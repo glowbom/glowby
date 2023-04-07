@@ -19,3 +19,5 @@ doc/api/
 *.js_
 *.js.deps
 *.js.map
+chat/.DS_Store
+.DS_Store
