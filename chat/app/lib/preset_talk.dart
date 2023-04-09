@@ -200,7 +200,7 @@ class _TalkState extends State<Talk> {
                           ? _content['start_over']
                           : 'AI',
                       _questions,
-                      _voice,
+                      _voice!,
                     )),
     );
   }
