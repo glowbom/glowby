@@ -2,23 +2,16 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'chat_screen.dart';
 
 void main() => runApp(Talk(null));
 
 class _TalkState extends State<Talk> {
-  var _questionIndex = 0;
   var _appScreen = 'Loading';
-  var _totalScore = 0;
-  var _selectedAnswer = -1;
-  var _questionsWithoutAnswers = 0;
 
   String? _title;
   String? _mainColor;
-  bool? _showNumberResult = true;
-  bool? _showPercentageResult = true;
   bool? _voice = false;
 
   Future<dynamic> loadContentFromAssets() async {
@@ -43,18 +36,6 @@ class _TalkState extends State<Talk> {
         _mainColor = 'Blue';
       }
 
-      if (_content.containsKey('show_number_result')) {
-        _showNumberResult = _content['show_number_result'];
-      } else {
-        _showNumberResult = true;
-      }
-
-      if (_content.containsKey('show_percentage_result')) {
-        _showPercentageResult = _content['show_percentage_result'];
-      } else {
-        _showPercentageResult = true;
-      }
-
       if (_content.containsKey('voice')) {
         _voice = _content['voice'];
       } else {
@@ -74,18 +55,6 @@ class _TalkState extends State<Talk> {
               _mainColor = _content['main_color'];
             } else {
               _mainColor = 'Blue';
-            }
-
-            if (_content.containsKey('show_number_result')) {
-              _showNumberResult = _content['show_number_result'];
-            } else {
-              _showNumberResult = true;
-            }
-
-            if (_content.containsKey('show_percentage_result')) {
-              _showPercentageResult = _content['show_percentage_result'];
-            } else {
-              _showPercentageResult = true;
             }
 
             if (_content.containsKey('voice')) {
@@ -118,53 +87,11 @@ class _TalkState extends State<Talk> {
     }
   }
 
-  List<Map<String, Object>>? _currentQuestions;
   var _content;
 
   _TalkState(this._content);
 
   var _questions;
-
-  void _restart() {
-    setState(() {
-      _appScreen = 'Menu';
-      _questionIndex = 0;
-      _totalScore = 0;
-      _questionsWithoutAnswers = 0;
-    });
-
-    if (_content != null) {
-      _pressed100();
-    }
-
-    if (!kIsWeb) {}
-  }
-
-  void _answerQuestion(int score, int selectedAnswer) {
-    if (_questions[_questionIndex]['answersCount'] == 0) {
-      setState(() {
-        _selectedAnswer = -1;
-        ++_questionIndex;
-        ++_questionsWithoutAnswers;
-      });
-      return;
-    }
-
-    _totalScore += (score >= 1 ? 1 : 0);
-
-    setState(() {
-      _selectedAnswer = selectedAnswer;
-    });
-
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      setState(() {
-        _selectedAnswer = -1;
-        ++_questionIndex;
-      });
-    });
-
-    print(_questionIndex);
-  }
 
   List<Map<String, Object>> deepCopy(List<Map<String, Object>> items) {
     List<Map<String, Object>> result = List.from(
@@ -186,8 +113,6 @@ class _TalkState extends State<Talk> {
 
     if (dnsgs == true) {
       setState(() {
-        _questionIndex = 0;
-        _currentQuestions = deepCopy(_questions);
         _appScreen = 'Test100';
       });
     } else {
@@ -196,8 +121,6 @@ class _TalkState extends State<Talk> {
       });
       Future.delayed(const Duration(milliseconds: 1500), () {
         setState(() {
-          _questionIndex = 0;
-          _currentQuestions = deepCopy(_questions);
           _appScreen = 'Test100';
         });
       });

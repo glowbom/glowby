@@ -25,10 +25,6 @@ class _ChatScreenState extends State<ChatScreen> {
       flutterTts = FlutterTts();
     }
 
-    //List<dynamic> languages = await flutterTts.getLanguages;
-
-    //print(languages);
-
     if ((text as String).startsWith('Italian: ')) {
       await flutterTts!.setLanguage("it-IT");
       text = text.replaceAll('Italian: ', '');
