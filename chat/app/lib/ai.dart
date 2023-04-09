@@ -37,6 +37,7 @@ class Ai {
 
       if (question == userMessage) {
         foundQuestions.add(questionMap);
+        break; // Exit the loop early as we have found an exact match
       }
     }
 
@@ -97,7 +98,6 @@ class Ai {
     } catch (e) {
       print('Error generating response message: $e');
     }
-
     return [];
   }
 }
