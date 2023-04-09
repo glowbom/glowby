@@ -15,11 +15,11 @@ class _TalkState extends State<Talk> {
   var _selectedAnswer = -1;
   var _questionsWithoutAnswers = 0;
 
-  String _title;
-  String _mainColor;
-  bool _showNumberResult = true;
-  bool _showPercentageResult = true;
-  bool _voice = false;
+  String? _title;
+  String? _mainColor;
+  bool? _showNumberResult = true;
+  bool? _showPercentageResult = true;
+  bool? _voice = false;
 
   Future<dynamic> loadContentFromAssets() async {
     String data =
@@ -67,7 +67,7 @@ class _TalkState extends State<Talk> {
             _content = value;
             if (_content.containsKey('title')) {
               _title = _content['title'];
-              print('title: ' + _title);
+              print('title: ' + _title!);
             }
 
             if (_content.containsKey('main_color')) {
@@ -98,7 +98,7 @@ class _TalkState extends State<Talk> {
             List<dynamic> list = _content['questions'];
             for (int i = 0; i < list.length; i++) {
               dynamic item = list[i];
-              dynamic question = {
+              Map<String, Object> question = {
                 "title": item['title'].toString(),
                 "description": item['description'].toString(),
                 "buttonsTexts": List<String>.from(item['buttonsTexts']),
@@ -111,14 +111,14 @@ class _TalkState extends State<Talk> {
                 "heroValues": [],
                 "picturesSpriteNames": ["", "", "", "", "", ""]
               };
-              _questions.add(question);
+              _questions.add(question.cast<String, Object>());
             }
             _pressed100();
           }));
     }
   }
 
-  List<Map<String, Object>> _currentQuestions;
+  List<Map<String, Object>>? _currentQuestions;
   var _content;
 
   _TalkState(this._content);
@@ -180,7 +180,7 @@ class _TalkState extends State<Talk> {
   }
 
   void _pressed100() {
-    bool dnsgs = _content != null && _content.containsKey('dnsgs')
+    bool? dnsgs = _content != null && _content.containsKey('dnsgs')
         ? _content['dnsgs']
         : false;
 
@@ -256,7 +256,7 @@ class _TalkState extends State<Talk> {
       home: Scaffold(
           appBar: AppBar(
             title: Text(
-              _title != null ? _title : 'Chat App',
+              _title != null ? _title! : 'Chat App',
               style: TextStyle(
                 color: Colors.white,
               ),

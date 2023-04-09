@@ -4,15 +4,15 @@ import 'package:url_launcher/url_launcher.dart';
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
-  final Key key;
-  final String username;
-  final String link;
+  final Key? key;
+  final String? username;
+  final String? link;
 
   MessageBubble(this.message, this.username, this.isMe, this.link, {this.key});
 
   _launchLink() async {
-    if (await canLaunch(link)) {
-      await launch(link);
+    if (await canLaunch(link!)) {
+      await launch(link!);
     } else {
       throw 'Could not launch $link';
     }
@@ -47,7 +47,7 @@ class MessageBubble extends StatelessWidget {
                 isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               Text(
-                username,
+                username!,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: isMe ? Colors.black : Colors.white70,
@@ -62,7 +62,7 @@ class MessageBubble extends StatelessWidget {
                     )
                   : message == 'image'
                       ? Image.network(
-                          link,
+                          link!,
                         )
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(

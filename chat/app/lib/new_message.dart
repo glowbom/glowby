@@ -32,8 +32,8 @@ external void vr(text);
 class NewMessage extends StatefulWidget {
   final Function _refresh;
   final List<Message> _messages;
-  final List<Map<String, Object>> _questions;
-  final String _name;
+  final List<Map<String, Object>>? _questions;
+  final String? _name;
 
   NewMessage(
     this._refresh,
@@ -47,19 +47,19 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
-  var ai;
+  late var ai;
 
   final _controller = new TextEditingController();
   var _enteredMessage = '';
 
-  FocusNode _focusNode;
+  FocusNode? _focusNode;
   bool _isRecording = false;
-  Timer _voiceCancelTimer;
+  Timer? _voiceCancelTimer;
 
   void _onVoiceReady(text) {
     if (_isRecording) {
       if (_voiceCancelTimer != null) {
-        _voiceCancelTimer.cancel();
+        _voiceCancelTimer!.cancel();
         _voiceCancelTimer = null;
       }
 
@@ -91,7 +91,7 @@ class _NewMessageState extends State<NewMessage> {
   @override
   void dispose() {
     // Clean up the focus node when the Form is disposed.
-    _focusNode.dispose();
+    _focusNode!.dispose();
 
     super.dispose();
   }
@@ -109,7 +109,7 @@ class _NewMessageState extends State<NewMessage> {
     });
 
     if (_voiceCancelTimer != null) {
-      _voiceCancelTimer.cancel();
+      _voiceCancelTimer!.cancel();
       _voiceCancelTimer = null;
     }
 
@@ -138,7 +138,7 @@ class _NewMessageState extends State<NewMessage> {
     final message = _enteredMessage.trim();
     //_controller.clear();
     _controller.value = TextEditingValue.empty;
-    _focusNode.requestFocus();
+    _focusNode!.requestFocus();
 
     _enteredMessage = '';
 

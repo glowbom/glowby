@@ -5,8 +5,8 @@ import 'timestamp.dart';
 import 'message.dart';
 
 class Ai {
-  final List<Map<String, Object>> _questions;
-  final String _name;
+  final List<Map<String, Object>>? _questions;
+  final String? _name;
 
   Ai(this._name, this._questions);
 
@@ -15,7 +15,7 @@ class Ai {
 
     var userMessage = message.replaceAll('?', '').toLowerCase();
 
-    for (var q in _questions) {
+    for (var q in _questions!) {
       var question =
           q['description'].toString().replaceAll('?', '').toLowerCase();
 
@@ -26,7 +26,7 @@ class Ai {
     }
 
     if (foundQuestions.length == 0) {
-      for (var q in _questions) {
+      for (var q in _questions!) {
         var question =
             q['description'].toString().replaceAll('?', '').toLowerCase();
         if (userMessage.contains('question')) {
@@ -63,7 +63,7 @@ class Ai {
         List<String> messages = [];
 
         for (Map<String, Object> q in foundQuestions) {
-          messages.addAll(q['buttonsTexts']);
+          messages.addAll(q['buttonsTexts'] as Iterable<String>);
         }
 
         int index = rnd.nextInt(messages.length);
