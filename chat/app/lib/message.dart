@@ -1,5 +1,4 @@
 import 'timestamp.dart';
-import 'package:flutter/widgets.dart';
 
 class Message {
   final String text;

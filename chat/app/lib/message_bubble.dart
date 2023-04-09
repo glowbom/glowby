@@ -11,8 +11,8 @@ class MessageBubble extends StatelessWidget {
   MessageBubble(this.message, this.username, this.isMe, this.link, {this.key});
 
   _launchLink() async {
-    if (await canLaunch(link!)) {
-      await launch(link!);
+    if (await canLaunchUrl(Uri.parse(link!))) {
+      await launchUrl(Uri.parse(link!));
     } else {
       throw 'Could not launch $link';
     }
@@ -66,7 +66,7 @@ class MessageBubble extends StatelessWidget {
                         )
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: Colors.blue, // Background color
+                            backgroundColor: Colors.blue, // Background color
                           ),
                           child: Text(
                             message,
