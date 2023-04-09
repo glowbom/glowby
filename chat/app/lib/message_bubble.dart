@@ -19,10 +19,11 @@ class MessageBubble extends StatelessWidget {
     }
   }
 
-  // Builds the message bubble container
+  // Builds the message bubble container with the appropriate decoration
   Container _buildMessageBubbleContainer(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        // Different colors for sender and receiver
         color: isMe ? Colors.grey[300] : Theme.of(context).primaryColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(12),
@@ -45,6 +46,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   // Builds the message content, including the username, message, and link (if available)
+  // CrossAxisAlignment is determined based on the sender (isMe)
   Column _buildMessageContent(BuildContext context) {
     return Column(
       crossAxisAlignment:
@@ -56,7 +58,7 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  // Builds the username text
+  // Builds the username text with bold font weight and appropriate color
   Text _buildUsernameText(BuildContext context) {
     return Text(
       username!,
@@ -68,6 +70,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   // Builds the message or link, depending on the provided data
+  // If a link is provided, it will display the link as a button or an image, depending on the message content
   Widget _buildMessageOrLink(BuildContext context) {
     if (link == null) {
       return _buildMessageText(context);
@@ -78,7 +81,7 @@ class MessageBubble extends StatelessWidget {
     }
   }
 
-  // Builds the message text
+  // Builds the message text with the appropriate color and alignment
   Text _buildMessageText(BuildContext context) {
     return Text(
       message,
@@ -87,7 +90,7 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  // Builds the link button
+  // Builds the link button, which launches the link when pressed
   ElevatedButton _buildLinkButton(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -104,6 +107,7 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Aligns the message bubble to the right (sender) or left (receiver) side of the screen
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
