@@ -10,12 +10,96 @@ class MessageBubble extends StatelessWidget {
 
   MessageBubble(this.message, this.username, this.isMe, this.link, {this.key});
 
-  _launchLink() async {
-    if (await canLaunchUrl(Uri.parse(link!))) {
-      await launchUrl(Uri.parse(link!));
+  // Launches the link if it is valid
+  void _launchLink() async {
+    if (await canLaunch(link!)) {
+      await launch(link!);
     } else {
       throw 'Could not launch $link';
     }
+  }
+
+  // Builds the message bubble container
+  Container _buildMessageBubbleContainer(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isMe ? Colors.grey[300] : Theme.of(context).primaryColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+          bottomLeft: Radius.circular(isMe ? 12 : 0),
+          bottomRight: Radius.circular(isMe ? 0 : 12),
+        ),
+      ),
+      width: 280,
+      padding: EdgeInsets.symmetric(
+        vertical: 10,
+        horizontal: 16,
+      ),
+      margin: EdgeInsets.symmetric(
+        vertical: 4,
+        horizontal: 8,
+      ),
+      child: _buildMessageContent(context),
+    );
+  }
+
+  // Builds the message content, including the username, message, and link (if available)
+  Column _buildMessageContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment:
+          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        _buildUsernameText(context),
+        _buildMessageOrLink(context),
+      ],
+    );
+  }
+
+  // Builds the username text
+  Text _buildUsernameText(BuildContext context) {
+    return Text(
+      username!,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: isMe ? Colors.black : Colors.white70,
+      ),
+    );
+  }
+
+  // Builds the message or link, depending on the provided data
+  Widget _buildMessageOrLink(BuildContext context) {
+    if (link == null) {
+      return _buildMessageText(context);
+    } else if (message == 'image') {
+      return Image.network(link!);
+    } else {
+      return _buildLinkButton(context);
+    }
+  }
+
+  // Builds the message text
+  Text _buildMessageText(BuildContext context) {
+    return Text(
+      message,
+      textAlign: isMe ? TextAlign.end : TextAlign.start,
+      style: TextStyle(color: isMe ? Colors.black : Colors.white70),
+    );
+  }
+
+  // Builds the link button
+  ElevatedButton _buildLinkButton(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue, // Background color
+      ),
+      child: Text(
+        message,
+        textAlign: isMe ? TextAlign.end : TextAlign.start,
+        style: TextStyle(color: isMe ? Colors.black : Colors.white70),
+      ),
+      onPressed: _launchLink,
+    );
   }
 
   @override
@@ -23,62 +107,7 @@ class MessageBubble extends StatelessWidget {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
-        Container(
-          decoration: BoxDecoration(
-            color: isMe ? Colors.grey[300] : Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-              bottomLeft: Radius.circular(isMe ? 12 : 0),
-              bottomRight: Radius.circular(isMe ? 0 : 12),
-            ),
-          ),
-          width: 280,
-          padding: EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 16,
-          ),
-          margin: EdgeInsets.symmetric(
-            vertical: 4,
-            horizontal: 8,
-          ),
-          child: Column(
-            crossAxisAlignment:
-                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
-              Text(
-                username!,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isMe ? Colors.black : Colors.white70,
-                ),
-              ),
-              link == null
-                  ? Text(
-                      message,
-                      textAlign: isMe ? TextAlign.end : TextAlign.start,
-                      style: TextStyle(
-                          color: isMe ? Colors.black : Colors.white70),
-                    )
-                  : message == 'image'
-                      ? Image.network(
-                          link!,
-                        )
-                      : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue, // Background color
-                          ),
-                          child: Text(
-                            message,
-                            textAlign: isMe ? TextAlign.end : TextAlign.start,
-                            style: TextStyle(
-                                color: isMe ? Colors.black : Colors.white70),
-                          ),
-                          onPressed: _launchLink,
-                        ),
-            ],
-          ),
-        ),
+        _buildMessageBubbleContainer(context),
       ],
     );
   }
