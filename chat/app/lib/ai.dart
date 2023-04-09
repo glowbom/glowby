@@ -1,81 +1,85 @@
 import 'dart:math';
 
 import 'timestamp.dart';
-
 import 'message.dart';
 
 class Ai {
   final List<Map<String, Object>>? _questions;
   final String? _name;
 
+  static const String defaultUserId = '007';
+
   Ai(this._name, this._questions);
 
   Future<List<Message>> message(String message) async {
+    List<Map<String, Object>> foundQuestions = _findMatchingQuestions(message);
+
+    if (foundQuestions.isNotEmpty) {
+      return _generateResponseMessage(foundQuestions);
+    }
+
+    return [];
+  }
+
+  List<Map<String, Object>> _findMatchingQuestions(String message) {
     List<Map<String, Object>> foundQuestions = [];
+    var userMessage = _sanitizeMessage(message);
 
-    var userMessage = message.replaceAll('?', '').toLowerCase();
-
-    for (var q in _questions!) {
-      var question =
-          q['description'].toString().replaceAll('?', '').toLowerCase();
+    for (var questionMap in _questions!) {
+      var question = _sanitizeMessage(questionMap['description'].toString());
 
       if (question == userMessage) {
-        // exact match
-        foundQuestions.add(q);
+        foundQuestions.add(questionMap);
       }
     }
 
-    if (foundQuestions.length == 0) {
-      for (var q in _questions!) {
-        var question =
-            q['description'].toString().replaceAll('?', '').toLowerCase();
-        if (userMessage.contains('question')) {
-          // good match
-          foundQuestions.add(q);
-        } else if (foundQuestions.length == 0) {
-          // let's try to find intersection
-          Set<String> userMessageSet = Set<String>();
-          List<String> words = userMessage.split(' ');
-          for (String word in words) {
-            userMessageSet.add(word);
-          }
+    if (foundQuestions.isEmpty) {
+      foundQuestions = _searchForQuestions(userMessage);
+    }
 
-          Set<String> questionSet = Set<String>();
-          words = question.replaceAll("'s", "").split(' ');
-          for (String word in words) {
-            questionSet.add(word);
-          }
+    return foundQuestions;
+  }
 
-          Set<String> intersection = userMessageSet.intersection(questionSet);
-          double percentPerWord = 100 / words.length;
-          double percentage = intersection.length * percentPerWord;
+  String _sanitizeMessage(String message) {
+    return message.replaceAll('?', '').toLowerCase();
+  }
 
-          if (percentage > 70) {
-            foundQuestions.add(q);
-          }
-        }
+  List<Map<String, Object>> _searchForQuestions(String userMessage) {
+    List<Map<String, Object>> foundQuestions = [];
+
+    for (var questionMap in _questions!) {
+      var question = _sanitizeMessage(questionMap['description'].toString());
+
+      if (userMessage.contains(question)) {
+        foundQuestions.add(questionMap);
       }
     }
 
-    if (foundQuestions.length > 0) {
-      try {
-        Random rnd = new Random(DateTime.now().millisecondsSinceEpoch);
-        List<String> messages = [];
+    return foundQuestions;
+  }
 
-        for (Map<String, Object> q in foundQuestions) {
-          messages.addAll(q['buttonsTexts'] as Iterable<String>);
-        }
+  Future<List<Message>> _generateResponseMessage(
+      List<Map<String, Object>> foundQuestions) async {
+    try {
+      Random rnd = Random(DateTime.now().millisecondsSinceEpoch);
+      List<String> messages = [];
 
-        int index = rnd.nextInt(messages.length);
+      for (Map<String, Object> questionMap in foundQuestions) {
+        messages.addAll(questionMap['buttonsTexts'] as Iterable<String>);
+      }
 
-        return [
-          Message(
-              text: messages[index],
-              createdAt: Timestamp.now(),
-              userId: '007',
-              username: _name == '' ? 'AI' : _name),
-        ];
-      } catch (e) {}
+      int index = rnd.nextInt(messages.length);
+
+      return [
+        Message(
+          text: messages[index],
+          createdAt: Timestamp.now(),
+          userId: defaultUserId,
+          username: _name == '' ? 'AI' : _name,
+        ),
+      ];
+    } catch (e) {
+      // Log the exception or handle it appropriately
     }
 
     return [];
