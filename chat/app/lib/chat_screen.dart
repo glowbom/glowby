@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'message.dart';
 import 'new_message.dart';
 import 'messages.dart';
-import 'package:flutter/material.dart';
 import 'text_to_speech.dart'; // Import the new TextToSpeech class
 
 class ChatScreen extends StatefulWidget {
@@ -22,13 +22,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
   List<Message> _messages = [];
 
+  // Refresh the chat screen and handle text-to-speech functionality
   void refresh() {
     if (widget._voice) {
       try {
         if (_messages.isNotEmpty && _messages[0].userId == '007') {
           textToSpeech.speakText(_messages[0].text);
         }
-      } catch (e) {}
+      } catch (e) {
+        print('Error: $e'); // Log the exception
+      }
     }
     setState(() {});
   }
