@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-
+import 'color_utils.dart';
 import 'chat_screen.dart';
-
-void main() => runApp(Talk(null));
 
 class _TalkState extends State<Talk> {
   var _appScreen = 'Loading';
@@ -13,6 +10,11 @@ class _TalkState extends State<Talk> {
   String? _title;
   String? _mainColor;
   bool? _voice = false;
+  List<Map<String, Object>> _questions = [];
+
+  _TalkState(this._content);
+
+  var _content;
 
   Future<dynamic> loadContentFromAssets() async {
     String data =
@@ -23,87 +25,49 @@ class _TalkState extends State<Talk> {
   @override
   void initState() {
     super.initState();
+    initializeTalkState();
+  }
 
+  void initializeTalkState() {
     if (_content != null) {
       _questions = _content['questions'];
-      if (_content.containsKey('title')) {
-        _title = _content['title'];
-      }
-
-      if (_content.containsKey('main_color')) {
-        _mainColor = _content['main_color'];
-      } else {
-        _mainColor = 'Blue';
-      }
-
-      if (_content.containsKey('voice')) {
-        _voice = _content['voice'];
-      } else {
-        _voice = false;
-      }
-
+      _title = _content['title'];
+      _mainColor = _content['main_color'] ?? 'Blue';
+      _voice = _content['voice'] ?? false;
       _pressed100();
     } else {
       loadContentFromAssets().then((value) => setState(() {
             _content = value;
-            if (_content.containsKey('title')) {
-              _title = _content['title'];
-              print('title: ' + _title!);
-            }
-
-            if (_content.containsKey('main_color')) {
-              _mainColor = _content['main_color'];
-            } else {
-              _mainColor = 'Blue';
-            }
-
-            if (_content.containsKey('voice')) {
-              _voice = _content['voice'];
-            } else {
-              _voice = false;
-            }
-
-            _questions = List<Map<String, Object>>.empty(growable: true);
-            List<dynamic> list = _content['questions'];
-            for (int i = 0; i < list.length; i++) {
-              dynamic item = list[i];
-              Map<String, Object> question = {
-                "title": item['title'].toString(),
-                "description": item['description'].toString(),
-                "buttonsTexts": List<String>.from(item['buttonsTexts']),
-                "buttonAnswers": List<int>.from(item['buttonAnswers']),
-                "answersCount": item['answersCount'],
-                "goIndexes": List<int>.from(item['goIndexes']),
-                "answerPicture": item['answerPicture'].toString(),
-                "answerPictureDelay": item['answerPictureDelay'],
-                "goConditions": [],
-                "heroValues": [],
-                "picturesSpriteNames": ["", "", "", "", "", ""]
-              };
-              _questions.add(question.cast<String, Object>());
-            }
+            _title = _content['title'];
+            _mainColor = _content['main_color'] ?? 'Blue';
+            _voice = _content['voice'] ?? false;
+            _questions = buildQuestions(_content['questions']);
             _pressed100();
           }));
     }
   }
 
-  var _content;
-
-  _TalkState(this._content);
-
-  var _questions;
-
-  List<Map<String, Object>> deepCopy(List<Map<String, Object>> items) {
-    List<Map<String, Object>> result = List.from(
-      {},
-    );
-
-    // Go through all elements.
-    for (var i = 0; i < items.length; i++) {
-      result.add(Map.from(items[i]));
+  List<Map<String, Object>> buildQuestions(List<dynamic> questionsData) {
+    List<Map<String, Object>> questions =
+        List<Map<String, Object>>.empty(growable: true);
+    for (int i = 0; i < questionsData.length; i++) {
+      dynamic item = questionsData[i];
+      Map<String, Object> question = {
+        "title": item['title'].toString(),
+        "description": item['description'].toString(),
+        "buttonsTexts": List<String>.from(item['buttonsTexts']),
+        "buttonAnswers": List<int>.from(item['buttonAnswers']),
+        "answersCount": item['answersCount'],
+        "goIndexes": List<int>.from(item['goIndexes']),
+        "answerPicture": item['answerPicture'].toString(),
+        "answerPictureDelay": item['answerPictureDelay'],
+        "goConditions": [],
+        "heroValues": [],
+        "picturesSpriteNames": ["", "", "", "", "", ""]
+      };
+      questions.add(question);
     }
-
-    return result;
+    return questions;
   }
 
   void _pressed100() {
@@ -127,42 +91,8 @@ class _TalkState extends State<Talk> {
     }
   }
 
-  int tintValue(int value, double factor) =>
-      max(0, min((value + ((255 - value) * factor)).round(), 255));
-
-  Color tintColor(Color color, double factor) => Color.fromRGBO(
-      tintValue(color.red, factor),
-      tintValue(color.green, factor),
-      tintValue(color.blue, factor),
-      1);
-
-  int shadeValue(int value, double factor) =>
-      max(0, min(value - (value * factor).round(), 255));
-
-  Color shadeColor(Color color, double factor) => Color.fromRGBO(
-      shadeValue(color.red, factor),
-      shadeValue(color.green, factor),
-      shadeValue(color.blue, factor),
-      1);
-
-  MaterialColor generateMaterialColor(Color color) {
-    return MaterialColor(color.value, {
-      50: tintColor(color, 0.9),
-      100: tintColor(color, 0.8),
-      200: tintColor(color, 0.6),
-      300: tintColor(color, 0.4),
-      400: tintColor(color, 0.2),
-      500: color,
-      600: shadeColor(color, 0.1),
-      700: shadeColor(color, 0.2),
-      800: shadeColor(color, 0.3),
-      900: shadeColor(color, 0.4),
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    //speak();
     return MaterialApp(
       title: 'Chat',
       theme: ThemeData(
@@ -206,6 +136,7 @@ class _TalkState extends State<Talk> {
   }
 }
 
+// A StatefulWidget that represents the main Talk widget.
 class Talk extends StatefulWidget {
   final _content;
 

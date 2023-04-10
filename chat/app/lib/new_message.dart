@@ -29,6 +29,7 @@ external set _vr(void Function(dynamic) f);
 external void vr(text);
 */
 
+/// A class representing the NewMessage widget, which allows users to send messages and receive AI responses.
 class NewMessage extends StatefulWidget {
   final Function _refresh;
   final List<Message> _messages;
