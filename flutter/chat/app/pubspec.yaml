@@ -26,6 +26,9 @@ dependencies:
   url_launcher: ^6.1.10
   flutter_tts: ^3.6.3
   http: ^0.13.5
+  shared_preferences: ^2.1.0
+  flutter_secure_storage: ^8.0.0
+  
   flutter:
     sdk: flutter
 

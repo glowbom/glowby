@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:web/openai_api.dart';
 
 class ApiKeyDialog extends StatefulWidget {
   @override
@@ -10,8 +11,20 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
   final _apiKeyController = TextEditingController();
   String _apiKey = '';
 
+  @override
+  void initState() {
+    super.initState();
+
+    OpenAI_API.loadOat().then((_) {
+      setState(() {
+        _apiKey = OpenAI_API.oat();
+        _apiKeyController.text = _apiKey;
+      });
+    });
+  }
+
   void _saveApiKey() {
-    // Save the API key locally and validate it
+    OpenAI_API.setOat(_apiKey);
   }
 
   void _launchURL(String url) async {

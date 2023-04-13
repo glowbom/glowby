@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'message.dart';
 import 'new_message.dart';
 import 'messages.dart';
+import 'openai_api.dart';
 import 'text_to_speech.dart'; // Import the new TextToSpeech class
 import 'api_key_dialog.dart'; // Import the ApiKeyDialog widget
 
@@ -22,6 +22,12 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextToSpeech textToSpeech = TextToSpeech(); // Initialize TextToSpeech
 
   List<Message> _messages = [];
+
+  @override
+  void initState() {
+    OpenAI_API.loadOat();
+    super.initState();
+  }
 
   // Refresh the chat screen and handle text-to-speech functionality
   void refresh() {
@@ -76,6 +82,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
             ),
+            SizedBox(height: 20),
           ],
         ),
       ),

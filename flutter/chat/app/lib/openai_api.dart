@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 int totalTokensUsed = 0;
@@ -6,13 +7,24 @@ int totalTokensUsed = 0;
 class OpenAI_API {
   static String apiKey = '';
   static String model = 'gpt-3.5-turbo'; //'gpt-4';
+  static const String _apiKeyKey = 'openai_api_key';
+  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
+    if (apiKey == '') {
+      loadOat();
+    }
+
     return apiKey;
   }
 
-  static void setOat(String value) {
+  static void setOat(String value) async {
     apiKey = value;
+    await _secureStorage.write(key: _apiKeyKey, value: apiKey);
+  }
+
+  static Future<void> loadOat() async {
+    apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
   }
 
   static Future<String?> generateImageUrl(String description) async {
