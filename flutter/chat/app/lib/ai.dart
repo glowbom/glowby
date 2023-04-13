@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'openai_api.dart';
 import 'timestamp.dart';
 import 'message.dart';
 
@@ -20,6 +21,19 @@ class Ai {
 
     if (foundQuestions.isNotEmpty) {
       return _generateResponseMessage(foundQuestions);
+    }
+
+    // Call the OpenAI API if no matching questions are found locally
+    if (OpenAI_API.oat().isNotEmpty) {
+      String response = await OpenAI_API.getResponseFromOpenAI(message);
+      return [
+        Message(
+          text: response,
+          createdAt: Timestamp.now(),
+          userId: defaultUserId,
+          username: _name == '' ? 'AI' : _name,
+        ),
+      ];
     }
 
     return [];
