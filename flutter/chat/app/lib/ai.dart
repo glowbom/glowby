@@ -16,7 +16,8 @@ class Ai {
   /// Processes the user's message and returns an AI-generated response.
   ///
   /// [message] is the input message from the user.
-  Future<List<Message>> message(String message) async {
+  Future<List<Message>> message(String message,
+      {List<Map<String, String?>> previousMessages = const []}) async {
     List<Map<String, Object>> foundQuestions = _findMatchingQuestions(message);
 
     if (foundQuestions.isNotEmpty) {
@@ -25,7 +26,8 @@ class Ai {
 
     // Call the OpenAI API if no matching questions are found locally
     if (OpenAI_API.oat().isNotEmpty) {
-      String response = await OpenAI_API.getResponseFromOpenAI(message);
+      String response = await OpenAI_API.getResponseFromOpenAI(message,
+          previousMessages: previousMessages);
       return [
         Message(
           text: response,
