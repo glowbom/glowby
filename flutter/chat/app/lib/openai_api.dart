@@ -152,7 +152,11 @@ class OpenAI_API {
       final data = {
         'model': model,
         'messages': [
-          {'role': 'system', 'content': 'You are a helpful assistant.'},
+          {
+            'role': 'system',
+            'content':
+                'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.'
+          },
           ...previousMessages,
           {'role': 'user', 'content': inputMessage}
         ],

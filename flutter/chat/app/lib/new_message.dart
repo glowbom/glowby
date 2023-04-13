@@ -3,6 +3,7 @@
 // Uncomment 2 lines above to compile the web version
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
@@ -152,7 +153,22 @@ class _NewMessageState extends State<NewMessage> {
     widget._messages.insert(0, typingMessage);
     widget._refresh();
 
-    var response = await ai.message(message);
+    // Select the last 5 messages (excluding the user's input message)
+    int messageHistoryCount = min(5, widget._messages.length - 1);
+    List<Message> previousMessages =
+        widget._messages.sublist(1, messageHistoryCount + 1);
+
+    // Convert previousMessages to the format expected by the API
+    List<Map<String, String?>> formattedPreviousMessages =
+        previousMessages.map((message) {
+      return {
+        'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+        'content': message.text
+      };
+    }).toList();
+
+    var response =
+        await ai.message(message, previousMessages: formattedPreviousMessages);
 
     // Remove the typing message instance when the response is received
     widget._messages.remove(typingMessage);
