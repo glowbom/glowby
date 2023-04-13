@@ -5,6 +5,7 @@ import 'message.dart';
 import 'new_message.dart';
 import 'messages.dart';
 import 'text_to_speech.dart'; // Import the new TextToSpeech class
+import 'api_key_dialog.dart'; // Import the ApiKeyDialog widget
 
 class ChatScreen extends StatefulWidget {
   final List<Map<String, Object>> _questions;
@@ -36,6 +37,15 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {});
   }
 
+  void _showApiKeyDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ApiKeyDialog(); // Use the ApiKeyDialog widget
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -53,6 +63,18 @@ class _ChatScreenState extends State<ChatScreen> {
               _messages,
               widget._questions,
               widget._name,
+            ),
+            Container(
+              margin: EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ElevatedButton(
+                    child: Text('Enter API Key'),
+                    onPressed: _showApiKeyDialog,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
