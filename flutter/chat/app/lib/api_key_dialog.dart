@@ -23,8 +23,13 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     });
   }
 
-  void _saveApiKey() {
+  void _saveApiKey(BuildContext context) {
     OpenAI_API.setOat(_apiKey);
+    Navigator.pop(context); // Hide the dialog
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('API Key saved successfully!')),
+    );
   }
 
   void _launchURL(String url) async {
@@ -66,11 +71,6 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   });
                 },
               ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                child: Text('Save API Key'),
-                onPressed: _saveApiKey,
-              ),
               SizedBox(height: 20),
               InkWell(
                 child: Text(
@@ -81,7 +81,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                     'https://platform.openai.com/account/billing/overview'),
               ),
               Text('Ensure billing info is added in OpenAI Billing.'),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               InkWell(
                 child: Text(
                   'The Price is about 100,000 words per \$1',
@@ -95,6 +95,27 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
           ),
         ),
       ),
+      actions: [
+        TextButton(
+          child: Text('Clear'),
+          onPressed: () {
+            setState(() {
+              _apiKeyController.clear();
+              _apiKey = '';
+            });
+          },
+        ),
+        TextButton(
+          child: Text('Cancel'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        ElevatedButton(
+          child: Text('Save API Key'),
+          onPressed: () => _saveApiKey(context),
+        ),
+      ],
     );
   }
 }
