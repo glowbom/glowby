@@ -137,13 +137,25 @@ class _NewMessageState extends State<NewMessage> {
     );
 
     final message = _enteredMessage.trim();
-    //_controller.clear();
     _controller.value = TextEditingValue.empty;
     _focusNode!.requestFocus();
 
     _enteredMessage = '';
 
+    // Add a new message instance indicating that the AI is typing
+    Message typingMessage = Message(
+      text: 'typing...',
+      createdAt: Timestamp.now(),
+      userId: Ai.defaultUserId,
+      username: widget._name == '' ? 'AI' : widget._name,
+    );
+    widget._messages.insert(0, typingMessage);
+    widget._refresh();
+
     var response = await ai.message(message);
+
+    // Remove the typing message instance when the response is received
+    widget._messages.remove(typingMessage);
 
     if (response.length > 0) {
       for (Message m in response) {

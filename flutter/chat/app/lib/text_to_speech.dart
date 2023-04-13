@@ -21,6 +21,10 @@ class TextToSpeech {
   };
 
   Future<void> speakText(String text) async {
+    if (text == 'typing...') {
+      return;
+    }
+
     if (_flutterTts == null) {
       _flutterTts = FlutterTts();
     }
