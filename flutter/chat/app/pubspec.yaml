@@ -25,6 +25,7 @@ dependencies:
   # js: ^0.6.2
   url_launcher: ^6.1.10
   flutter_tts: ^3.6.3
+  http: ^0.13.5
   flutter:
     sdk: flutter
 
