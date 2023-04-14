@@ -1,4 +1,4 @@
-# Glowby Basic - AI Agent Builder
+# Glowby Basic - Voice-Based AI Agent Builder
 
 Glowby Basic is an open source application that lets you build your own baic but powerful voiced-based AI agent that can help you do various tasts.
 
