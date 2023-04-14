@@ -96,6 +96,9 @@ class _TalkState extends State<Talk> {
     return MaterialApp(
       title: 'Chat',
       theme: ThemeData(
+        textSelectionTheme: TextSelectionThemeData(
+          selectionColor: Colors.grey, // Change this to your desired color
+        ),
         primarySwatch: generateMaterialColor(_mainColor == 'Green'
             ? Color.fromRGBO(85, 185, 158, 1)
             : _mainColor == 'Blue'
