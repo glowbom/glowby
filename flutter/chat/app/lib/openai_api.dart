@@ -186,7 +186,7 @@ class OpenAI_API {
       );
 
       if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
+        final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
         String receivedResponse =
             responseBody['choices'][0]['message']['content'].toString().trim();
 
