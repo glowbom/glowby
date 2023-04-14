@@ -16,10 +16,17 @@ class ChatScreen extends StatefulWidget {
   ChatScreen(this._name, this._questions, this._voice);
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ChatScreenState createState() => ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class ChatScreenState extends State<ChatScreen> {
+  static bool voiceEnabled = false;
+  void updateVoiceEnabled(bool value) {
+    setState(() {
+      voiceEnabled = value;
+    });
+  }
+
   final TextToSpeech textToSpeech = TextToSpeech(); // Initialize TextToSpeech
 
   List<Message> _messages = [];
@@ -27,6 +34,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    voiceEnabled = widget._voice;
     OpenAI_API.loadOat().then((_) {
       setState(() {});
     });
@@ -34,7 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Refresh the chat screen and handle text-to-speech functionality
   void refresh() {
-    if (widget._voice) {
+    if (widget._voice && voiceEnabled) {
       try {
         if (_messages.isNotEmpty && _messages[0].userId == '007') {
           textToSpeech.speakText(_messages[0].text);
@@ -61,7 +69,9 @@ class _ChatScreenState extends State<ChatScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AiSettingsDialog(); // Use the AiSettingsDialog widget
+        return AiSettingsDialog(
+          onVoiceEnabledChanged: updateVoiceEnabled,
+        );
       },
     );
   }
