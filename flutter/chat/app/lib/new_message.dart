@@ -159,13 +159,16 @@ class _NewMessageState extends State<NewMessage> {
         widget._messages.sublist(1, messageHistoryCount + 1);
 
     // Convert previousMessages to the format expected by the API
-    List<Map<String, String?>> formattedPreviousMessages =
-        previousMessages.map((message) {
-      return {
-        'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
-        'content': message.text
-      };
-    }).toList();
+    List<Map<String, String?>> formattedPreviousMessages = previousMessages
+        .map((message) {
+          return {
+            'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+            'content': message.text
+          };
+        })
+        .toList()
+        .reversed
+        .toList();
 
     var response =
         await ai.message(message, previousMessages: formattedPreviousMessages);
