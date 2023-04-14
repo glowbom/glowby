@@ -25,8 +25,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
-    OpenAI_API.loadOat();
     super.initState();
+    OpenAI_API.loadOat().then((_) {
+      setState(() {});
+    });
   }
 
   // Refresh the chat screen and handle text-to-speech functionality
@@ -49,6 +51,8 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (BuildContext context) {
         return ApiKeyDialog(); // Use the ApiKeyDialog widget
       },
+    ).then(
+      (value) => setState(() {}),
     );
   }
 
@@ -79,6 +83,17 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Text('Enter API Key'),
                     onPressed: _showApiKeyDialog,
                   ),
+                  // Add the AI Settings button conditionally
+                  if (OpenAI_API.oat().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: ElevatedButton(
+                        child: Text('AI Settings'),
+                        onPressed: () {
+                          // Add your onPressed logic for the AI Settings button
+                        },
+                      ),
+                    ),
                 ],
               ),
             ),
