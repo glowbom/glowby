@@ -18,8 +18,8 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   }
 
   void _saveSettings(BuildContext context) {
-    OpenAI_API.model = _selectedModel;
-    OpenAI_API.systemPrompt = _systemPrompt;
+    OpenAI_API.setModel(_selectedModel);
+    OpenAI_API.setSystemPrompt(_systemPrompt);
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog

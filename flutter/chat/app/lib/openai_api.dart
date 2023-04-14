@@ -10,6 +10,8 @@ class OpenAI_API {
   static String systemPrompt =
       'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
   static const String _apiKeyKey = 'openai_api_key';
+  static const String _modelKey = 'openai_model';
+  static const String _systemPromptKey = 'openai_system_prompt';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
@@ -27,6 +29,19 @@ class OpenAI_API {
 
   static Future<void> loadOat() async {
     apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+    model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
+    systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
+        'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
+  }
+
+  static Future<void> setModel(String value) async {
+    model = value;
+    await _secureStorage.write(key: _modelKey, value: model);
+  }
+
+  static Future<void> setSystemPrompt(String value) async {
+    systemPrompt = value;
+    await _secureStorage.write(key: _systemPromptKey, value: systemPrompt);
   }
 
   static Future<String?> generateImageUrl(String description) async {
