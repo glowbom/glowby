@@ -7,6 +7,8 @@ int totalTokensUsed = 0;
 class OpenAI_API {
   static String apiKey = '';
   static String model = 'gpt-3.5-turbo'; //'gpt-4';
+  static String systemPrompt =
+      'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
   static const String _apiKeyKey = 'openai_api_key';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
@@ -152,11 +154,7 @@ class OpenAI_API {
       final data = {
         'model': model,
         'messages': [
-          {
-            'role': 'system',
-            'content':
-                'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.'
-          },
+          {'role': 'system', 'content': systemPrompt},
           ...previousMessages,
           {'role': 'user', 'content': inputMessage}
         ],

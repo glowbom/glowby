@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'ai_settings_dialog.dart';
 import 'message.dart';
 import 'new_message.dart';
 import 'messages.dart';
@@ -56,6 +57,15 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  void _showAiSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AiSettingsDialog(); // Use the AiSettingsDialog widget
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -89,9 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: ElevatedButton(
                         child: Text('AI Settings'),
-                        onPressed: () {
-                          // Add your onPressed logic for the AI Settings button
-                        },
+                        onPressed: _showAiSettingsDialog,
                       ),
                     ),
                 ],
