@@ -82,8 +82,8 @@ class MessageBubble extends StatelessWidget {
   }
 
   // Builds the message text with the appropriate color and alignment
-  Text _buildMessageText(BuildContext context) {
-    return Text(
+  SelectableText _buildMessageText(BuildContext context) {
+    return SelectableText(
       message,
       textAlign: isMe ? TextAlign.end : TextAlign.start,
       style: TextStyle(color: isMe ? Colors.black : Colors.white70),
