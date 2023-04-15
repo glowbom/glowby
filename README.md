@@ -18,10 +18,6 @@ This project offers an easy-to-use platform for creating customizable AI agents 
 
 Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=glowbom/glowby&type=Date)](https://star-history.com/#glowbom/glowby&Date)
-
 ## Getting Started
 
 ### Prerequisites
@@ -34,11 +30,49 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 
 1. Clone the repository:
 
-''' git clone https://github.com/glowbom/glowby-basic.git '''
+```
+git clone https://github.com/glowbom/glowby.git 
+```
 
-## Demo
+2. Navigate to the project directory:
 
-You can check out a live demo of Glowby Basic hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
+```
+cd app
+```
+
+3. Install dependencies:
+
+
+```
+flutter pub get
+```
+
+4. Run the project in your preferred environment:
+
+
+```
+flutter run
+```
+
+## Customization
+
+To customize the AI agent's behavior and tasks, modify the default prompt in AI Settings or in the code.
+
+Complex Task Prompt
+```
+You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.
+```
+
+Brainstorming Prompt
+```
+Generate ideas with Glowby! As a super helpful, nice, and humorous AI assistant, Glowby is ready to provide you with a concise plan and assist in executing it. With Glowby by your side, you'll never feel stuck again. Let's get brainstorming!
+```
+
+Simple Assistant Prompt
+```
+You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.
+```
+
 
 
 ## Star History
