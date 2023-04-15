@@ -80,7 +80,8 @@ You are Glowby, super helpful, nice, and humorous AI assistant ready to help wit
 
 ## Contributing
 
-We'd love to have you join our community and contribute to Glowby Basic! To get started, please check out our [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute.
+We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub.
+
 
 ## License
 
