@@ -6,6 +6,8 @@ Glowby Basic is an open-source platform for developing and deploying powerful vo
 
 Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
 
+### See It in Action
+
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
 
 ## Overview
