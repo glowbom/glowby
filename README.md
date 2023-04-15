@@ -1,4 +1,4 @@
-# Glowby Basic - Customizable Voice-Enabled AI Agent
+# Glowby Basic - Customizable Voice-Enabled AI Assistant
 
 Glowby Basic is a powerful voice-based AI agent that can assist users with various tasks. Easily customizable, trainable, and deployable anywhere, Glowby Basic is designed to adapt to your specific needs. Built using Flutter, Glowby Basic provides a seamless web app experience with an intuitive voice interface.
 
