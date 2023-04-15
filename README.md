@@ -21,11 +21,13 @@ This project offers an easy-to-use platform for creating customizable AI agents 
 
 ## Features
 
-- User-friendly platform to create voice-based AI agents
-- Customizable AI behavior to cater to specific tasks and preferences
+- User-friendly platform to create voice-based AI agents.
+- Customizable AI behavior to cater to specific tasks and preferences.
+- Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com).
+- Voice input and output for a smooth and intuitive user experience.
+- Customizable prompts for AI agents, allowing you to tailor the agent to your needs.
 - Breaks down complex tasks into 5 manageable steps
 - Offers 3 options for each step, allowing users to choose their preferred approach
-- Interactive and engaging experience with personalized, actionable plans based on user choices
 
 ## Getting Started
 
@@ -36,7 +38,7 @@ This project offers an easy-to-use platform for creating customizable AI agents 
 - A compatible browser or device for running the web app
 - [OpenAI API key](https://platform.openai.com/account/api-keys)
 
-Glowbom Basic supports **gpt-4** and **gpt-3.5-turbo**. If you don't have access to GPT-4, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
+Glowby Basic supports **gpt-4** and **gpt-3.5-turbo**. If you don't have access to GPT-4, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
 
 ### Installation
 
