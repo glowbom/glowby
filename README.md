@@ -2,6 +2,8 @@
 
 Glowby Basic is an open-source platform for developing and deploying powerful voice-based AI agents that can assist users in breaking down complex tasks and solving them efficiently. Built using Flutter, Glowby Basic provides a seamless web app experience with an intuitive voice interface.
 
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
+
 ## Live Demo
 
 Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
