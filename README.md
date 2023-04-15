@@ -21,11 +21,11 @@ This project offers an easy-to-use platform for creating customizable AI agents 
 
 ## Features
 
-- User-friendly platform to create voice-based AI agents.
-- Customizable AI behavior to cater to specific tasks and preferences.
-- Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com).
+- User-friendly platform to create voice-based AI agents
+- Customizable AI behavior to cater to specific tasks and preferences
+- Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience.
-- Customizable prompts for AI agents, allowing you to tailor the agent to your needs.
+- Customizable prompts for AI agents, allowing you to tailor the agent to your needs
 - Breaks down complex tasks into 5 manageable steps
 - Offers 3 options for each step, allowing users to choose their preferred approach
 
