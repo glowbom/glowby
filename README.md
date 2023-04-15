@@ -104,3 +104,7 @@ We're excited to have you join our community and contribute to Glowby Basic! Whe
 
 Glowby Basic is released under the [MIT License](https://opensource.org/licenses/MIT).
 
+## Contact
+
+If you have any questions or need assistance, feel free to reach out to us on [Twitter](https://twitter.com/glowbomcorp).
+
