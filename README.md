@@ -81,8 +81,6 @@ You are Glowby, super helpful, nice, and humorous AI assistant ready to help wit
 
 One of the powerful features of Glowby Basic is the ability to pre-set questions and answers for your AI assistant. Using [Glowbom.com](https://www.glowbom.com), you can create a knowledge base of questions and answers that your AI assistant can use to provide instant responses. If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
-This combination of local and server-based knowledge retrieval empowers your AI assistant to provide a seamless and interactive experience to users, making it a valuable tool for a wide range of applications.
-
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=glowbom/glowby&type=Date)](https://star-history.com/#glowbom/glowby&Date)
