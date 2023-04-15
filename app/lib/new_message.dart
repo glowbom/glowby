@@ -153,7 +153,7 @@ class _NewMessageState extends State<NewMessage> {
     widget._refresh();
 
     // Select the last 5 messages (excluding the user's input message)
-    int messageHistoryCount = min(5, widget._messages.length - 1);
+    int messageHistoryCount = min(20, widget._messages.length - 1);
     List<Message> previousMessages =
         widget._messages.sublist(1, messageHistoryCount + 1);
 
