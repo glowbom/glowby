@@ -15,9 +15,11 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
 
+
 ## Overview
 
-Glowby Basic is a versatile and customizable voice-enabled AI agent designed to assist users with various tasks. It's based on Glowby, a witty AI assistant that assists users in building apps on [Glowbom.com](https://www.glowbom.com). Glowby Basic serves as a foundation for creating your own AI assistant, tailored to your specific needs. By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem where users can build and share diverse AI agents for a variety of use cases.
+This project offers an easy-to-use way for creating customizable AI agents like Glowby, a witty AI assistant that assists users in building apps on [Glowbom.com](https://www.glowbom.com). By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem to build diverse AI agents for a variety of use cases.
+
 
 ## Features
 
