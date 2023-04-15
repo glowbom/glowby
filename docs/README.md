@@ -34,6 +34,9 @@ This project offers an easy-to-use platform for creating customizable AI agents 
 - Flutter SDK (version 3.7.10 or higher)
 - Dart (version 2.19.5 or higher)
 - A compatible browser or device for running the web app
+- [OpenAI API key](https://platform.openai.com/account/api-keys)
+
+Glowbom Basic supports **gpt-4** and **gpt-3.5-turbo**. If you don't have access to GPT-4, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
 
 ### Installation
 
@@ -103,3 +106,7 @@ We're excited to have you join our community and contribute to Glowby Basic! Whe
 ## License
 
 Glowby Basic is released under the [MIT License](https://opensource.org/licenses/MIT).
+
+## Contact
+
+If you have any questions or need assistance, feel free to reach out to us on [Twitter](https://twitter.com/glowbomcorp).
