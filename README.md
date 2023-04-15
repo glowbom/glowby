@@ -18,7 +18,7 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 
 ## Overview
 
-This project offers an easy way for creating customizable AI agents like Glowby, a witty AI assistant that assists users in building apps on [Glowbom.com](https://www.glowbom.com). By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem to build diverse AI agents for a variety of use cases.
+This project offers an easy way for creating customizable AI assistant like Glowby, a witty AI agent that assists users in building apps on [Glowbom.com](https://www.glowbom.com). By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem to build diverse AI agents for a variety of use cases.
 
 
 ## Features
