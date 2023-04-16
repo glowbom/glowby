@@ -31,6 +31,21 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Capable of breaking down complex tasks into manageable steps
 - Offers multiple options for each step, allowing users to choose their preferred approach
 
+## Upcoming Features
+
+We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
+
+### Language Support
+- Support for multiple languages
+
+### Functionality
+- Autonomous mode
+
+### Monetization
+- Adding a paywall
+
+Stay tuned for more updates and enhancements as we continue to grow and develop the project!
+
 
 ## Getting Started
 
