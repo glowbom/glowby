@@ -23,13 +23,13 @@ This project offers an easy way for creating customizable AI assistant like [Glo
 
 ## Features
 
-- Powerful, customizable voice-based AI agent
+- Powerful, customizable voice-based AI assistant
 - Adaptable AI behavior to cater to specific tasks and preferences
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
-- Customizable prompts for AI agents, allowing you to tailor the agent to your needs
-- Capable of breaking down complex tasks into 5 manageable steps (optional feature)
-- Offers 3 options for each step, allowing users to choose their preferred approach (optional feature)
+- Customizable prompts allowing you to tailor the assistant to your needs
+- Capable of breaking down complex tasks into manageable steps
+- Offers multiple options for each step, allowing users to choose their preferred approach
 
 
 ## Getting Started
@@ -77,7 +77,7 @@ Glowby Basic comes with a pre-built `dist` folder, which you can deploy directly
 
 ## Customization
 
-To customize the AI agent's behavior and tasks, modify the default prompt in AI Settings or in the code.
+To customize the AI assistant's behavior and tasks, modify the default prompt in AI Settings or in the code.
 
 #### Complex Task Prompt
 ```
