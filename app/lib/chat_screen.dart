@@ -45,7 +45,7 @@ class ChatScreenState extends State<ChatScreen> {
     if (widget._voice && voiceEnabled) {
       try {
         if (_messages.isNotEmpty && _messages[0].userId == '007') {
-          textToSpeech.speakText(_messages[0].text);
+          textToSpeech.speakText(_messages[0].text, language: 'English');
         }
       } catch (e) {
         print('Error: $e'); // Log the exception

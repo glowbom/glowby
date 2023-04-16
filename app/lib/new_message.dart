@@ -19,7 +19,7 @@ import 'ai.dart';
 // Uncomment the next block to compile the web version
 
 @JS()
-external int rv();
+external int rv(String lang);
 
 /// Allows assigning a function to be callable from `window.functionName()`
 @JS('vr')
@@ -103,7 +103,7 @@ class _NewMessageState extends State<NewMessage> {
     }
 
     // Uncomment the next line to compile the web version
-    rv();
+    rv('en-US');
 
     setState(() {
       _isRecording = true;

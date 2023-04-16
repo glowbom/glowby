@@ -17,7 +17,12 @@ r.addEventListener('result', (e) => {
   // We will use the Socket.IO here later…
 });
 
-function rv() {
+function rv(lang) {
+  if ((typeof(lang) !== 'undefined') && (lang !== null)) {
+    r.lang = lang;
+    console.log('switched to ' + lang);
+  }
+
   r.start();
   console.log('recordVoice call');
 }

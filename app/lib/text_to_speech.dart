@@ -20,13 +20,21 @@ class TextToSpeech {
     'English': 'en-US',
   };
 
-  Future<void> speakText(String text) async {
+  Future<void> speakText(String text, {String language = 'English'}) async {
     if (text == 'typing...') {
       return;
     }
 
     if (_flutterTts == null) {
       _flutterTts = FlutterTts();
+    }
+
+    String? languageCode = _languageCodes[language];
+    if (languageCode != null) {
+      await _flutterTts!.setLanguage(languageCode);
+    } else {
+      print('Invalid language provided. Falling back to default language.');
+      await _flutterTts!.setLanguage(_languageCodes['English']!);
     }
 
     for (final entry in _languageCodes.entries) {
