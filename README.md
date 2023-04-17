@@ -18,10 +18,6 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
 
-## Compiled Code
-
-Compiled code is available [here](https://github.com/glowbom/glowby-basic).
-
 
 ## Overview
 
@@ -99,7 +95,9 @@ flutter run
 
 ## Deployment
 
-Glowby Basic comes with a pre-built `dist` folder, which you can deploy directly to your preferred hosting platform. Alternatively, you can build the project yourself and deploy the output. Glowby Basic is compatible with a variety of hosting services, including Netlify, Vercel, Firebase, AWS, and more. Simply follow the deployment instructions provided by your chosen hosting service.
+Glowby Basic comes with a pre-built `dist` folder, which you can deploy directly to your preferred hosting platform. Alternatively, you can build the project yourself and deploy the output. Glowby Basic is compatible with a variety of hosting services, including Netlify, Vercel, Firebase, AWS, and more. Simply follow the deployment instructions provided by your chosen hosting service. Compiled code is available [here](https://github.com/glowbom/glowby-basic) in a separate GitHub project.
+
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https://github.com/glowbom/glowby-basic)
 
 ## Customization
 
