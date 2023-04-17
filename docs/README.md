@@ -32,6 +32,9 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Offers multiple options for each step, allowing users to choose their preferred approach
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, French, German, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, and Ukrainian. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp)
 
+### Multilingual Support in Action
+
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232397460-6348da46-1282-438a-b9ca-3546fb6de124.gif)
 
 ## Upcoming Features
 
@@ -39,6 +42,8 @@ We're constantly working to improve our project and have several exciting featur
 
 ### Functionality
 - Autonomous mode
+- Image Generation
+- Local Storage
 
 ### Monetization
 - Adding a paywall
@@ -129,3 +134,4 @@ Glowby Basic is released under the [MIT License](https://opensource.org/licenses
 ## Contact
 
 If you have any questions or need assistance, feel free to reach out to us on [Twitter](https://twitter.com/glowbomcorp).
+
