@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:web/ai_settings_dialog.dart';
 
 import 'message.dart';
 import 'timestamp.dart';
@@ -102,8 +103,7 @@ class _NewMessageState extends State<NewMessage> {
       return;
     }
 
-    // Uncomment the next line to compile the web version
-    rv('en-US');
+    rv(AiSettingsDialog.selectedLanguage);
 
     setState(() {
       _isRecording = true;

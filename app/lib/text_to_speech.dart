@@ -3,7 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 class TextToSpeech {
   FlutterTts? _flutterTts;
 
-  final Map<String, String> _languageCodes = {
+  static final Map<String, String> _languageCodes = {
     'Italian': 'it-IT',
     'German': 'de-DE',
     'Portuguese': 'pt-PT',
@@ -18,9 +18,14 @@ class TextToSpeech {
     'British English': 'en-GB',
     'Australian English': 'en-AU',
     'English': 'en-US',
+    'Argentinian Spanish': 'es-AR',
+    'Brazilian Portuguese': 'pt-BR',
+    'Polish': 'pl-PL',
   };
 
-  Future<void> speakText(String text, {String language = 'English'}) async {
+  static Map<String, String> get languageCodes => _languageCodes;
+
+  Future<void> speakText(String text, {String language = 'en-US'}) async {
     if (text == 'typing...') {
       return;
     }
@@ -29,12 +34,8 @@ class TextToSpeech {
       _flutterTts = FlutterTts();
     }
 
-    String? languageCode = _languageCodes[language];
-    if (languageCode != null) {
-      await _flutterTts!.setLanguage(languageCode);
-    } else {
-      print('Invalid language provided. Falling back to default language.');
-      await _flutterTts!.setLanguage(_languageCodes['English']!);
+    if (language.isNotEmpty) {
+      await _flutterTts!.setLanguage(language);
     }
 
     for (final entry in _languageCodes.entries) {

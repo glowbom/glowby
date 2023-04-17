@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web/openai_api.dart';
+import 'package:web/text_to_speech.dart';
 
 import 'chat_screen.dart';
 
@@ -7,6 +8,9 @@ class AiSettingsDialog extends StatefulWidget {
   final Function(bool) onVoiceEnabledChanged;
 
   AiSettingsDialog({required this.onVoiceEnabledChanged});
+
+  static String get selectedLanguage =>
+      _AiSettingsDialogState._selectedLanguage;
 
   @override
   _AiSettingsDialogState createState() => _AiSettingsDialogState();
@@ -16,6 +20,27 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   String _selectedModel = OpenAI_API.model;
   String _systemPrompt = OpenAI_API.systemPrompt;
   final TextEditingController _systemPromptController = TextEditingController();
+
+  static String _selectedLanguage = 'en-US';
+
+  static void _languageChanged(String? value) {
+    if (value != null) {
+      _selectedLanguage = value;
+    }
+  }
+
+  List<DropdownMenuItem<String>> buildLanguageDropdownItems() {
+    Set<String> uniqueLanguageCodes =
+        Set<String>.from(TextToSpeech.languageCodes.values);
+    return uniqueLanguageCodes
+        .map((code) => DropdownMenuItem<String>(
+              value: code,
+              child: Text(TextToSpeech.languageCodes.entries
+                  .firstWhere((entry) => entry.value == code)
+                  .key),
+            ))
+        .toList();
+  }
 
   @override
   void initState() {
@@ -84,6 +109,13 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                   });
                   widget.onVoiceEnabledChanged(value!);
                 },
+              ),
+              SizedBox(height: 10),
+              Text('Choose Language:'),
+              DropdownButton<String>(
+                value: _selectedLanguage,
+                items: buildLanguageDropdownItems(),
+                onChanged: _languageChanged,
               ),
             ],
           ),
