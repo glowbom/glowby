@@ -24,6 +24,7 @@ class TextToSpeech {
   };
 
   static Map<String, String> get languageCodes => _languageCodes;
+  static String? lastLanguage = null;
 
   Future<void> speakText(String text, {String language = 'en-US'}) async {
     if (text == 'typing...') {
@@ -34,8 +35,9 @@ class TextToSpeech {
       _flutterTts = FlutterTts();
     }
 
-    if (language.isNotEmpty) {
+    if (language.isNotEmpty && language != lastLanguage) {
       await _flutterTts!.setLanguage(language);
+      lastLanguage = language;
     }
 
     for (final entry in _languageCodes.entries) {

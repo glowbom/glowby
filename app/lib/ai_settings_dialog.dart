@@ -110,12 +110,21 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                   widget.onVoiceEnabledChanged(value!);
                 },
               ),
-              SizedBox(height: 10),
-              Text('Choose Language:'),
-              DropdownButton<String>(
-                value: _selectedLanguage,
-                items: buildLanguageDropdownItems(),
-                onChanged: _languageChanged,
+              Padding(
+                padding: const EdgeInsets.only(left: 12, right: 20),
+                child: Container(
+                  width: 220, // Width adjusted to match expanding triangle
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    value: _selectedLanguage,
+                    items: buildLanguageDropdownItems(),
+                    onChanged: (value) {
+                      setState(() {
+                        _languageChanged(value);
+                      });
+                    },
+                  ),
+                ),
               ),
             ],
           ),
