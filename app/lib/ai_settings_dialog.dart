@@ -21,7 +21,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   String _systemPrompt = OpenAI_API.systemPrompt;
   final TextEditingController _systemPromptController = TextEditingController();
 
-  static String _selectedLanguage = 'en-US';
+  static String _selectedLanguage = OpenAI_API.selectedLanguage;
 
   static void _languageChanged(String? value) {
     if (value != null) {
@@ -51,6 +51,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   void _saveSettings(BuildContext context) {
     OpenAI_API.setModel(_selectedModel);
     OpenAI_API.setSystemPrompt(_systemPrompt);
+    OpenAI_API.setSelectedLanguage(_selectedLanguage);
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog
