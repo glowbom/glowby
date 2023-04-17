@@ -43,6 +43,8 @@ We're constantly working to improve our project and have several exciting featur
 
 ### Functionality
 - Autonomous mode
+- Image Generation
+- Local Storage
 
 ### Monetization
 - Adding a paywall
