@@ -34,7 +34,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ### Multilingual Support in Action
 
-![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232397460-6348da46-1282-438a-b9ca-3546fb6de124.gif)
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
 
 ## Upcoming Features
 
