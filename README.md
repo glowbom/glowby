@@ -6,7 +6,7 @@ Glowby Basic is a powerful voice-based AI assistant that can help users with var
 
 ## Live Demo
 
-Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/). Compiled code is available [here](https://github.com/glowbom/glowby-basic).
+Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
 
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/glowbom/glowby?style=social)
@@ -17,6 +17,10 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ### See It in Action
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
+
+## Compiled Code
+
+Compiled code is available [here](https://github.com/glowbom/glowby-basic).
 
 
 ## Overview
