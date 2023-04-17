@@ -10,10 +10,6 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ![GitHub Repo stars](https://img.shields.io/github/stars/glowbom/glowby?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/GlowbomCorp?style=social)](https://twitter.com/GlowbomCorp)
 [![Discord Follow](https://dcbadge.vercel.app/api/server/zqcsurUN?style=flat)](https://discord.gg/zqcsurUN)
-
-
-## Deploy
-
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https://github.com/glowbom/glowby-basic)
 
 
