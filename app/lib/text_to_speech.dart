@@ -58,6 +58,14 @@ class TextToSpeech {
 
     if (language.isNotEmpty && language != lastLanguage) {
       await _flutterTts!.setLanguage(language);
+      if (language.contains('en') ||
+          language.contains('ru') ||
+          language.contains('pt') ||
+          language.contains('pl')) {
+        await _flutterTts!.setSpeechRate(1);
+      } else {
+        await _flutterTts!.setSpeechRate(0.85);
+      }
       lastLanguage = language;
     }
 
