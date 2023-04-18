@@ -28,6 +28,7 @@ dependencies:
   http: ^0.13.5
   shared_preferences: ^2.1.0
   flutter_secure_storage: ^8.0.0
+  file_picker: ^5.2.9
   
   flutter:
     sdk: flutter
