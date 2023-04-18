@@ -31,6 +31,17 @@ class TextToSpeech {
     'Spanish': 'es-ES',
     'Swedish': 'sv-SE',
     'Ukrainian': 'uk-UA',
+    'Finnish': 'fi-FI',
+    'Arabic (Saudi Arabia)': 'ar-SA',
+    'Greek': 'el-GR',
+    'Hebrew (Israel)': 'he-IL',
+    'Hungarian': 'hu-HU',
+    'Indonesian': 'id-ID',
+    'Romanian': 'ro-RO',
+    'Slovak': 'sk-SK',
+    'Thai': 'th-TH',
+    'Turkish': 'tr-TR',
+    'Vietnamese': 'vi-VN',
   };
 
   static Map<String, String> get languageCodes => _languageCodes;
