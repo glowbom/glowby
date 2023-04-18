@@ -42,6 +42,43 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         .toList();
   }
 
+  static String _selectedPrompt = 'Complex Task Prompt';
+  List<Map<String, String>> _prompts = [
+    {
+      'name': 'Complex Task Prompt',
+      'description':
+          'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.',
+    },
+    {
+      'name': 'Brainstorming Prompt',
+      'description':
+          'Generate ideas with Glowby! As a super helpful, nice, and humorous AI assistant, Glowby is ready to provide you with a concise plan and assist in executing it. With Glowby by your side, you\'ll never feel stuck again. Let\'s get brainstorming!',
+    },
+    {
+      'name': 'Simple Assistant Prompt',
+      'description':
+          'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.',
+    },
+  ];
+
+  List<DropdownMenuItem<String>> buildPromptDropdownItems() {
+    return _prompts
+        .map((prompt) => DropdownMenuItem<String>(
+              value: prompt['name'],
+              child: Text(prompt['name']!),
+            ))
+        .toList();
+  }
+
+  void _promptChanged(String? value) {
+    if (value != null) {
+      _selectedPrompt = value;
+      _systemPrompt = _prompts.firstWhere(
+          (prompt) => prompt['name'] == _selectedPrompt)['description']!;
+      _systemPromptController.text = _systemPrompt;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +128,15 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
               ),
               SizedBox(height: 10),
               Text('System Prompt:'),
+              DropdownButton<String>(
+                value: _selectedPrompt,
+                items: buildPromptDropdownItems(),
+                onChanged: (value) {
+                  setState(() {
+                    _promptChanged(value);
+                  });
+                },
+              ),
               TextField(
                 controller: _systemPromptController,
                 maxLines: 3,
