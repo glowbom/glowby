@@ -39,6 +39,8 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
 
+To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
+
 ## Upcoming Features
 
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
