@@ -31,7 +31,6 @@ class _TalkState extends State<Talk> {
   }
 
   void initializeTalkState() {
-    print('content: $_content');
     if (_content != null) {
       _questions = buildQuestions(_content['questions']);
       _title = _content['title'];
