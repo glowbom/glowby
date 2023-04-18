@@ -41,6 +41,56 @@ class Ai {
     return [];
   }
 
+  double jaroSimilarity(String s1, String s2) {
+    int maxDistance = (s1.length / 2).floor() - 1;
+
+    List<bool> matches1 = List.filled(s1.length, false);
+    List<bool> matches2 = List.filled(s2.length, false);
+
+    int matches = 0;
+    int transpositions = 0;
+
+    for (int i = 0; i < s1.length; i++) {
+      int start = max(0, i - maxDistance);
+      int end = min(i + maxDistance + 1, s2.length);
+
+      for (int j = start; j < end; j++) {
+        if (matches2[j]) continue;
+        if (s1[i] != s2[j]) continue;
+        matches1[i] = true;
+        matches2[j] = true;
+        matches++;
+        break;
+      }
+    }
+
+    if (matches == 0) return 0.0;
+
+    int k = 0;
+    for (int i = 0; i < s1.length; i++) {
+      if (!matches1[i]) continue;
+      while (!matches2[k]) k++;
+      if (s1[i] != s2[k]) transpositions++;
+      k++;
+    }
+
+    double m = matches.toDouble();
+    return (m / s1.length + m / s2.length + (m - transpositions / 2) / m) / 3;
+  }
+
+  double jaroWinkler(String s1, String s2, {double p = 0.1}) {
+    double jaro = jaroSimilarity(s1, s2);
+    int prefix = 0;
+    for (int i = 0; i < min(s1.length, s2.length); i++) {
+      if (s1[i] == s2[i]) {
+        prefix++;
+      } else {
+        break;
+      }
+    }
+    return jaro + prefix * p * (1 - jaro);
+  }
+
   /// Searches the AI's question database for matching questions based on the user's input.
   ///
   /// [message] is the sanitized input message from the user.
@@ -76,14 +126,25 @@ class Ai {
   /// [userMessage] is the sanitized input message from the user.
   List<Map<String, Object>> _searchForQuestions(String userMessage) {
     List<Map<String, Object>> foundQuestions = [];
+    double similarityThreshold =
+        0.98; // You can adjust this value to fine-tune the matching algorithm
 
     for (var questionMap in _questions!) {
       var question = _sanitizeMessage(questionMap['description'].toString());
+      double similarity = jaroWinkler(userMessage, question);
 
-      if (userMessage.contains(question)) {
+      if (similarity >= similarityThreshold) {
         foundQuestions.add(questionMap);
       }
     }
+
+    // Sort the found questions by their similarity in descending order
+    foundQuestions.sort((a, b) {
+      var aQuestion = _sanitizeMessage(a['description'].toString());
+      var bQuestion = _sanitizeMessage(b['description'].toString());
+      return jaroWinkler(userMessage, bQuestion)
+          .compareTo(jaroWinkler(userMessage, aQuestion));
+    });
 
     return foundQuestions;
   }
