@@ -31,6 +31,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
 - Customizable prompts allowing you to tailor the assistant to your needs
+- Easily add and switch between different prompts for a variety of scenarios and tasks
 - Capable of breaking down complex tasks into manageable steps
 - Offers multiple options for each step, allowing users to choose their preferred approach
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, French, German, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, and Ukrainian. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp)
