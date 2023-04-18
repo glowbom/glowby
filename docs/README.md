@@ -34,7 +34,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Easily switch between different prompts for a variety of scenarios and tasks
 - Capable of breaking down complex tasks into manageable steps
 - Offers multiple options for each step, allowing users to choose their preferred approach
-- Support for multiple languages: American English, American Spanish, Argentinian Spanish, Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, French, German, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, and Ukrainian. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp)
+- Support for multiple languages: American English, American Spanish, Argentinian Spanish, Arabic (Saudi Arabia), Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew (Israel), Hungarian, Indonesian, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Spanish, Swedish, Thai, Turkish, Ukrainian, and Vietnamese. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp).
 
 ### Multilingual Support in Action
 
