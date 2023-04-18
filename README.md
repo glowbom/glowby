@@ -42,6 +42,11 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
 
+### Switch Between Different Prompts
+
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232727678-ced2ee44-a5df-45da-8846-d90e82c8a007.gif)
+
+
 ## Upcoming Features
 
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
