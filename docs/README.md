@@ -2,6 +2,8 @@
 
 Glowby Basic is a powerful voice-based AI assistant that can help users with various tasks. Easily customizable, trainable, and deployable anywhere, Glowby Basic is designed to adapt to your specific needs. Built using Flutter, Glowby Basic provides a seamless web app experience with an intuitive voice interface.
 
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https://github.com/glowbom/glowby-basic)
+
 ## Live Demo
 
 Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
@@ -10,6 +12,7 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ![GitHub Repo stars](https://img.shields.io/github/stars/glowbom/glowby?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/GlowbomCorp?style=social)](https://twitter.com/GlowbomCorp)
 [![Discord Follow](https://dcbadge.vercel.app/api/server/zqcsurUN?style=flat)](https://discord.gg/zqcsurUN)
+
 
 ### See It in Action
 
@@ -34,7 +37,9 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ### Multilingual Support in Action
 
-![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232397460-6348da46-1282-438a-b9ca-3546fb6de124.gif)
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
+
+To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
 
 ## Upcoming Features
 
@@ -92,7 +97,9 @@ flutter run
 
 ## Deployment
 
-Glowby Basic comes with a pre-built `dist` folder, which you can deploy directly to your preferred hosting platform. Alternatively, you can build the project yourself and deploy the output. Glowby Basic is compatible with a variety of hosting services, including Netlify, Vercel, Firebase, AWS, and more. Simply follow the deployment instructions provided by your chosen hosting service.
+Glowby Basic comes with a pre-built `dist` folder, which you can deploy directly to your preferred hosting platform. Alternatively, you can build the project yourself and deploy the output. Glowby Basic is compatible with a variety of hosting services, including Netlify, Vercel, Firebase, AWS, and more. Simply follow the deployment instructions provided by your chosen hosting service. Compiled code is available in a separate GitHub project [here](https://github.com/glowbom/glowby-basic).
+
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https://github.com/glowbom/glowby-basic)
 
 ## Customization
 
