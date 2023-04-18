@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
+import 'dart:html' as html;
 
 var _content;
 
@@ -51,21 +52,27 @@ class _TalkState extends State<Talk> {
 
   void _startFilePicker() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['glowbom'], // Limit the file extension to 'glowbom'
-      );
+      html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+      uploadInput.multiple = false;
+      uploadInput.accept = '.glowbom';
 
-      if (result != null) {
-        PlatformFile file = result.files.first;
-        Uint8List? fileBytes = file.bytes;
-        if (fileBytes != null) {
-          String content =
-              utf8.decode(fileBytes); // Decode the Uint8List to a String
-          _content = json.decode(content);
-          keyIndex.value += 1;
+      uploadInput.onChange.listen((e) {
+        final files = uploadInput.files;
+        if (files != null && files.isNotEmpty) {
+          final file = files.first;
+          final reader = html.FileReader();
+
+          reader.onLoadEnd.listen((e) {
+            String content = reader.result as String;
+            _content = json.decode(content);
+            keyIndex.value += 1;
+          });
+
+          reader.readAsText(file);
         }
-      }
+      });
+
+      uploadInput.click();
     } catch (e) {
       print('Error: $e'); // Log the exception
     }
