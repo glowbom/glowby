@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:web/openai_api.dart';
 import 'package:web/text_to_speech.dart';
 
-import 'chat_screen.dart';
-
 class AiSettingsDialog extends StatefulWidget {
   final Function(bool) onVoiceEnabledChanged;
 
@@ -12,11 +10,15 @@ class AiSettingsDialog extends StatefulWidget {
   static String get selectedLanguage =>
       _AiSettingsDialogState._selectedLanguage;
 
+  static bool get voiceEnabled => _AiSettingsDialogState._voiceEnabled;
+
   @override
   _AiSettingsDialogState createState() => _AiSettingsDialogState();
 }
 
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
+  static bool _voiceEnabled = true;
+
   String _selectedModel = OpenAI_API.model;
   String _systemPrompt = OpenAI_API.systemPrompt;
   final TextEditingController _systemPromptController = TextEditingController();
@@ -174,10 +176,10 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
               ),
               CheckboxListTile(
                 title: Text('Enable voice'),
-                value: ChatScreenState.voiceEnabled,
+                value: _AiSettingsDialogState._voiceEnabled,
                 onChanged: (bool? value) {
                   setState(() {
-                    ChatScreenState.voiceEnabled = value!;
+                    _AiSettingsDialogState._voiceEnabled = value!;
                   });
                   widget.onVoiceEnabledChanged(value!);
                 },

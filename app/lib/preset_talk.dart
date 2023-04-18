@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
 
+var _content;
+
 class _TalkState extends State<Talk> {
   var _appScreen = 'Loading';
 
@@ -13,11 +15,8 @@ class _TalkState extends State<Talk> {
   String? _mainColor;
   bool? _voice = false;
   List<Map<String, Object>> _questions = [];
-  GlobalKey<ChatScreenState> chatScreenKey = GlobalKey();
 
-  _TalkState(this._content);
-
-  var _content;
+  _TalkState();
 
   Future<dynamic> loadContentFromAssets() async {
     String data =
@@ -32,8 +31,9 @@ class _TalkState extends State<Talk> {
   }
 
   void initializeTalkState() {
+    print('content: $_content');
     if (_content != null) {
-      _questions = _content['questions'];
+      _questions = buildQuestions(_content['questions']);
       _title = _content['title'];
       _mainColor = _content['main_color'] ?? 'Blue';
       _voice = _content['voice'] ?? false;
@@ -63,19 +63,8 @@ class _TalkState extends State<Talk> {
         if (fileBytes != null) {
           String content =
               utf8.decode(fileBytes); // Decode the Uint8List to a String
-          Map<String, dynamic> fileContent = json.decode(content);
-
-          // Do something with the file content, e.g., update the questions
-          setState(() {
-            _content = fileContent;
-            _title = _content['title'];
-            _mainColor = _content['main_color'] ?? 'Blue';
-            _voice = _content['voice'] ?? false;
-            _questions = buildQuestions(_content['questions']);
-          });
-
-          print(_content);
-          print('name = ${_content['start_over']}');
+          _content = json.decode(content);
+          keyIndex.value += 1;
         }
       }
     } catch (e) {
@@ -181,14 +170,40 @@ class _TalkState extends State<Talk> {
   }
 }
 
+ValueNotifier<int> keyIndex = ValueNotifier<int>(0);
+
 // A StatefulWidget that represents the main Talk widget.
 class Talk extends StatefulWidget {
-  final _content;
+  final Key key;
 
-  Talk(this._content);
+  Talk({required this.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _TalkState(_content);
+    return _TalkState();
+  }
+}
+
+class TalkApp extends StatefulWidget {
+  @override
+  _TalkAppState createState() => _TalkAppState();
+}
+
+class _TalkAppState extends State<TalkApp> {
+  @override
+  void initState() {
+    super.initState();
+    keyIndex.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Talk(
+        key: Key(keyIndex.value.toString()),
+      ),
+    );
   }
 }
