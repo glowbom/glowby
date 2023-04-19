@@ -79,27 +79,43 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<List<String>> _generateTaskOptions(String inputMessage) async {
-    List<String> taskOptions = [];
+  Future<List<String>> _generateTasks(String inputMessage) async {
+    List<String> tasks = [];
 
     try {
       String response = await OpenAI_API.getResponseFromOpenAI(inputMessage,
           customSystemPrompt:
-              'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience. Provide the first step with 3 options for the user to choose from.');
+              'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan.');
 
-      // Assuming the AI returns the options separated by a newline
-      taskOptions = response.split('\n');
+      print('response: $response');
 
-      // Ensure there are only 3 options
-      if (taskOptions.length > 3) {
-        taskOptions = taskOptions.sublist(0, 3);
+      RegExp stepPattern =
+          RegExp(r'(?:Step\s*\d+\s*:|^\d+\.)', multiLine: true);
+      Iterable<RegExpMatch> matches = stepPattern.allMatches(response);
+
+      int startIndex = 0;
+      for (RegExpMatch match in matches) {
+        int endIndex = match.start;
+        if (startIndex != 0) {
+          tasks.add(response.substring(startIndex, endIndex).trim());
+        }
+
+        startIndex = endIndex;
+        String? nextMatch = match.group(0);
+        if (nextMatch != null) {
+          startIndex = endIndex + nextMatch.length;
+        }
       }
+
+      tasks.add(response.substring(startIndex).trim());
     } catch (e) {
-      print('Error getting task options: $e');
+      print('Error getting tasks: $e');
     }
 
-    return taskOptions;
+    return tasks;
   }
+
+  List<String> _tasks = [];
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +126,9 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             Expanded(
               child: Container(
-                child: _autonomousMode ? TasksView() : Messages(_messages),
+                child: _autonomousMode
+                    ? TasksView(tasks: _tasks)
+                    : Messages(_messages),
               ),
             ),
             NewMessage(
@@ -119,11 +137,11 @@ class _ChatScreenState extends State<ChatScreen> {
               widget._questions,
               widget._name,
               onAutonomousModeMessage: (String userInput) async {
-                List<String> taskOptions =
-                    await _generateTaskOptions(userInput);
-                print(taskOptions);
+                List<String> tasks = await _generateTasks(userInput);
+                print(tasks);
                 setState(() {
                   _autonomousMode = true;
+                  _tasks = tasks;
                 });
               },
             ),

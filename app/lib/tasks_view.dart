@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TasksView extends StatefulWidget {
+  final List<String> tasks;
+
+  TasksView({required this.tasks});
+
   @override
   _TasksViewState createState() => _TasksViewState();
 }
@@ -8,6 +12,12 @@ class TasksView extends StatefulWidget {
 class _TasksViewState extends State<TasksView> {
   List<String> _tasks = [];
   final TextEditingController _newTaskController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _tasks = widget.tasks;
+  }
 
   Widget _buildTaskList() {
     return ListView.builder(
