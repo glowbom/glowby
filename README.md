@@ -42,6 +42,11 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
 
+### Switch Between Different Prompts
+
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232727678-ced2ee44-a5df-45da-8846-d90e82c8a007.gif)
+
+
 ## Upcoming Features
 
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
@@ -151,7 +156,10 @@ Want to add your prompt? Let us know on [Twitter](https://twitter.com/glowbomcor
 
 ### Questions Pre-set
 
-One of the powerful features of Glowby Basic is the ability to pre-set questions and answers for your AI assistant. Using [Glowbom.com](https://www.glowbom.com), you can create a knowledge base of questions and answers that your AI assistant can use to provide instant responses. If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
+One of the powerful features of Glowby Basic is the ability to pre-set questions and answers for your AI assistant. Using [Glowbom.com](https://www.glowbom.com), you can create a knowledge base of questions and answers that your AI assistant can use to provide instant responses. 
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232735288-abb5f9d8-3d51-4170-a6dd-a967e7d8ae30.gif)
+
+If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
 ## Star History
 
