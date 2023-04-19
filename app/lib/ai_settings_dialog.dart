@@ -11,6 +11,7 @@ class AiSettingsDialog extends StatefulWidget {
       _AiSettingsDialogState._selectedLanguage;
 
   static bool get voiceEnabled => _AiSettingsDialogState._voiceEnabled;
+  static bool get autonomousMode => _AiSettingsDialogState._autonomousMode;
 
   @override
   _AiSettingsDialogState createState() => _AiSettingsDialogState();
@@ -24,6 +25,23 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   final TextEditingController _systemPromptController = TextEditingController();
 
   static String _selectedLanguage = OpenAI_API.selectedLanguage;
+
+  static bool _autonomousMode = false;
+
+  Widget _buildAutonomousModeCheckbox() {
+    if (_selectedPrompt == 'Complex Task Prompt') {
+      return CheckboxListTile(
+        title: Text('Autonomous Mode'),
+        value: _autonomousMode,
+        onChanged: (bool? value) {
+          setState(() {
+            _autonomousMode = value!;
+          });
+        },
+      );
+    }
+    return SizedBox.shrink();
+  }
 
   static void _languageChanged(String? value) {
     if (value != null) {
@@ -164,6 +182,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                   });
                 },
               ),
+              _buildAutonomousModeCheckbox(),
               TextField(
                 controller: _systemPromptController,
                 maxLines: 3,
