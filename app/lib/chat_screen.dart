@@ -101,15 +101,24 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<List<String>> _generateTasks(String inputMessage) async {
+    if (inputMessage != '') {
+      _lastInputMessage = inputMessage;
+    }
+
+    if (_lastInputMessage == '') {
+      return [];
+    }
+
     List<String> tasks = [];
 
     try {
-      String response = await OpenAI_API.getResponseFromOpenAI(inputMessage,
+      String response = await OpenAI_API.getResponseFromOpenAI(
+          _lastInputMessage,
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan.');
 
       print('response: $response');
-      _planName = extractPlanName(response, inputMessage);
+      _planName = extractPlanName(response, _lastInputMessage);
 
       RegExp stepPattern =
           RegExp(r'(?:Step\s*\d+\s*:|^\d+\.)', multiLine: true);
@@ -137,6 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return tasks;
   }
 
+  String _lastInputMessage = '';
   String _planName = 'Unnamed Plan';
   List<String> _tasks = [];
 
@@ -150,7 +160,26 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Container(
                 child: _autonomousMode
-                    ? TasksView(tasks: _tasks, name: _planName)
+                    ? TasksView(
+                        tasks: _tasks,
+                        name: _planName,
+                        onBackButtonPressed: () {
+                          setState(() {
+                            _autonomousMode = false;
+                          });
+                        },
+                        onRequestNewPlanButtonPressed: () async {
+                          List<String> tasks =
+                              await _generateTasks(_lastInputMessage);
+                          setState(() {
+                            _autonomousMode = true;
+                            _tasks = tasks;
+                          });
+                        },
+                        onImplementPlanButtonPressed: () {
+                          // TODO: Implement the onImplementPlanButtonPressed callback
+                        },
+                      )
                     : Messages(_messages),
               ),
             ),

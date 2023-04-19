@@ -3,8 +3,16 @@ import 'package:flutter/material.dart';
 class TasksView extends StatefulWidget {
   final List<String> tasks;
   final String name;
+  final Function onImplementPlanButtonPressed;
+  final Function onRequestNewPlanButtonPressed;
+  final Function onBackButtonPressed;
 
-  TasksView({required this.tasks, required this.name});
+  TasksView(
+      {required this.tasks,
+      required this.name,
+      required this.onImplementPlanButtonPressed,
+      required this.onRequestNewPlanButtonPressed,
+      required this.onBackButtonPressed});
 
   @override
   _TasksViewState createState() => _TasksViewState();
@@ -13,6 +21,9 @@ class TasksView extends StatefulWidget {
 class _TasksViewState extends State<TasksView> {
   List<String> _tasks = [];
   final TextEditingController _newTaskController = TextEditingController();
+  final FocusNode _inputFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  int? _selectedTaskIndex;
 
   @override
   void initState() {
@@ -20,8 +31,33 @@ class _TasksViewState extends State<TasksView> {
     _tasks = widget.tasks;
   }
 
+  Widget _buildTaskItem(int index) {
+    if (index == _selectedTaskIndex) {
+      return TextFormField(
+        initialValue: _tasks[index],
+        autofocus: true,
+        onFieldSubmitted: (value) {
+          setState(() {
+            _tasks[index] = value;
+            _selectedTaskIndex = null;
+          });
+        },
+      );
+    } else {
+      return InkWell(
+        onTap: () {
+          setState(() {
+            _selectedTaskIndex = index;
+          });
+        },
+        child: Text(_tasks[index]),
+      );
+    }
+  }
+
   Widget _buildTaskList() {
     return ListView.separated(
+      controller: _scrollController,
       itemCount: _tasks.length,
       separatorBuilder: (context, index) => Divider(),
       itemBuilder: (context, index) {
@@ -30,12 +66,17 @@ class _TasksViewState extends State<TasksView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('${index + 1}. '),
-              Expanded(child: Text(_tasks[index])),
+              Expanded(child: _buildTaskItem(index)),
+              IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    _tasks.removeAt(index);
+                  });
+                },
+              ),
             ],
           ),
-          onTap: () {
-            // handle task editing
-          },
         );
       },
     );
@@ -44,11 +85,18 @@ class _TasksViewState extends State<TasksView> {
   Widget _buildAddTaskForm() {
     return TextFormField(
       controller: _newTaskController,
+      focusNode: _inputFocusNode,
       decoration: InputDecoration(labelText: 'Add a new task'),
       onFieldSubmitted: (value) {
         setState(() {
           _tasks.add(value);
           _newTaskController.clear();
+          _inputFocusNode.requestFocus();
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+          );
         });
       },
     );
@@ -76,19 +124,19 @@ class _TasksViewState extends State<TasksView> {
             TextButton(
               child: Text('Return to Chat'),
               onPressed: () {
-                // Handle cancel action
+                widget.onBackButtonPressed();
               },
             ),
             TextButton(
               child: Text('Request New Plan'),
               onPressed: () {
-                // Handle try again action
+                widget.onRequestNewPlanButtonPressed();
               },
             ),
             ElevatedButton(
               child: Text('Implement Plan'),
               onPressed: () {
-                // Handle generating the customized plan
+                widget.onImplementPlanButtonPressed(_tasks);
               },
             ),
           ],
