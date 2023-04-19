@@ -92,6 +92,8 @@ class _TasksViewState extends State<TasksView> {
           _tasks.add(value);
           _newTaskController.clear();
           _inputFocusNode.requestFocus();
+        });
+        Future.delayed(Duration(milliseconds: 100)).then((_) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: Duration(milliseconds: 500),
@@ -141,6 +143,7 @@ class _TasksViewState extends State<TasksView> {
             ),
           ],
         ),
+        SizedBox(height: 8),
       ],
     );
   }
