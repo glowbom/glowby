@@ -36,13 +36,10 @@ class NewMessage extends StatefulWidget {
   final List<Message> _messages;
   final List<Map<String, Object>>? _questions;
   final String? _name;
+  final Function(String) onAutonomousModeMessage;
 
-  NewMessage(
-    this._refresh,
-    this._messages,
-    this._questions,
-    this._name,
-  );
+  NewMessage(this._refresh, this._messages, this._questions, this._name,
+      {required this.onAutonomousModeMessage});
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -141,50 +138,55 @@ class _NewMessageState extends State<NewMessage> {
     _focusNode!.requestFocus();
 
     _enteredMessage = '';
+    // Check if Autonomous mode is on
+    if (AiSettingsDialog.autonomousMode) {
+      widget.onAutonomousModeMessage(
+          message); // Call the callback function with the user's input
+    } else {
+      // Add a new message instance indicating that the AI is typing
+      Message typingMessage = Message(
+        text: 'typing...',
+        createdAt: Timestamp.now(),
+        userId: Ai.defaultUserId,
+        username: widget._name == '' ? 'AI' : widget._name,
+      );
+      widget._messages.insert(0, typingMessage);
+      widget._refresh();
 
-    // Add a new message instance indicating that the AI is typing
-    Message typingMessage = Message(
-      text: 'typing...',
-      createdAt: Timestamp.now(),
-      userId: Ai.defaultUserId,
-      username: widget._name == '' ? 'AI' : widget._name,
-    );
-    widget._messages.insert(0, typingMessage);
-    widget._refresh();
+      // Select the last 5 messages (excluding the user's input message)
+      int messageHistoryCount = min(20, widget._messages.length - 1);
+      List<Message> previousMessages =
+          widget._messages.sublist(1, messageHistoryCount + 1);
 
-    // Select the last 5 messages (excluding the user's input message)
-    int messageHistoryCount = min(20, widget._messages.length - 1);
-    List<Message> previousMessages =
-        widget._messages.sublist(1, messageHistoryCount + 1);
+      // Convert previousMessages to the format expected by the API
+      List<Map<String, String?>> formattedPreviousMessages = previousMessages
+          .map((message) {
+            return {
+              'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+              'content': message.text
+            };
+          })
+          .toList()
+          .reversed
+          .toList();
 
-    // Convert previousMessages to the format expected by the API
-    List<Map<String, String?>> formattedPreviousMessages = previousMessages
-        .map((message) {
-          return {
-            'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
-            'content': message.text
-          };
-        })
-        .toList()
-        .reversed
-        .toList();
+      var response = await ai.message(message,
+          previousMessages: formattedPreviousMessages);
 
-    var response =
-        await ai.message(message, previousMessages: formattedPreviousMessages);
+      // Remove the typing message instance when the response is received
+      widget._messages.remove(typingMessage);
 
-    // Remove the typing message instance when the response is received
-    widget._messages.remove(typingMessage);
-
-    if (response.length > 0) {
-      for (Message m in response) {
-        widget._messages.insert(
-          0,
-          m,
-        );
+      if (response.length > 0) {
+        for (Message m in response) {
+          widget._messages.insert(
+            0,
+            m,
+          );
+        }
       }
-    }
 
-    widget._refresh();
+      widget._refresh();
+    }
   }
 
   @override

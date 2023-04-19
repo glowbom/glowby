@@ -160,7 +160,8 @@ class OpenAI_API {
 
   static Future<String> getResponseFromOpenAI(String message,
       {List<Map<String, String?>> previousMessages = const [],
-      int maxTries = 1}) async {
+      int maxTries = 1,
+      String? customSystemPrompt = null}) async {
     String finalResponse = '';
     String inputMessage = message;
     int tries = 0;
@@ -179,7 +180,11 @@ class OpenAI_API {
       final data = {
         'model': model,
         'messages': [
-          {'role': 'system', 'content': systemPrompt},
+          {
+            'role': 'system',
+            'content':
+                customSystemPrompt == null ? systemPrompt : customSystemPrompt
+          },
           ...previousMessages,
           {'role': 'user', 'content': inputMessage}
         ],

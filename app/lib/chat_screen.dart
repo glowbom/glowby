@@ -79,6 +79,28 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<List<String>> _generateTaskOptions(String inputMessage) async {
+    List<String> taskOptions = [];
+
+    try {
+      String response = await OpenAI_API.getResponseFromOpenAI(inputMessage,
+          customSystemPrompt:
+              'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience. Provide the first step with 3 options for the user to choose from.');
+
+      // Assuming the AI returns the options separated by a newline
+      taskOptions = response.split('\n');
+
+      // Ensure there are only 3 options
+      if (taskOptions.length > 3) {
+        taskOptions = taskOptions.sublist(0, 3);
+      }
+    } catch (e) {
+      print('Error getting task options: $e');
+    }
+
+    return taskOptions;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -96,6 +118,14 @@ class _ChatScreenState extends State<ChatScreen> {
               _messages,
               widget._questions,
               widget._name,
+              onAutonomousModeMessage: (String userInput) async {
+                List<String> taskOptions =
+                    await _generateTaskOptions(userInput);
+                print(taskOptions);
+                setState(() {
+                  _autonomousMode = true;
+                });
+              },
             ),
             Container(
               margin: EdgeInsets.all(8),
