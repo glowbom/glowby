@@ -38,21 +38,27 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
                 return CustomPaint(
                   painter: _MagicalLoadingPainter(_controller.value),
                   child: Container(
-                    width: 200,
-                    height: 200,
+                    width: 280,
+                    height: 280,
                   ),
                 );
               },
             ),
             Positioned(
               bottom: 0,
-              child: Text(
-                getRandomMessage(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.black,
+              child: Container(
+                width: 280, // Adjust this value according to your preference
+                child: Text(
+                  getRandomMessage(),
+                  textAlign: TextAlign.center,
+                  maxLines:
+                      2, // You can increase this value to accommodate more lines
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
