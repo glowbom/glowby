@@ -52,7 +52,7 @@ To experience the demo with sound, check out this [Twitter post](https://twitter
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
 
 ### Functionality
-- Autonomous mode
+- Autonomous Mode
 - Image Generation
 - Local Storage
 
@@ -160,6 +160,13 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232735288-abb5f9d8-3d51-4170-a6dd-a967e7d8ae30.gif)
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
+
+### Autonomous Mode (Coming soon...)
+
+![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
+
+Coming soon...
+
 
 ## Star History
 
