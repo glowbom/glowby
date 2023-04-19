@@ -154,40 +154,42 @@ class _ChatScreenState extends State<ChatScreen> {
                     : Messages(_messages),
               ),
             ),
-            NewMessage(
-              refresh,
-              _messages,
-              widget._questions,
-              widget._name,
-              onAutonomousModeMessage: (String userInput) async {
-                List<String> tasks = await _generateTasks(userInput);
-                setState(() {
-                  _autonomousMode = true;
-                  _tasks = tasks;
-                });
-              },
-            ),
-            Container(
-              margin: EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    child: Text('Enter API Key'),
-                    onPressed: _showApiKeyDialog,
-                  ),
-                  // Add the AI Settings button conditionally
-                  if (OpenAI_API.oat().isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: ElevatedButton(
-                        child: Text('AI Settings'),
-                        onPressed: _showAiSettingsDialog,
-                      ),
-                    ),
-                ],
+            if (!_autonomousMode)
+              NewMessage(
+                refresh,
+                _messages,
+                widget._questions,
+                widget._name,
+                onAutonomousModeMessage: (String userInput) async {
+                  List<String> tasks = await _generateTasks(userInput);
+                  setState(() {
+                    _autonomousMode = true;
+                    _tasks = tasks;
+                  });
+                },
               ),
-            ),
+            if (!_autonomousMode)
+              Container(
+                margin: EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ElevatedButton(
+                      child: Text('Enter API Key'),
+                      onPressed: _showApiKeyDialog,
+                    ),
+                    // Add the AI Settings button conditionally
+                    if (OpenAI_API.oat().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: ElevatedButton(
+                          child: Text('AI Settings'),
+                          onPressed: _showAiSettingsDialog,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             SizedBox(height: 20),
           ],
         ),

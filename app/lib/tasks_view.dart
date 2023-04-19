@@ -70,11 +70,28 @@ class _TasksViewState extends State<TasksView> {
         ),
         Expanded(child: _buildTaskList()),
         _buildAddTaskForm(),
-        ElevatedButton(
-          child: Text('Execute'),
-          onPressed: () {
-            // Handle generating the customized plan
-          },
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              child: Text('Return to Chat'),
+              onPressed: () {
+                // Handle cancel action
+              },
+            ),
+            TextButton(
+              child: Text('Request New Plan'),
+              onPressed: () {
+                // Handle try again action
+              },
+            ),
+            ElevatedButton(
+              child: Text('Implement Plan'),
+              onPressed: () {
+                // Handle generating the customized plan
+              },
+            ),
+          ],
         ),
       ],
     );
