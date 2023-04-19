@@ -27,18 +27,37 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: _MagicalLoadingPainter(_controller.value),
-            child: Container(
-              width: 200,
-              height: 200,
+    return Expanded(
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _MagicalLoadingPainter(_controller.value),
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                  ),
+                );
+              },
             ),
-          );
-        },
+            Positioned(
+              bottom: 0,
+              child: Text(
+                getRandomMessage(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
