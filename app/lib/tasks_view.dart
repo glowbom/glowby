@@ -60,7 +60,9 @@ class _TasksViewState extends State<TasksView> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            widget.name,
+            widget.name == 'Unnamed Plan'
+                ? widget.name
+                : 'Plan to ${widget.name}',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
