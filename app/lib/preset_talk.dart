@@ -125,6 +125,7 @@ class _TalkState extends State<Talk> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Chat',
       theme: ThemeData(
         textSelectionTheme: TextSelectionThemeData(
@@ -206,10 +207,8 @@ class _TalkAppState extends State<TalkApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Talk(
-        key: Key(keyIndex.value.toString()),
-      ),
+    return Talk(
+      key: Key(keyIndex.value.toString()),
     );
   }
 }
