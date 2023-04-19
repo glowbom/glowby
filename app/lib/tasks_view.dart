@@ -21,11 +21,13 @@ class _TasksViewState extends State<TasksView> {
   }
 
   Widget _buildTaskList() {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: _tasks.length,
+      separatorBuilder: (context, index) => Divider(),
       itemBuilder: (context, index) {
         return ListTile(
           title: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('${index + 1}. '),
               Expanded(child: Text(_tasks[index])),
