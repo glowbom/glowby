@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:web/tasks_view.dart';
 
 import 'ai_settings_dialog.dart';
+import 'magical_loading_view.dart';
 import 'message.dart';
 import 'new_message.dart';
 import 'messages.dart';
@@ -22,6 +23,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   var _autonomousMode = false;
+  bool _loading = false;
   bool _voiceEnabled = true;
   void updateVoiceEnabled(bool value) {
     setState(() {
@@ -109,6 +111,10 @@ class _ChatScreenState extends State<ChatScreen> {
       return [];
     }
 
+    setState(() {
+      _loading = true;
+    });
+
     List<String> tasks = [];
 
     try {
@@ -143,6 +149,10 @@ class _ChatScreenState extends State<ChatScreen> {
       print('Error getting tasks: $e');
     }
 
+    setState(() {
+      _loading = false;
+    });
+
     return tasks;
   }
 
@@ -157,33 +167,35 @@ class _ChatScreenState extends State<ChatScreen> {
         constraints: BoxConstraints(minWidth: 100, maxWidth: 640),
         child: Column(
           children: <Widget>[
-            Expanded(
-              child: Container(
-                child: _autonomousMode
-                    ? TasksView(
-                        tasks: _tasks,
-                        name: _planName,
-                        onBackButtonPressed: () {
-                          setState(() {
-                            _autonomousMode = false;
-                          });
-                        },
-                        onRequestNewPlanButtonPressed: () async {
-                          List<String> tasks =
-                              await _generateTasks(_lastInputMessage);
-                          setState(() {
-                            _autonomousMode = true;
-                            _tasks = tasks;
-                          });
-                        },
-                        onImplementPlanButtonPressed: () {
-                          // TODO: Implement the onImplementPlanButtonPressed callback
-                        },
-                      )
-                    : Messages(_messages),
-              ),
-            ),
-            if (!_autonomousMode)
+            _loading
+                ? MagicalLoadingView()
+                : Expanded(
+                    child: Container(
+                      child: _autonomousMode
+                          ? TasksView(
+                              tasks: _tasks,
+                              name: _planName,
+                              onBackButtonPressed: () {
+                                setState(() {
+                                  _autonomousMode = false;
+                                });
+                              },
+                              onRequestNewPlanButtonPressed: () async {
+                                List<String> tasks =
+                                    await _generateTasks(_lastInputMessage);
+                                setState(() {
+                                  _autonomousMode = true;
+                                  _tasks = tasks;
+                                });
+                              },
+                              onImplementPlanButtonPressed: () {
+                                // TODO: Implement the onImplementPlanButtonPressed callback
+                              },
+                            )
+                          : Messages(_messages),
+                    ),
+                  ),
+            if (!_autonomousMode && !_loading)
               NewMessage(
                 refresh,
                 _messages,
@@ -197,7 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   });
                 },
               ),
-            if (!_autonomousMode)
+            if (!_autonomousMode && !_loading)
               Container(
                 margin: EdgeInsets.all(8),
                 child: Row(
