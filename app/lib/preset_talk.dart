@@ -1,7 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';

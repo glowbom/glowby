@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:web/tasks_view.dart';
 
+import 'ai.dart';
 import 'ai_settings_dialog.dart';
 import 'magical_loading_view.dart';
 import 'message.dart';
@@ -8,7 +9,8 @@ import 'new_message.dart';
 import 'messages.dart';
 import 'openai_api.dart';
 import 'text_to_speech.dart'; // Import the new TextToSpeech class
-import 'api_key_dialog.dart'; // Import the ApiKeyDialog widget
+import 'api_key_dialog.dart';
+import 'timestamp.dart'; // Import the ApiKeyDialog widget
 
 class ChatScreen extends StatefulWidget {
   final List<Map<String, Object>> _questions;
@@ -160,6 +162,55 @@ class _ChatScreenState extends State<ChatScreen> {
   String _planName = 'Unnamed Plan';
   List<String> _tasks = [];
 
+  Future<void> _implementPlan() async {
+    // Send initial message to start working on the plan
+    String initialMessage = "Let's work on $_planName. First: ${_tasks[0]}";
+    await _sendMessageOnBehalfOfUser(initialMessage);
+
+    // Send messages for the rest of the tasks
+    for (int i = 1; i < _tasks.length; i++) {
+      String taskMessage = "Now let's do ${_tasks[i]}";
+      await _sendMessageOnBehalfOfUser(taskMessage);
+    }
+
+    // Generate the summary message
+    String summary = "Here's the summary of the plan:\n\n";
+    for (int i = 0; i < _tasks.length; i++) {
+      summary += "${i + 1}. ${_tasks[i]}\n";
+    }
+
+    // Send the summary message and add a Copy button
+    await _sendMessageOnBehalfOfUser(summary);
+  }
+
+  Future<void> _sendMessageOnBehalfOfUser(String message) async {
+    // Add the message to the list
+    _messages.insert(
+        0,
+        Message(
+          text: message,
+          createdAt: Timestamp.now(),
+          userId: 'Me',
+          username: 'Me',
+        ));
+
+    // Get the AI response
+    String response = await OpenAI_API.getResponseFromOpenAI(message);
+
+    // Add the response to the list
+    _messages.insert(
+        0,
+        Message(
+          text: response,
+          createdAt: Timestamp.now(),
+          userId: '007',
+          username: widget._name == '' ? 'AI' : widget._name,
+        ));
+
+    // Update the UI
+    refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -189,7 +240,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                 });
                               },
                               onImplementPlanButtonPressed: () {
-                                // TODO: Implement the onImplementPlanButtonPressed callback
+                                setState(() {
+                                  _autonomousMode = false;
+                                });
+
+                                _implementPlan();
                               },
                             )
                           : Messages(_messages),

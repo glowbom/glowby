@@ -138,7 +138,7 @@ class _TasksViewState extends State<TasksView> {
             ElevatedButton(
               child: Text('Implement Plan'),
               onPressed: () {
-                widget.onImplementPlanButtonPressed(_tasks);
+                widget.onImplementPlanButtonPressed();
               },
             ),
           ],
