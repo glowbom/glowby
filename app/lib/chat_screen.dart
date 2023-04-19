@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web/tasks_view.dart';
 
 import 'ai_settings_dialog.dart';
 import 'message.dart';
@@ -20,6 +21,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  var _autonomousMode = false;
   bool _voiceEnabled = true;
   void updateVoiceEnabled(bool value) {
     setState(() {
@@ -86,7 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             Expanded(
               child: Container(
-                child: Messages(_messages),
+                child: _autonomousMode ? TasksView() : Messages(_messages),
               ),
             ),
             NewMessage(
