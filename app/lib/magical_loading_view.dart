@@ -70,3 +70,37 @@ class _MagicalLoadingPainter extends CustomPainter {
     return oldDelegate.progress != progress;
   }
 }
+
+List<String> loadingMessages = [
+  'Generating magical plans...',
+  'Talking to planning masterminds...',
+  'Breaking down complex tasks...',
+  'Creating a manageable plan...',
+  'Assembling steps for success...',
+  'Crafting an achievable roadmap...',
+  'Designing your path to victory...',
+  'Simplifying your journey...',
+  'Unlocking the secrets of success...',
+  'Structuring the plan of action...',
+  'Organizing steps for clarity...',
+  'Outlining a clear strategy...',
+  'Dividing and conquering tasks...',
+  'Weaving a plan for triumph...',
+  'Mapping your way to accomplishment...',
+  'Carving your route to achievement...',
+  'Gathering insights for planning...',
+  'Turning chaos into order...',
+  'Constructing your plan of attack...',
+  'Laying the foundation for success...',
+  'Distilling the essence of victory...',
+  'Collating the blueprint for progress...',
+  'Forging a pathway to triumph...',
+  'Envisioning a successful future...',
+  'Formulating a winning strategy...',
+];
+
+String getRandomMessage() {
+  final random = Random();
+  int index = random.nextInt(loadingMessages.length);
+  return loadingMessages[index];
+}
