@@ -79,6 +79,27 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  String extractPlanName(String response, String inputMessage) {
+    RegExp inputMessagePattern = RegExp(
+        r"(?:I want to|I'd like to|I'd love to|I wanna|let's|I desire to) (.+)",
+        caseSensitive: false);
+    RegExpMatch? inputMatch = inputMessagePattern.firstMatch(inputMessage);
+
+    if (inputMatch != null && inputMatch.groupCount > 0) {
+      return inputMatch.group(1)!;
+    } else {
+      RegExp planNamePattern = RegExp(
+          r"Here's a (?:\d+-step|five-step) plan(?: to| for)?(?: break)?(?:ing)?(?: it)?(?: down)?(?: into)? ([^:]+):");
+      RegExpMatch? match = planNamePattern.firstMatch(response);
+
+      if (match != null && match.groupCount > 0) {
+        return match.group(1)!;
+      } else {
+        return 'Unnamed Plan';
+      }
+    }
+  }
+
   Future<List<String>> _generateTasks(String inputMessage) async {
     List<String> tasks = [];
 
@@ -88,6 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan.');
 
       print('response: $response');
+      _planName = extractPlanName(response, inputMessage);
 
       RegExp stepPattern =
           RegExp(r'(?:Step\s*\d+\s*:|^\d+\.)', multiLine: true);
@@ -115,6 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return tasks;
   }
 
+  String _planName = 'Unnamed Plan';
   List<String> _tasks = [];
 
   @override
@@ -127,7 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Container(
                 child: _autonomousMode
-                    ? TasksView(tasks: _tasks)
+                    ? TasksView(tasks: _tasks, name: _planName)
                     : Messages(_messages),
               ),
             ),
@@ -138,7 +161,6 @@ class _ChatScreenState extends State<ChatScreen> {
               widget._name,
               onAutonomousModeMessage: (String userInput) async {
                 List<String> tasks = await _generateTasks(userInput);
-                print(tasks);
                 setState(() {
                   _autonomousMode = true;
                   _tasks = tasks;

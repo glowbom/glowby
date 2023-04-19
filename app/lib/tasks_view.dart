@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class TasksView extends StatefulWidget {
   final List<String> tasks;
+  final String name;
 
-  TasksView({required this.tasks});
+  TasksView({required this.tasks, required this.name});
 
   @override
   _TasksViewState createState() => _TasksViewState();
@@ -24,7 +25,12 @@ class _TasksViewState extends State<TasksView> {
       itemCount: _tasks.length,
       itemBuilder: (context, index) {
         return ListTile(
-          title: Text(_tasks[index]),
+          title: Row(
+            children: [
+              Text('${index + 1}. '),
+              Expanded(child: Text(_tasks[index])),
+            ],
+          ),
           onTap: () {
             // handle task editing
           },
@@ -49,7 +55,15 @@ class _TasksViewState extends State<TasksView> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            widget.name,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
         Expanded(child: _buildTaskList()),
         _buildAddTaskForm(),
         ElevatedButton(
@@ -57,7 +71,7 @@ class _TasksViewState extends State<TasksView> {
           onPressed: () {
             // Handle generating the customized plan
           },
-        )
+        ),
       ],
     );
   }
