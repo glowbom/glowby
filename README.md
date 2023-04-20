@@ -173,7 +173,7 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 
 [![Star History Chart](https://api.star-history.com/svg?repos=glowbom/glowby&type=Date)](https://star-history.com/#glowbom/glowby&Date)
 
-### Star us ⭐️
+### ⭐️ Star Us ⭐️
 If this project helps you create voice AI assistant apps faster, please consider starring it – every star makes us very happy!
 
 ## Contributing
