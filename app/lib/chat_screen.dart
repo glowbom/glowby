@@ -127,7 +127,7 @@ class _ChatScreenState extends State<ChatScreen> {
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
 
-      print('response: $response');
+      //print('response: $response');
       _planName = extractPlanName(response, _lastInputMessage);
 
       RegExp stepPattern =
