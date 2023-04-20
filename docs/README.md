@@ -4,7 +4,7 @@ Glowby Basic is a powerful voice-based AI assistant that can help users with var
 
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https://github.com/glowbom/glowby-basic)
 
-## Live Demo
+## Live Demo 🤖
 
 Experience Glowby Basic in action with our live demo hosted on GitHub Pages [here](https://glowbom.github.io/glowby-basic/).
 
@@ -14,10 +14,16 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 [![Discord Follow](https://dcbadge.vercel.app/api/server/zqcsurUN?style=flat)](https://discord.gg/zqcsurUN)
 
 
-### See It in Action
+## See It in Action 
+
+### Experimental Autonomous Mode 🧠
+
+![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
+Glowby plans a trip to Portugal with Autonomous Mode. To see this demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
+
+### Regular Mode 🤖
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
-
 
 ## Overview
 
@@ -32,12 +38,6 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Customizable prompts allowing you to tailor the assistant to your needs
 - Easily switch between different prompts for a variety of scenarios and tasks
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Arabic (Saudi Arabia), Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew (Israel), Hungarian, Indonesian, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Spanish, Swedish, Thai, Turkish, Ukrainian, and Vietnamese. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp).
-
-
-### Experimental Autonomous Mode
-
-![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
-Glowby plans a trip to Portugal with Autonomous Mode. To see this demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
 ### Multilingual Support in Action
 
@@ -173,6 +173,8 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 
 [![Star History Chart](https://api.star-history.com/svg?repos=glowbom/glowby&type=Date)](https://star-history.com/#glowbom/glowby&Date)
 
+### ⭐️ Star Us ⭐️
+If this project helps you create voice AI assistant apps faster, please consider starring it – every star makes us very happy!
 
 ## Contributing
 
