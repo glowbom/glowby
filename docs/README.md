@@ -26,21 +26,19 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ## Features
 
+- **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
 - Powerful, customizable voice-based AI assistant
-- Adaptable AI behavior to cater to specific tasks and preferences
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
 - Customizable prompts allowing you to tailor the assistant to your needs
 - Easily switch between different prompts for a variety of scenarios and tasks
-- Capable of breaking down complex tasks into manageable steps
-- Offers multiple options for each step, allowing users to choose their preferred approach
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Arabic (Saudi Arabia), Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew (Israel), Hungarian, Indonesian, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Spanish, Swedish, Thai, Turkish, Ukrainian, and Vietnamese. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp).
 
 ### Multilingual Support in Action
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
 
-To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
+To experience the Autonomous Mode demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
 ### Switch Between Different Prompts
 
@@ -52,7 +50,6 @@ To experience the demo with sound, check out this [Twitter post](https://twitter
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
 
 ### Functionality
-- Autonomous Mode
 - Image Generation
 - Local Storage
 
@@ -161,12 +158,11 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
-### Autonomous Mode (Coming soon...)
+### Autonomous Mode (Experimental)
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
 
-Coming soon...
-
+To experience the Autonomous Mode demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
 ## Star History
 
