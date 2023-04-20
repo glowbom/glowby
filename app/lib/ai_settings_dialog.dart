@@ -31,7 +31,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   Widget _buildAutonomousModeCheckbox() {
     if (_selectedPrompt == 'Complex Task Prompt') {
       return CheckboxListTile(
-        title: Text('Autonomous Mode'),
+        title: Text('Autonomous Mode (Experimental)'),
         value: _autonomousMode,
         onChanged: (bool? value) {
           setState(() {

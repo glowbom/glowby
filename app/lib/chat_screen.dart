@@ -50,7 +50,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void refresh() {
     if (widget._voice && _voiceEnabled) {
       try {
-        if (_messages.isNotEmpty && _messages[0].userId == '007') {
+        if (_messages.isNotEmpty &&
+            _messages[0].userId == '007' &&
+            _planImplementationInProgress == false) {
           textToSpeech.speakText(_messages[0].text,
               language: AiSettingsDialog.selectedLanguage);
         }
@@ -123,7 +125,7 @@ class _ChatScreenState extends State<ChatScreen> {
       String response = await OpenAI_API.getResponseFromOpenAI(
           _lastInputMessage,
           customSystemPrompt:
-              'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan.');
+              'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
 
       print('response: $response');
       _planName = extractPlanName(response, _lastInputMessage);
@@ -155,35 +157,52 @@ class _ChatScreenState extends State<ChatScreen> {
       _loading = false;
     });
 
+    if (_planName == 'Unnamed Plan') {
+      textToSpeech.speakText('You plan is ready',
+          language: AiSettingsDialog.selectedLanguage);
+    } else {
+      textToSpeech.speakText('You plan to ${_planName} is ready',
+          language: AiSettingsDialog.selectedLanguage);
+    }
+
     return tasks;
   }
 
   String _lastInputMessage = '';
   String _planName = 'Unnamed Plan';
   List<String> _tasks = [];
+  bool _planImplementationInProgress = false;
 
   Future<void> _implementPlan() async {
+    _planImplementationInProgress = true;
     // Send initial message to start working on the plan
     String initialMessage = "Let's work on $_planName. First: ${_tasks[0]}";
-    await _sendMessageOnBehalfOfUser(initialMessage);
+    await _sendMessageOnBehalfOfUser(initialMessage,
+        customSystemPrompt:
+            'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
 
     // Send messages for the rest of the tasks
     for (int i = 1; i < _tasks.length; i++) {
-      String taskMessage = "Now let's do ${_tasks[i]}";
-      await _sendMessageOnBehalfOfUser(taskMessage);
-    }
-
-    // Generate the summary message
-    String summary = "Here's the summary of the plan:\n\n";
-    for (int i = 0; i < _tasks.length; i++) {
-      summary += "${i + 1}. ${_tasks[i]}\n";
+      textToSpeech.speakText('Moving on to the next task.',
+          language: AiSettingsDialog.selectedLanguage);
+      String taskMessage = "Moving on to the next task. ${_tasks[i]}";
+      await _sendMessageOnBehalfOfUser(taskMessage,
+          customSystemPrompt:
+              'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
     }
 
     // Send the summary message and add a Copy button
-    await _sendMessageOnBehalfOfUser(summary);
+    await _sendMessageOnBehalfOfUser('Summarising...',
+        customSystemPrompt:
+            'You are Glowby, an AI assistant. The user has enabled the auto mode, and you have followed your suggested concise actions for each task in the plan. Help the user summarize the plan, and provide all info from previous messages but in a shorter but still informative form. ',
+        lastMessage: true);
   }
 
-  Future<void> _sendMessageOnBehalfOfUser(String message) async {
+  Future<void> _sendMessageOnBehalfOfUser(
+    String message, {
+    String? customSystemPrompt,
+    bool lastMessage = false,
+  }) async {
     // Add the message to the list
     _messages.insert(
         0,
@@ -194,8 +213,28 @@ class _ChatScreenState extends State<ChatScreen> {
           username: 'Me',
         ));
 
-    // Get the AI response
-    String response = await OpenAI_API.getResponseFromOpenAI(message);
+    //await textToSpeech.speakText(message,
+    //  language: AiSettingsDialog.selectedLanguage);
+
+    refresh();
+
+    String response = '';
+
+    // Convert previousMessages to the format expected by the API
+    List<Map<String, String?>> formattedPreviousMessages = _messages
+        .map((message) {
+          return {
+            'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+            'content': message.text
+          };
+        })
+        .toList()
+        .reversed
+        .toList();
+
+    response = await OpenAI_API.getResponseFromOpenAI(message,
+        previousMessages: formattedPreviousMessages,
+        customSystemPrompt: customSystemPrompt);
 
     // Add the response to the list
     _messages.insert(
@@ -208,7 +247,13 @@ class _ChatScreenState extends State<ChatScreen> {
         ));
 
     // Update the UI
+    if (lastMessage) {
+      _planImplementationInProgress = false;
+    }
     refresh();
+
+    await textToSpeech.speakText(response,
+        language: AiSettingsDialog.selectedLanguage);
   }
 
   @override
@@ -250,7 +295,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           : Messages(_messages),
                     ),
                   ),
-            if (!_autonomousMode && !_loading)
+            if (!_autonomousMode && !_loading && !_planImplementationInProgress)
               NewMessage(
                 refresh,
                 _messages,
@@ -264,7 +309,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   });
                 },
               ),
-            if (!_autonomousMode && !_loading)
+            if (!_autonomousMode && !_loading && !_planImplementationInProgress)
               Container(
                 margin: EdgeInsets.all(8),
                 child: Row(
@@ -286,6 +331,20 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
+            if (_planImplementationInProgress)
+              Container(
+                height: 50,
+                child: Center(
+                  child: Text(
+                    'Implementing plan...',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            if (_planImplementationInProgress) CircularProgressIndicator(),
             SizedBox(height: 20),
           ],
         ),
