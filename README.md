@@ -40,7 +40,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
 
-To experience the demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1647833129644875777).
+To experience the Autonomous Mode demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
 ### Switch Between Different Prompts
 
@@ -166,7 +166,7 @@ If the answer to a question is not found locally, the app will make a server req
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
 
 Coming soon...
-
+https://twitter.com/jacobilin/status/1648870682972004352?s=20
 
 ## Star History
 
