@@ -174,6 +174,9 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 [![Star History Chart](https://api.star-history.com/svg?repos=glowbom/glowby&type=Date)](https://star-history.com/#glowbom/glowby&Date)
 
 
+⭐️ Star us
+If this project helps you create voice AI assistant apps faster, please consider starring it – every star makes us very happy!
+
 ## Contributing
 
 We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub.
