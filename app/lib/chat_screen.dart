@@ -179,7 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String initialMessage = "Let's work on $_planName. First: ${_tasks[0]}";
     await _sendMessageOnBehalfOfUser(initialMessage,
         customSystemPrompt:
-            'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
+            'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. Your answer should be short and informative. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
 
     // Send messages for the rest of the tasks
     for (int i = 1; i < _tasks.length; i++) {
@@ -188,7 +188,7 @@ class _ChatScreenState extends State<ChatScreen> {
       String taskMessage = "Moving on to the next task. ${_tasks[i]}";
       await _sendMessageOnBehalfOfUser(taskMessage,
           customSystemPrompt:
-              'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
+              'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. Your answer should be short and informative. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
     }
 
     // Send the summary message and add a Copy button
@@ -251,9 +251,10 @@ class _ChatScreenState extends State<ChatScreen> {
       _planImplementationInProgress = false;
     }
     refresh();
-
-    await textToSpeech.speakText(response,
-        language: AiSettingsDialog.selectedLanguage);
+    if (!lastMessage) {
+      await textToSpeech.speakText(response,
+          language: AiSettingsDialog.selectedLanguage);
+    }
   }
 
   @override
