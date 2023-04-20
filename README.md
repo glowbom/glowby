@@ -21,7 +21,7 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
 Glowby plans a trip to Portugal with Autonomous Mode. To see this demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
-#### Regular Mode
+#### Regular Mode 🤖
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
 
