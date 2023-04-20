@@ -161,7 +161,7 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
-### Autonomous Mode (Coming soon...)
+### Autonomous Mode
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
 
