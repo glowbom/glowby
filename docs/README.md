@@ -1,4 +1,4 @@
-# Glowby Basic - Customizable Voice-Enabled AI Assistant
+# Glowby Basic - Create Voice AI Assistant App in Minutes
 
 Glowby Basic is a powerful voice-based AI assistant that can help users with various tasks. Easily customizable, trainable, and deployable anywhere, Glowby Basic is designed to adapt to your specific needs. Built using Flutter, Glowby Basic provides a seamless web app experience with an intuitive voice interface.
 
