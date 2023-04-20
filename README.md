@@ -26,6 +26,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ## Features
 
+- Autonomous Mode (Experimental), a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352)
 - Powerful, customizable voice-based AI assistant
 - Adaptable AI behavior to cater to specific tasks and preferences
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
@@ -52,7 +53,6 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
 
 ### Functionality
-- Autonomous Mode
 - Image Generation
 - Local Storage
 
