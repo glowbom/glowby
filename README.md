@@ -26,15 +26,12 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 ## Features
 
-- Autonomous Mode (Experimental), a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352)
+- **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
 - Powerful, customizable voice-based AI assistant
-- Adaptable AI behavior to cater to specific tasks and preferences
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
 - Customizable prompts allowing you to tailor the assistant to your needs
 - Easily switch between different prompts for a variety of scenarios and tasks
-- Capable of breaking down complex tasks into manageable steps
-- Offers multiple options for each step, allowing users to choose their preferred approach
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Arabic (Saudi Arabia), Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew (Israel), Hungarian, Indonesian, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Spanish, Swedish, Thai, Turkish, Ukrainian, and Vietnamese. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp).
 
 ### Multilingual Support in Action
