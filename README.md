@@ -19,14 +19,15 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232182586-30984d36-4641-41da-9e1e-c23c27716e3d.gif)
 
 
+## Overview
+
+This project offers an easy way for creating customizable AI assistants like [Glowby](https://www.youtube.com/watch?v=iFECpMXmKOg), a witty AI agent that assists users in building apps on [Glowbom.com](https://www.glowbom.com). By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem to build diverse AI agents for a variety of use cases.
+
+
 ### Experimental Autonomous Mode
 
 ![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
 Glowby plans a trip to Portugal with Autonomous Mode...
-
-## Overview
-
-This project offers an easy way for creating customizable AI assistants like [Glowby](https://www.youtube.com/watch?v=iFECpMXmKOg), a witty AI agent that assists users in building apps on [Glowbom.com](https://www.glowbom.com). By open-sourcing the Flutter-based chat component, we aim to foster a community-driven ecosystem to build diverse AI agents for a variety of use cases.
 
 
 ## Features
