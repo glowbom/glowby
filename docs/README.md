@@ -37,8 +37,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ### Experimental Autonomous Mode
 
 ![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
-Glowby plans a trip to Portugal with Autonomous Mode...
-
+Glowby plans a trip to Portugal with Autonomous Mode. To see this demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
 
 ### Multilingual Support in Action
 
