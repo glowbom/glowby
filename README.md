@@ -22,7 +22,7 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ### Experimental Autonomous Mode
 
 ![Glowby Basic Experimental Autonomous Mode](https://user-images.githubusercontent.com/2455891/233245896-59d5f7a4-667c-4f74-95c0-b348a3712e9e.gif)
-AI Assistant Plans a Trip to Portugal...
+Glowby plans a trip to Portugal...
 
 ## Overview
 
