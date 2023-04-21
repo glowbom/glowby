@@ -231,59 +231,73 @@ class OpenAI_API {
         'temperature': 1,
       };
 
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: headers,
-        body: jsonEncode(data),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: headers,
+          body: jsonEncode(data),
+        );
 
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
-        String receivedResponse =
-            responseBody['choices'][0]['message']['content'].toString().trim();
+        if (response.statusCode == 200) {
+          final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+          String receivedResponse = responseBody['choices'][0]['message']
+                  ['content']
+              .toString()
+              .trim();
 
-        // Add the current received response to the final response
-        finalResponse += receivedResponse;
+          // Add the current received response to the final response
+          finalResponse += receivedResponse;
 
-        // Add the tokens used in this response to the total tokens used
-        int tokensUsed = responseBody['usage']['total_tokens'];
-        totalTokensUsed += tokensUsed;
+          // Add the tokens used in this response to the total tokens used
+          int tokensUsed = responseBody['usage']['total_tokens'];
+          totalTokensUsed += tokensUsed;
 
-        // Calculate the cost of the tokens used
-        double cost = tokensUsed * 0.002 / 1000;
-        if (kDebugMode) {
-          // Print the tokens used and the cost to the console
-          print('Tokens used in this response: $tokensUsed');
-          print('Cost of this response: \$${cost.toStringAsFixed(5)}');
-          print('Total tokens used so far: $totalTokensUsed');
-        }
-
-        double totalCost = totalTokensUsed * 0.002 / 1000;
-        if (kDebugMode) {
-          print('Total cost so far: \$${totalCost.toStringAsFixed(5)}');
-        }
-
-        // Check if the received response was cut-off
-        if (responseBody['choices'][0]['finish_reason'] == 'length') {
-          // Use the last part of the received response as input for the next request
-          inputMessage += receivedResponse;
-          int maxLength = 1024 * 10; // You can set this to a desired limit
-          if (inputMessage.length > maxLength) {
-            inputMessage =
-                inputMessage.substring(inputMessage.length - maxLength);
+          // Calculate the cost of the tokens used
+          double cost = tokensUsed * 0.002 / 1000;
+          if (kDebugMode) {
+            // Print the tokens used and the cost to the console
+            print('Tokens used in this response: $tokensUsed');
+            print('Cost of this response: \$${cost.toStringAsFixed(5)}');
+            print('Total tokens used so far: $totalTokensUsed');
           }
-          tries++;
+
+          double totalCost = totalTokensUsed * 0.002 / 1000;
+          if (kDebugMode) {
+            print('Total cost so far: \$${totalCost.toStringAsFixed(5)}');
+          }
+
+          // Check if the received response was cut-off
+          if (responseBody['choices'][0]['finish_reason'] == 'length') {
+            // Use the last part of the received response as input for the next request
+            inputMessage += receivedResponse;
+            int maxLength = 1024 * 10; // You can set this to a desired limit
+            if (inputMessage.length > maxLength) {
+              inputMessage =
+                  inputMessage.substring(inputMessage.length - maxLength);
+            }
+            tries++;
+          } else {
+            break;
+          }
         } else {
-          break;
+          throw Exception('Failed to get response from OpenAI API.');
         }
-      } else {
-        throw Exception('Failed to get response from OpenAI API.');
+      } catch (e) {
+        if (tries + 1 < maxTries) {
+          tries++;
+          // You can add a delay before retrying the request.
+          await Future.delayed(Duration(seconds: 2));
+        } else {
+          throw Exception(
+              'Failed to get response from OpenAI API after $maxTries attempts.');
+        }
       }
     }
 
     completer.complete(finalResponse);
 
-    // Explicitly return null to avoid the error
+    // Explicitly return null to avoid
+
     return null;
   }
 }
