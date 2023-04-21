@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:async/async.dart';
 
 int totalTokensUsed = 0;
 
@@ -158,7 +159,29 @@ class OpenAI_API {
     return defaultMaxTokens;
   }
 
-  static Future<String> getResponseFromOpenAI(String message,
+  static CancelableOperation<String> getResponseFromOpenAI(
+    String message, {
+    List<Map<String, String?>> previousMessages = const [],
+    int maxTries = 1,
+    String? customSystemPrompt = null,
+  }) {
+    // Create a cancelable completer
+    final completer = CancelableCompleter<String>();
+
+    // Wrap the _getResponseFromOpenAI with the cancelable completer
+    _getResponseFromOpenAI(
+      message,
+      completer,
+      previousMessages: previousMessages,
+      maxTries: maxTries,
+      customSystemPrompt: customSystemPrompt,
+    );
+
+    return completer.operation;
+  }
+
+  static Future<void> _getResponseFromOpenAI(
+      String message, CancelableCompleter<String> completer,
       {List<Map<String, String?>> previousMessages = const [],
       int maxTries = 1,
       String? customSystemPrompt = null}) async {
@@ -241,6 +264,9 @@ class OpenAI_API {
       }
     }
 
-    return finalResponse;
+    completer.complete(finalResponse);
+
+    // Explicitly return null to avoid the error
+    return null;
   }
 }

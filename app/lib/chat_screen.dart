@@ -11,6 +11,7 @@ import 'openai_api.dart';
 import 'text_to_speech.dart'; // Import the new TextToSpeech class
 import 'api_key_dialog.dart';
 import 'timestamp.dart'; // Import the ApiKeyDialog widget
+import 'package:async/async.dart';
 
 class ChatScreen extends StatefulWidget {
   final List<Map<String, Object>> _questions;
@@ -106,6 +107,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  CancelableOperation<String>? _currentOperation;
+
   Future<List<String>> _generateTasks(String inputMessage) async {
     if (inputMessage != '') {
       _lastInputMessage = inputMessage;
@@ -122,10 +125,12 @@ class _ChatScreenState extends State<ChatScreen> {
     List<String> tasks = [];
 
     try {
-      String response = await OpenAI_API.getResponseFromOpenAI(
+      _currentOperation = await OpenAI_API.getResponseFromOpenAI(
           _lastInputMessage,
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
+
+      String response = await _currentOperation!.value;
 
       //print('response: $response');
       _planName = extractPlanName(response, _lastInputMessage);
@@ -172,8 +177,10 @@ class _ChatScreenState extends State<ChatScreen> {
   String _planName = 'Unnamed Plan';
   List<String> _tasks = [];
   bool _planImplementationInProgress = false;
+  bool _stopRequested = false;
 
   Future<void> _implementPlan() async {
+    _stopRequested = false;
     _planImplementationInProgress = true;
     // Send initial message to start working on the plan
     String initialMessage = "Let's work on $_planName. First: ${_tasks[0]}";
@@ -183,6 +190,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Send messages for the rest of the tasks
     for (int i = 1; i < _tasks.length; i++) {
+      if (_stopRequested) {
+        _stopRequested = false;
+        break;
+      }
       textToSpeech.speakText('Moving on to the next task.',
           language: AiSettingsDialog.selectedLanguage);
       String taskMessage = "Moving on to the next task. ${_tasks[i]}";
@@ -191,11 +202,13 @@ class _ChatScreenState extends State<ChatScreen> {
               'You are Glowby, an AI assistant. The user has enabled the auto mode, which allows you to make choices on their behalf. Help the user with the following task and choose only one option, providing a concise action. Your answer should be short and informative. For example, if the task is to book accommodations in Dublin. Please provide a specific hotel name and location that you think the user should book:');
     }
 
-    // Send the summary message and add a Copy button
-    await _sendMessageOnBehalfOfUser('Summarising...',
-        customSystemPrompt:
-            'You are Glowby, an AI assistant. The user has enabled the auto mode, and you have followed your suggested concise actions for each task in the plan. Help the user summarize the plan, and provide all info from previous messages but in a shorter but still informative form. ',
-        lastMessage: true);
+    if (!_stopRequested) {
+      // Send the summary message and add a Copy button
+      await _sendMessageOnBehalfOfUser('Summarising...',
+          customSystemPrompt:
+              'You are Glowby, an AI assistant. The user has enabled the auto mode, and you have followed your suggested concise actions for each task in the plan. Help the user summarize the plan, and provide all info from previous messages but in a shorter but still informative form. ',
+          lastMessage: true);
+    }
   }
 
   Future<void> _sendMessageOnBehalfOfUser(
@@ -232,9 +245,11 @@ class _ChatScreenState extends State<ChatScreen> {
         .reversed
         .toList();
 
-    response = await OpenAI_API.getResponseFromOpenAI(message,
+    _currentOperation = await OpenAI_API.getResponseFromOpenAI(message,
         previousMessages: formattedPreviousMessages,
         customSystemPrompt: customSystemPrompt);
+
+    response = await _currentOperation!.value;
 
     // Add the response to the list
     _messages.insert(
@@ -255,6 +270,15 @@ class _ChatScreenState extends State<ChatScreen> {
       await textToSpeech.speakText(response,
           language: AiSettingsDialog.selectedLanguage);
     }
+  }
+
+  void _stopAutonomousMode() {
+    setState(() {
+      _stopRequested = true;
+      _autonomousMode = false;
+      _planImplementationInProgress = false;
+      _currentOperation?.cancel();
+    });
   }
 
   @override
@@ -309,6 +333,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     _tasks = tasks;
                   });
                 },
+                currentOperation: _currentOperation,
               ),
             if (!_autonomousMode && !_loading && !_planImplementationInProgress)
               Container(
@@ -346,6 +371,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             if (_planImplementationInProgress) CircularProgressIndicator(),
+            SizedBox(height: 20),
+            // Add the Stop button when plan implementation is in progress
+            if (_planImplementationInProgress)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: IconButton(
+                  icon: Icon(Icons.stop),
+                  onPressed: _stopAutonomousMode,
+                  tooltip: 'Stop',
+                  color: Colors.black, // Set the color of the stop icon to red
+                ),
+              ),
+
             SizedBox(height: 20),
           ],
         ),

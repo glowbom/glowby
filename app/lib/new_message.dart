@@ -11,6 +11,7 @@ import 'package:web/ai_settings_dialog.dart';
 import 'message.dart';
 import 'timestamp.dart';
 import 'package:flutter/material.dart';
+import 'package:async/async.dart';
 
 // Uncomment the next line to compile the web version
 import 'package:js/js.dart';
@@ -37,9 +38,10 @@ class NewMessage extends StatefulWidget {
   final List<Map<String, Object>>? _questions;
   final String? _name;
   final Function(String) onAutonomousModeMessage;
+  final CancelableOperation<String>? currentOperation;
 
   NewMessage(this._refresh, this._messages, this._questions, this._name,
-      {required this.onAutonomousModeMessage});
+      {required this.onAutonomousModeMessage, required this.currentOperation});
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -81,6 +83,7 @@ class _NewMessageState extends State<NewMessage> {
     ai = Ai(
       widget._name,
       widget._questions,
+      widget.currentOperation,
     );
     super.initState();
 
