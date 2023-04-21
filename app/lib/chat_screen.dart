@@ -132,6 +132,20 @@ class _ChatScreenState extends State<ChatScreen> {
 
       String response = await _currentOperation!.value;
 
+      if (response ==
+          'Sorry, there was an error processing your request. Please try again later.') {
+        _stopAutonomousMode();
+        Future.delayed(Duration(microseconds: 200), () {
+          setState(() {
+            _autonomousMode = false;
+          });
+        });
+
+        textToSpeech.speakText(
+            'Sorry, there was an error processing your request. Please try again later.');
+        return [];
+      }
+
       //print('response: $response');
       _planName = extractPlanName(response, _lastInputMessage);
 
@@ -161,6 +175,19 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _loading = false;
     });
+
+    if (tasks.length < 2) {
+      _stopAutonomousMode();
+      Future.delayed(Duration(microseconds: 200), () {
+        setState(() {
+          _autonomousMode = false;
+        });
+      });
+
+      textToSpeech
+          .speakText('No plan detected! Please input a different message.');
+      return [];
+    }
 
     if (_planName == 'Unnamed Plan') {
       textToSpeech.speakText('You plan is ready',
