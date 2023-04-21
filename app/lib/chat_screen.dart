@@ -204,7 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!_stopRequested) {
       // Send the summary message and add a Copy button
-      await _sendMessageOnBehalfOfUser('Summarising...',
+      await _sendMessageOnBehalfOfUser('Summarizing...',
           customSystemPrompt:
               'You are Glowby, an AI assistant. The user has enabled the auto mode, and you have followed your suggested concise actions for each task in the plan. Help the user summarize the plan, and provide all info from previous messages but in a shorter but still informative form. ',
           lastMessage: true);

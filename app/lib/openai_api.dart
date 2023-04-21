@@ -288,8 +288,11 @@ class OpenAI_API {
           // You can add a delay before retrying the request.
           await Future.delayed(Duration(seconds: 2));
         } else {
-          throw Exception(
-              'Failed to get response from OpenAI API after $maxTries attempts.');
+          finalResponse =
+              'Sorry, there was an error processing your request. Please try again later.';
+          if (kDebugMode) {
+            print('Error: $e');
+          }
         }
       }
     }
