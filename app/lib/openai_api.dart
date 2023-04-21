@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
@@ -67,21 +68,25 @@ class OpenAI_API {
       'n': 1,
       'size': '1024x1024',
     });
-
-    print('Request URL: $queryUrl');
-    print('Request Headers: $headers');
-    print('Request Body: $body');
+    if (kDebugMode) {
+      print('Request URL: $queryUrl');
+      print('Request Headers: $headers');
+      print('Request Body: $body');
+    }
 
     final response =
         await http.post(Uri.parse(queryUrl), headers: headers, body: body);
-
-    print('Response Status Code: ${response.statusCode}');
-    print('Response Body: ${response.body}');
+    if (kDebugMode) {
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+    }
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       final imageUrl = jsonResponse['data'][0]['url'];
-      print('Generated Image URL: $imageUrl');
+      if (kDebugMode) {
+        print('Generated Image URL: $imageUrl');
+      }
 
       return imageUrl;
     } else {
@@ -90,7 +95,9 @@ class OpenAI_API {
   }
 
   static Future<bool> isInputSafe(String input) async {
-    print('isInputSafe called with input: $input');
+    if (kDebugMode) {
+      print('isInputSafe called with input: $input');
+    }
     final apiUrl = 'https://api.openai.com/v1/moderation/classify';
 
     final headers = {
@@ -109,19 +116,24 @@ class OpenAI_API {
         headers: headers,
         body: jsonEncode(data),
       );
-
-      print('isInputSafe response: ${response.body}');
+      if (kDebugMode) {
+        print('isInputSafe response: ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         String? moderationStatus = responseBody['data']['classification'];
         return moderationStatus == 'safe';
       } else {
-        print('isInputSafe error: Status code ${response.statusCode}');
+        if (kDebugMode) {
+          print('isInputSafe error: Status code ${response.statusCode}');
+        }
         throw Exception('Failed to get response from OpenAI Moderation API.');
       }
     } catch (e) {
-      print('isInputSafe exception: $e');
+      if (kDebugMode) {
+        print('isInputSafe exception: $e');
+      }
       throw e;
     }
   }
@@ -190,7 +202,9 @@ class OpenAI_API {
     int tries = 0;
 
     while (tries < maxTries) {
-      print('inputMessage = $inputMessage');
+      if (kDebugMode) {
+        print('inputMessage = $inputMessage');
+      }
       final apiUrl = 'https://api.openai.com/v1/chat/completions';
 
       final headers = {
@@ -237,14 +251,17 @@ class OpenAI_API {
 
         // Calculate the cost of the tokens used
         double cost = tokensUsed * 0.002 / 1000;
-
-        // Print the tokens used and the cost to the console
-        print('Tokens used in this response: $tokensUsed');
-        print('Cost of this response: \$${cost.toStringAsFixed(5)}');
-        print('Total tokens used so far: $totalTokensUsed');
+        if (kDebugMode) {
+          // Print the tokens used and the cost to the console
+          print('Tokens used in this response: $tokensUsed');
+          print('Cost of this response: \$${cost.toStringAsFixed(5)}');
+          print('Total tokens used so far: $totalTokensUsed');
+        }
 
         double totalCost = totalTokensUsed * 0.002 / 1000;
-        print('Total cost so far: \$${totalCost.toStringAsFixed(5)}');
+        if (kDebugMode) {
+          print('Total cost so far: \$${totalCost.toStringAsFixed(5)}');
+        }
 
         // Check if the received response was cut-off
         if (responseBody['choices'][0]['finish_reason'] == 'length') {

@@ -182,9 +182,6 @@ class _NewMessageState extends State<NewMessage> {
           previousMessages: formattedPreviousMessages);
 
       if (_stopRequested) {
-        // Remove the typing message instance if _stopRequested is true
-        widget._messages.remove(typingMessage);
-        widget._refresh();
         return;
       }
 
@@ -209,12 +206,15 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   void _stopProcessing() {
-    print('network operation cancelled = ${ai.networkOperation}');
-    ai.networkOperation?.cancel();
     _stopRequested = true;
     setState(() {
       _isProcessing = false;
+      // Remove the typing message
+      widget._messages.removeAt(0);
+      widget._refresh();
     });
+
+    ai.getCurrentNetworkOperation()?.cancel();
   }
 
   @override

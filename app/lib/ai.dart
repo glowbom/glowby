@@ -11,6 +11,10 @@ class Ai {
   final String? _name;
   CancelableOperation<String>? newtworkOperation;
 
+  CancelableOperation<String>? getCurrentNetworkOperation() {
+    return newtworkOperation;
+  }
+
   static const String defaultUserId = '007';
 
   Ai(this._name, this._questions);
