@@ -93,7 +93,7 @@ class MessageBubble extends StatelessWidget {
           // Add more TextSpans if needed for different styles within the message
         ],
       ),
-      textAlign: isMe ? TextAlign.end : TextAlign.start,
+      textAlign: TextAlign.start,
     );
   }
 
