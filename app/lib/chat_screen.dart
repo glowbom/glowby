@@ -274,6 +274,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _stopAutonomousMode() {
     setState(() {
+      _loading = false;
       _stopRequested = true;
       _autonomousMode = false;
       _planImplementationInProgress = false;
@@ -333,7 +334,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     _tasks = tasks;
                   });
                 },
-                currentOperation: _currentOperation,
               ),
             if (!_autonomousMode && !_loading && !_planImplementationInProgress)
               Container(
@@ -373,7 +373,7 @@ class _ChatScreenState extends State<ChatScreen> {
             if (_planImplementationInProgress) CircularProgressIndicator(),
             SizedBox(height: 20),
             // Add the Stop button when plan implementation is in progress
-            if (_planImplementationInProgress)
+            if (_loading || _planImplementationInProgress)
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: IconButton(

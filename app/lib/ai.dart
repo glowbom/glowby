@@ -9,18 +9,19 @@ import 'package:async/async.dart';
 class Ai {
   final List<Map<String, Object>>? _questions;
   final String? _name;
-  CancelableOperation<String>? currentOperation;
+  CancelableOperation<String>? newtworkOperation;
 
   static const String defaultUserId = '007';
 
-  Ai(this._name, this._questions,
-      CancelableOperation<String>? currentOperation);
+  Ai(this._name, this._questions);
 
   /// Processes the user's message and returns an AI-generated response.
   ///
   /// [message] is the input message from the user.
-  Future<List<Message>> message(String message,
-      {List<Map<String, String?>> previousMessages = const []}) async {
+  Future<List<Message>> message(
+    String message, {
+    List<Map<String, String?>> previousMessages = const [],
+  }) async {
     List<Map<String, Object>> foundQuestions = _findMatchingQuestions(message);
 
     if (foundQuestions.isNotEmpty) {
@@ -29,9 +30,9 @@ class Ai {
 
     // Call the OpenAI API if no matching questions are found locally
     if (OpenAI_API.oat().isNotEmpty) {
-      currentOperation = await OpenAI_API.getResponseFromOpenAI(message,
+      newtworkOperation = await OpenAI_API.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
-      String response = await currentOperation!.value;
+      String response = await newtworkOperation!.value;
       return [
         Message(
           text: response,

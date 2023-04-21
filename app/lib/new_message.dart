@@ -38,10 +38,9 @@ class NewMessage extends StatefulWidget {
   final List<Map<String, Object>>? _questions;
   final String? _name;
   final Function(String) onAutonomousModeMessage;
-  final CancelableOperation<String>? currentOperation;
 
   NewMessage(this._refresh, this._messages, this._questions, this._name,
-      {required this.onAutonomousModeMessage, required this.currentOperation});
+      {required this.onAutonomousModeMessage});
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -56,6 +55,8 @@ class _NewMessageState extends State<NewMessage> {
   FocusNode? _focusNode;
   bool _isRecording = false;
   Timer? _voiceCancelTimer;
+  bool _isProcessing = false;
+  bool _stopRequested = false;
 
   void _onVoiceReady(text) {
     if (_isRecording) {
@@ -83,7 +84,6 @@ class _NewMessageState extends State<NewMessage> {
     ai = Ai(
       widget._name,
       widget._questions,
-      widget.currentOperation,
     );
     super.initState();
 
@@ -125,6 +125,7 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   void _sendMessage() async {
+    _stopRequested = false;
     FocusScope.of(context).unfocus();
 
     widget._messages.insert(
@@ -173,8 +174,23 @@ class _NewMessageState extends State<NewMessage> {
           .reversed
           .toList();
 
+      setState(() {
+        _isProcessing = true; // Set to true before processing
+      });
+
       var response = await ai.message(message,
           previousMessages: formattedPreviousMessages);
+
+      if (_stopRequested) {
+        // Remove the typing message instance if _stopRequested is true
+        widget._messages.remove(typingMessage);
+        widget._refresh();
+        return;
+      }
+
+      setState(() {
+        _isProcessing = false; // Set to false after processing
+      });
 
       // Remove the typing message instance when the response is received
       widget._messages.remove(typingMessage);
@@ -190,6 +206,15 @@ class _NewMessageState extends State<NewMessage> {
 
       widget._refresh();
     }
+  }
+
+  void _stopProcessing() {
+    print('network operation cancelled = ${ai.networkOperation}');
+    ai.networkOperation?.cancel();
+    _stopRequested = true;
+    setState(() {
+      _isProcessing = false;
+    });
   }
 
   @override
@@ -224,13 +249,19 @@ class _NewMessageState extends State<NewMessage> {
               ),
             ),
           ),
-          if (kIsWeb)
+          if (kIsWeb && !_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,
               icon: Icon(
                 _isRecording ? Icons.record_voice_over : Icons.keyboard_voice,
               ),
               onPressed: _voiceMessage,
+            ),
+          if (_isProcessing)
+            IconButton(
+              color: Theme.of(context).primaryColor,
+              icon: Icon(Icons.stop),
+              onPressed: _stopProcessing,
             ),
           IconButton(
             color: Theme.of(context).primaryColor,
