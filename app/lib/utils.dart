@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
 
@@ -33,19 +32,9 @@ class Utils {
   }
 
   static void downloadImage(String url, String description) {
-    final anchor = html.AnchorElement(
-      href: url,
-    )
-      ..setAttribute("download", 'glowby-image-${description}.png')
-      ..style.display = 'none';
-    html.document.body!.children.add(anchor);
-    anchor.click();
-    html.document.body!.children.remove(anchor);
-  }
-
-  static String decodeUtf8String(String input) {
-    List<int> bytes = input.codeUnits;
-    return utf8.decode(bytes);
+    final windowFeatures =
+        'menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=yes,width=600,height=400';
+    html.window.open(url, 'glowby-image-${description}', windowFeatures);
   }
 
   static Future<String> getImageDataFromUrl(String url) async {
@@ -55,38 +44,6 @@ class Utils {
         final imageData = response.bodyBytes;
         final base64Image = base64Encode(imageData);
         return base64Image;
-      } else {
-        throw 'Failed to download image: ${response.statusCode}';
-      }
-    } catch (e) {
-      throw 'Failed to save image: ${e.toString()}';
-    }
-  }
-
-  static Future<String> getImageDataFromUrlViaProxy(String url) async {
-    try {
-      if (kDebugMode) {
-        print('Downloading image: $url');
-        print(
-            'request is: https://ttvqgokmjd.execute-api.us-east-1.amazonaws.com?imageUrl=${Uri.encodeComponent(url)}');
-      }
-      final response = await http.post(
-        Uri.parse(
-            'https://ttvqgokmjd.execute-api.us-east-1.amazonaws.com/?imageUrl=${Uri.encodeComponent(url)}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
-      if (kDebugMode) {
-        print('Response status code: ${response.statusCode}');
-      }
-
-      if (response.statusCode == 200) {
-        final base64ImageEncoded = jsonDecode(response.body)['base64Image'];
-        final base64Image = Uri.decodeComponent(base64ImageEncoded);
-
-        return base64Image.replaceAll('base64Image=', '');
       } else {
         throw 'Failed to download image: ${response.statusCode}';
       }

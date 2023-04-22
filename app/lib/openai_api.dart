@@ -66,7 +66,7 @@ class OpenAI_API {
     final body = jsonEncode({
       'prompt': description,
       'n': 1,
-      'size': '1024x1024',
+      'size': '512x512',
     });
     if (kDebugMode) {
       print('Request URL: $queryUrl');
