@@ -13,7 +13,6 @@ import 'message.dart';
 import 'openai_api.dart';
 import 'timestamp.dart';
 import 'package:flutter/material.dart';
-import 'package:async/async.dart';
 
 // Uncomment the next line to compile the web version
 import 'package:js/js.dart';
@@ -175,6 +174,8 @@ class _NewMessageState extends State<NewMessage> {
           widget._messages.remove(drawingMessage);
           widget._messages.insert(0, message);
           widget._refresh();
+
+          Utils.downloadImage(imageUrl, description);
         } catch (e) {
           // Handle the exception and emit an error state
           widget._messages.remove(drawingMessage);

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:html' as html;
 
 class Utils {
   // List of image command patterns
@@ -29,6 +30,17 @@ class Utils {
       }
     }
     return null;
+  }
+
+  static void downloadImage(String url, String description) {
+    final anchor = html.AnchorElement(
+      href: url,
+    )
+      ..setAttribute("download", 'glowby-image-${description}.png')
+      ..style.display = 'none';
+    html.document.body!.children.add(anchor);
+    anchor.click();
+    html.document.body!.children.remove(anchor);
   }
 
   static String decodeUtf8String(String input) {
