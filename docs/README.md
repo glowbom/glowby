@@ -32,6 +32,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ## Features
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
+- **New!** Image Generation with DALL·E 2
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
@@ -50,12 +51,16 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232727678-ced2ee44-a5df-45da-8846-d90e82c8a007.gif)
 
 
+### Image Generation with DALL·E 2
+
+![Glowby Basic Image Generation](https://user-images.githubusercontent.com/2455891/233778560-47d8e011-03a8-41ad-a1fc-33827a033475.gif)
+
+
 ## Upcoming Features
 
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
 
 ### Functionality
-- Image Generation
 - Local Storage
 
 ### Monetization
