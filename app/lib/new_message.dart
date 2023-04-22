@@ -164,7 +164,7 @@ class _NewMessageState extends State<NewMessage> {
         try {
           final imageUrl = (await OpenAI_API.generateImageUrl(description))!;
           Message message = Message(
-            text: 'image',
+            text: 'Here is your image!',
             createdAt: Timestamp.now(),
             userId: Ai.defaultUserId,
             username: widget._name == '' ? 'AI' : widget._name,
@@ -173,6 +173,15 @@ class _NewMessageState extends State<NewMessage> {
 
           widget._messages.remove(drawingMessage);
           widget._messages.insert(0, message);
+          widget._messages.insert(
+              0,
+              Message(
+                text: Utils.getRandomImageReadyMessage(),
+                createdAt: Timestamp.now(),
+                userId: Ai.defaultUserId,
+                username: widget._name == '' ? 'AI' : widget._name,
+              ));
+
           widget._refresh();
 
           Utils.downloadImage(imageUrl, description);

@@ -52,30 +52,46 @@ class Utils {
     }
   }
 
+  static List<String> imageReadyMessages = [
+    'Your image is ready! Make sure you allow pop-ups.',
+    'Image generated! Remember to enable pop-ups.',
+    'Voila! Your image is done. Don\'t forget to allow pop-ups.',
+    'Success! Your image has been created. Ensure pop-ups are allowed.',
+    'Image complete! Just a reminder to permit pop-ups.',
+    'Your masterpiece is finished! Please enable pop-ups.',
+    'Your visual creation is ready! Check that you\'ve allowed pop-ups.',
+  ];
+
+  static String getRandomImageReadyMessage() {
+    final random = Random();
+    int index = random.nextInt(imageReadyMessages.length);
+    return imageReadyMessages[index];
+  }
+
   static List<String> imageGenerationFunnyMessages = [
-    'Searching for my digital paintbrush...',
-    'Brewing a colorful potion...',
-    'Summoning artistic inspiration...',
-    'Painting with pixels...',
-    'Conjuring a visual masterpiece...',
-    'Diving into the canvas of imagination...',
-    'Sketching with code...',
-    'Weaving a tapestry of pixels...',
-    'Navigating the art labyrinth...',
-    'Decoding visual enigmas...',
-    'Assembling a digital gallery...',
-    'Cooking up a visual feast...',
-    'Unraveling the threads of creativity...',
-    'Tapping into the visual matrix...',
-    'Beaming up new designs...',
-    'Hitchhiking through the artverse...',
-    'Dusting off ancient palettes...',
-    'Crafting an artistic potion...',
-    'Igniting the creative spark...',
-    'Fishing for inspiration...',
-    'Sifting through the sands of design...',
-    'Gathering visual gems...',
-    'Riding the wave of imagination...',
+    'Drawing your image... Searching for my digital paintbrush...',
+    'Drawing your image... Brewing a colorful potion...',
+    'Drawing your image... Summoning artistic inspiration...',
+    'Drawing your image... Painting with pixels...',
+    'Drawing your image... Conjuring a visual masterpiece...',
+    'Drawing your image... Diving into the canvas of imagination...',
+    'Drawing your image... Sketching with code...',
+    'Drawing your image... Weaving a tapestry of pixels...',
+    'Drawing your image... Navigating the art labyrinth...',
+    'Drawing your image... Decoding visual enigmas...',
+    'Drawing your image... Assembling a digital gallery...',
+    'Drawing your image... Cooking up a visual feast...',
+    'Drawing your image... Unraveling the threads of creativity...',
+    'Drawing your image... Tapping into the visual matrix...',
+    'Drawing your image... Beaming up new designs...',
+    'Drawing your image... Hitchhiking through the artverse...',
+    'Drawing your image... Dusting off ancient palettes...',
+    'Drawing your image... Crafting an artistic potion...',
+    'Drawing your image... Igniting the creative spark...',
+    'Drawing your image... Fishing for inspiration...',
+    'Drawing your image... Sifting through the sands of design...',
+    'Drawing your image... Gathering visual gems...',
+    'Drawing your image... Riding the wave of imagination...',
   ];
 
   static String getRandomImageGenerationFunnyMessage() {
