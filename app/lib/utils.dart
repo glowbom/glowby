@@ -83,6 +83,38 @@ class Utils {
     }
   }
 
+  static List<String> imageGenerationFunnyMessages = [
+    'Searching for my digital paintbrush...',
+    'Brewing a colorful potion...',
+    'Summoning artistic inspiration...',
+    'Painting with pixels...',
+    'Conjuring a visual masterpiece...',
+    'Diving into the canvas of imagination...',
+    'Sketching with code...',
+    'Weaving a tapestry of pixels...',
+    'Navigating the art labyrinth...',
+    'Decoding visual enigmas...',
+    'Assembling a digital gallery...',
+    'Cooking up a visual feast...',
+    'Unraveling the threads of creativity...',
+    'Tapping into the visual matrix...',
+    'Beaming up new designs...',
+    'Hitchhiking through the artverse...',
+    'Dusting off ancient palettes...',
+    'Crafting an artistic potion...',
+    'Igniting the creative spark...',
+    'Fishing for inspiration...',
+    'Sifting through the sands of design...',
+    'Gathering visual gems...',
+    'Riding the wave of imagination...',
+  ];
+
+  static String getRandomImageGenerationFunnyMessage() {
+    final random = Random();
+    int index = random.nextInt(imageGenerationFunnyMessages.length);
+    return imageGenerationFunnyMessages[index];
+  }
+
   static List<String> loadingMessages = [
     'Talking to collective wisdom...',
     'Summoning creative spirits...',

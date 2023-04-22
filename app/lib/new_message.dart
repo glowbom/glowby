@@ -153,7 +153,7 @@ class _NewMessageState extends State<NewMessage> {
       print('description: $description');
       if (description.isNotEmpty) {
         Message drawingMessage = Message(
-          text: 'drawing...',
+          text: Utils.getRandomImageGenerationFunnyMessage(),
           createdAt: Timestamp.now(),
           userId: Ai.defaultUserId,
           username: widget._name == '' ? 'AI' : widget._name,
