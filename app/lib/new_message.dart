@@ -7,8 +7,10 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:web/ai_settings_dialog.dart';
+import 'package:web/utils.dart';
 
 import 'message.dart';
+import 'openai_api.dart';
 import 'timestamp.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
@@ -142,8 +144,55 @@ class _NewMessageState extends State<NewMessage> {
     _focusNode!.requestFocus();
 
     _enteredMessage = '';
+
+    if (Utils.isImageGenerationCommand(message)) {
+      final pattern = Utils.getMatchingPattern(message);
+      final description = pattern != null
+          ? message.replaceAll(RegExp(pattern, caseSensitive: false), '').trim()
+          : '';
+      print('description: $description');
+      if (description.isNotEmpty) {
+        Message drawingMessage = Message(
+          text: 'drawing...',
+          createdAt: Timestamp.now(),
+          userId: Ai.defaultUserId,
+          username: widget._name == '' ? 'AI' : widget._name,
+        );
+        widget._messages.insert(0, drawingMessage);
+        widget._refresh();
+
+        // Generate the image
+        try {
+          final imageUrl = (await OpenAI_API.generateImageUrl(description))!;
+          Message message = Message(
+            text: 'image',
+            createdAt: Timestamp.now(),
+            userId: Ai.defaultUserId,
+            username: widget._name == '' ? 'AI' : widget._name,
+            link: imageUrl,
+          );
+
+          widget._messages.remove(drawingMessage);
+          widget._messages.insert(0, message);
+          widget._refresh();
+        } catch (e) {
+          // Handle the exception and emit an error state
+          widget._messages.remove(drawingMessage);
+          Message message = Message(
+            text: 'Something went wrong. Please try again later.',
+            createdAt: Timestamp.now(),
+            userId: Ai.defaultUserId,
+            username: widget._name == '' ? 'AI' : widget._name,
+          );
+
+          widget._messages.remove(drawingMessage);
+          widget._messages.insert(0, message);
+          widget._refresh();
+        }
+      }
+    }
     // Check if Autonomous mode is on
-    if (AiSettingsDialog.autonomousMode) {
+    else if (AiSettingsDialog.autonomousMode) {
       widget.onAutonomousModeMessage(
           message); // Call the callback function with the user's input
     } else {
