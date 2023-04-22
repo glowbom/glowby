@@ -70,8 +70,6 @@ class OpenAI_API {
     });
     if (kDebugMode) {
       print('Request URL: $queryUrl');
-      print('Request Headers: $headers');
-      print('Request Body: $body');
     }
 
     final response =
