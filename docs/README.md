@@ -40,6 +40,8 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - Easily switch between different prompts for a variety of scenarios and tasks
 - Support for multiple languages: American English, American Spanish, Argentinian Spanish, Arabic (Saudi Arabia), Australian English, Brazilian Portuguese, British English, Bulgarian, Canadian French, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew (Israel), Hungarian, Indonesian, Italian, Japanese, Korean, Mexican Spanish, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Spanish, Swedish, Thai, Turkish, Ukrainian, and Vietnamese. Want to add more languages? Feel free to let us know on [Twitter](https://twitter.com/glowbomcorp).
 
+More details about Glowby Basic's features in our Twitter thread [here](https://twitter.com/jacobilin/status/1649443429347397632). 
+
 ### Multilingual Support in Action
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232395321-cea05b32-070d-494a-ac85-05c5f493f2ba.gif)
