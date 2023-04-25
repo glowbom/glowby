@@ -163,7 +163,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                 items: [
                   DropdownMenuItem<String>(
                     value: 'gpt-3.5-turbo',
-                    child: Text('ChatGPT (Recommended)'),
+                    child: Text('GPT-3.5 (Recommended)'),
                   ),
                   DropdownMenuItem<String>(
                     value: 'gpt-4',
