@@ -32,7 +32,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ## Features
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
-- **New!** Image Generation powered by OpenAI's DALL·E 2. The DALL·E 2 system from OpenAI generates unique images and art from text descriptions, combining concepts and styles in creative and inspiring ways.
+- **New!** Image Generation powered by OpenAI's DALL·E 2. DALL·E 2 is an AI system developed by OpenAI that generates unique images and art from text descriptions, combining concepts and styles in creative and inspiring ways.
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
