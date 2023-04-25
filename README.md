@@ -82,8 +82,6 @@ Stay tuned for more updates and enhancements as we continue to grow and develop 
 
 Glowby Basic is powered by the **ChatGPT API** and built on the same groundbreaking technology as **ChatGPT**, the industry-leading natural-language AI system from OpenAI. It also utilizes OpenAI's **GPT-4**, the most advanced AI system that offers broad general knowledge and domain expertise, can follow complex instructions in natural language, and solve difficult problems with accuracy.
 
-**GPT-4**, OpenAI’s most advanced AI system, offers broad general knowledge and domain expertise, can follow complex instructions in natural language, and solve difficult problems with accuracy.
-
 ### Installation
 
 1. Clone the repository:
