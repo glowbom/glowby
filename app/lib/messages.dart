@@ -34,7 +34,8 @@ class _MessagesState extends State<Messages> {
     ];
 
     for (final prefix in languagePrefixes) {
-      messageText = messageText.replaceAll(prefix, '');
+      if (messageText.startsWith(prefix))
+        messageText = messageText.replaceAll(prefix, '');
     }
 
     return messageText;

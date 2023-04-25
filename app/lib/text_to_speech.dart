@@ -56,32 +56,56 @@ class TextToSpeech {
       _flutterTts = FlutterTts();
     }
 
-    if (language.isNotEmpty && language != lastLanguage) {
-      await _flutterTts!.setLanguage(language);
-      if (language.contains('en') ||
-          language.contains('ru') ||
-          language.contains('pt') ||
-          language.contains('pl')) {
-        await _flutterTts!.setSpeechRate(1);
-      } else {
-        await _flutterTts!.setSpeechRate(0.85);
-      }
-      lastLanguage = language;
-    }
+    // Split the text into lines
+    List<String> lines = text.split('\n');
 
-    for (final entry in _languageCodes.entries) {
-      if (text.startsWith('${entry.key}: ')) {
-        await _flutterTts!.setLanguage(entry.value);
-        text = text.replaceAll('${entry.key}: ', '');
-        break;
-      }
-    }
+    // Process each line separately
+    for (String line in lines) {
+      String currentLanguage = language;
 
-    await _flutterTts!.awaitSpeakCompletion(true);
-    try {
-      await _flutterTts!.speak(text);
-    } catch (e) {
-      print('Error speaking the text: $e');
+      // Check if a language code is present in the line
+      String languageName = '';
+      for (final entry in _languageCodes.entries) {
+        if (line.contains('${entry.key}: ')) {
+          currentLanguage = entry.value;
+          languageName = entry.key;
+          line = line.replaceAll('${entry.key}: ', '');
+          break;
+        }
+      }
+
+      if (currentLanguage.isNotEmpty && currentLanguage != lastLanguage) {
+        await _flutterTts!.setLanguage(currentLanguage);
+        if (currentLanguage.contains('en') ||
+            currentLanguage.contains('ru') ||
+            currentLanguage.contains('pt') ||
+            currentLanguage.contains('pl')) {
+          await _flutterTts!.setSpeechRate(1);
+        } else {
+          await _flutterTts!.setSpeechRate(0.85);
+        }
+        lastLanguage = currentLanguage;
+      }
+
+      await _flutterTts!.awaitSpeakCompletion(true);
+
+      // Switch to English and speak the language name
+      if (languageName.isNotEmpty) {
+        await _flutterTts!.setLanguage('en-US');
+        try {
+          await _flutterTts!.speak(languageName);
+        } catch (e) {
+          print('Error speaking the language name: $e');
+        }
+        // Switch back to the target language
+        await _flutterTts!.setLanguage(currentLanguage);
+      }
+
+      try {
+        await _flutterTts!.speak(line);
+      } catch (e) {
+        print('Error speaking the text: $e');
+      }
     }
   }
 }
