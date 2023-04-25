@@ -32,7 +32,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ## Features
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
-- **New!** Image Generation with DALL·E 2
+- **New!** Image Generation powered by OpenAI's DALL·E 2. DALL·E 2 is an AI system developed by OpenAI that generates unique images and art from text descriptions, combining concepts and styles in creative and inspiring ways.
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
@@ -53,7 +53,7 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232727678-ced2ee44-a5df-45da-8846-d90e82c8a007.gif)
 
 
-### Image Generation with DALL·E 2
+### Image Generation powered by OpenAI's DALL·E 2
 
 ![Glowby Basic Image Generation](https://user-images.githubusercontent.com/2455891/233778560-47d8e011-03a8-41ad-a1fc-33827a033475.gif)
 
@@ -78,9 +78,9 @@ Stay tuned for more updates and enhancements as we continue to grow and develop 
 - Flutter SDK (version 3.7.10 or higher)
 - Dart (version 2.19.5 or higher)
 - A compatible browser or device for running the web app
-- [OpenAI API key](https://platform.openai.com/account/api-keys)
+- [OpenAI API key](https://platform.openai.com/account/api-keys) (required to access GPT-4 and the ChatGPT API)
 
-Glowby Basic supports **gpt-4** and **gpt-3.5-turbo**. If you don't have access to GPT-4, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
+Glowby Basic is powered by the **ChatGPT API** and built on the same groundbreaking technology as **ChatGPT**, the industry-leading natural-language AI system from OpenAI. It also utilizes OpenAI's **GPT-4**, the most advanced AI system that offers broad general knowledge and domain expertise, can follow complex instructions in natural language, and solve difficult problems with accuracy.
 
 ### Installation
 
