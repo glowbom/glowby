@@ -62,7 +62,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         .toList();
   }
 
-  static String _selectedPrompt = 'Complex Task Prompt';
+  static String _selectedPrompt = 'Simple Assistant Prompt';
   List<Map<String, String>> _prompts = [
     {
       'name': 'Complex Task Prompt',
