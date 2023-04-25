@@ -305,6 +305,9 @@ class _NewMessageState extends State<NewMessage> {
                     _sendMessage();
                   }
                 },
+                keyboardType: TextInputType.multiline,
+                maxLines: 9,
+                minLines: 1,
               ),
             ),
           ),
