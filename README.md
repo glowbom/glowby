@@ -32,7 +32,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ## Features
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
-- **New!** Image Generation powered by **DALL·E**. OpenAI’s **DALL·E 2** system generates unique images and art from text descriptions, combining concepts and styles in creative and inspiring ways.
+- **New!** Image Generation powered by **DALL·E** (watch a [quick demo](https://twitter.com/jacobilin/status/1649910120988696576))
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
@@ -80,9 +80,11 @@ Stay tuned for more updates and enhancements as we continue to grow and develop 
 - A compatible browser or device for running the web app
 - [OpenAI API key](https://platform.openai.com/account/api-keys) (required to access GPT-4 and the ChatGPT API)
 
+Glowby Basic supports **GPT-4** and **ChatGPT** models. If you don't have access to **GPT-4**, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
+
 Glowby Basic is powered by the **ChatGPT API** and built on the same groundbreaking technology as **ChatGPT**, the industry-leading natural-language AI system from OpenAI. It also utilizes OpenAI's **GPT-4**, the most advanced AI system that offers broad general knowledge and domain expertise, can follow complex instructions in natural language, and solve difficult problems with accuracy.
 
-If you don't have access to **GPT-4**, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
+Glowby Basic supports image generation powered by **DALL·E**. OpenAI’s **DALL·E 2** system generates unique images and art from text descriptions, combining concepts and styles in creative and inspiring ways.
 
 ### Installation
 
