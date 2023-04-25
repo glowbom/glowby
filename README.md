@@ -78,9 +78,9 @@ Stay tuned for more updates and enhancements as we continue to grow and develop 
 - Flutter SDK (version 3.7.10 or higher)
 - Dart (version 2.19.5 or higher)
 - A compatible browser or device for running the web app
-- [OpenAI API key](https://platform.openai.com/account/api-keys) (required to access GPT-4 and the ChatGPT API)
+- [OpenAI API key](https://platform.openai.com/account/api-keys)
 
-Glowby Basic supports **GPT-4** and **ChatGPT** models. If you don't have access to **GPT-4**, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
+Glowby Basic supports **GPT-4** and **GPT-3.5** models. If you don't have access to **GPT-4**, you can join the waitlist [here](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4).
 
 Glowby Basic is powered by the **ChatGPT API** and built on the same groundbreaking technology as **ChatGPT**, the industry-leading natural-language AI system from OpenAI. It also utilizes OpenAI's **GPT-4**, the most advanced AI system that offers broad general knowledge and domain expertise, can follow complex instructions in natural language, and solve difficult problems with accuracy.
 
