@@ -53,7 +53,7 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232727678-ced2ee44-a5df-45da-8846-d90e82c8a007.gif)
 
 
-### Image Generation with DALL·E 2
+### Image Generation powered by OpenAI's DALL·E 2
 
 ![Glowby Basic Image Generation](https://user-images.githubusercontent.com/2455891/233778560-47d8e011-03a8-41ad-a1fc-33827a033475.gif)
 
