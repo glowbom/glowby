@@ -8,7 +8,7 @@ class TextToSpeech {
   static final Map<String, String> _languageCodes = {
     'American English': 'en-US',
     'American Spanish': 'es-US',
-    'Arabic (Saudi Arabia)': 'ar-SA',
+    'Arabic': 'ar-SA',
     'Argentinian Spanish': 'es-AR',
     'Australian English': 'en-AU',
     'Brazilian Portuguese': 'pt-BR',
@@ -84,8 +84,11 @@ class TextToSpeech {
       await completer.future;
     } else {
       // Speak the initial text in the default language
-      String initialText = text.split('1.')[0];
-      if (initialText != '') {
+      RegExp exp = RegExp(r'\d+\.\s');
+      Iterable<RegExpMatch> matches = exp.allMatches(text);
+      String initialText = text.substring(0, matches.first.start);
+
+      if (initialText.isNotEmpty) {
         await _flutterTts!.setLanguage(language);
         await setSpeechRate(language);
         await _flutterTts!.speak(initialText);
