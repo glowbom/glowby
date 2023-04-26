@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
@@ -44,6 +46,17 @@ class TextToSpeech {
     'Vietnamese': 'vi-VN',
   };
 
+  Future<void> setSpeechRate(currentLanguage) async {
+    if (currentLanguage.contains('en') ||
+        currentLanguage.contains('ru') ||
+        currentLanguage.contains('pt') ||
+        currentLanguage.contains('pl')) {
+      await _flutterTts!.setSpeechRate(1);
+    } else {
+      await _flutterTts!.setSpeechRate(0.85);
+    }
+  }
+
   static Map<String, String> get languageCodes => _languageCodes;
   static String? lastLanguage = null;
 
@@ -56,55 +69,46 @@ class TextToSpeech {
       _flutterTts = FlutterTts();
     }
 
-    // Split the text into lines
-    List<String> lines = text.split('\n');
+    bool containsLanguageCode =
+        _languageCodes.keys.any((key) => text.contains(key + ':'));
 
-    // Process each line separately
-    for (String line in lines) {
-      String currentLanguage = language;
+    Completer<void> completer = Completer<void>();
+    _flutterTts!.setCompletionHandler(() {
+      completer.complete();
+    });
 
-      // Check if a language code is present in the line
-      String languageName = '';
-      for (final entry in _languageCodes.entries) {
-        if (line.contains('${entry.key}: ')) {
-          currentLanguage = entry.value;
-          languageName = entry.key;
-          line = line.replaceAll('${entry.key}: ', '');
-          break;
+    if (!containsLanguageCode) {
+      await _flutterTts!.setLanguage(language);
+      await setSpeechRate(language);
+      await _flutterTts!.speak(text);
+      await completer.future;
+    } else {
+      List<String> lines = text.split('\n');
+      for (String line in lines) {
+        String currentLanguage = language;
+        for (final entry in _languageCodes.entries) {
+          if (line.contains(entry.key + ':')) {
+            // Speak the part before the colon with the default language.
+            String beforeColon = line.split(entry.key + ':')[0];
+            if (beforeColon != '') {
+              await _flutterTts!.setLanguage(currentLanguage);
+              await setSpeechRate(currentLanguage);
+              await _flutterTts!.speak(beforeColon + ' ' + entry.key);
+              await completer.future;
+              completer = Completer<void>();
+            }
+
+            // Speak the part after the colon with the appropriate language.
+            String afterColon = line.split(entry.key + ':')[1];
+            currentLanguage = entry.value;
+            await _flutterTts!.setLanguage(currentLanguage);
+            await setSpeechRate(currentLanguage);
+            await _flutterTts!.speak(afterColon);
+            await completer.future;
+            completer = Completer<void>();
+            break;
+          }
         }
-      }
-
-      if (currentLanguage.isNotEmpty && currentLanguage != lastLanguage) {
-        await _flutterTts!.setLanguage(currentLanguage);
-        if (currentLanguage.contains('en') ||
-            currentLanguage.contains('ru') ||
-            currentLanguage.contains('pt') ||
-            currentLanguage.contains('pl')) {
-          await _flutterTts!.setSpeechRate(1);
-        } else {
-          await _flutterTts!.setSpeechRate(0.85);
-        }
-        lastLanguage = currentLanguage;
-      }
-
-      await _flutterTts!.awaitSpeakCompletion(true);
-
-      // Switch to English and speak the language name
-      if (languageName.isNotEmpty) {
-        await _flutterTts!.setLanguage('en-US');
-        try {
-          await _flutterTts!.speak(languageName);
-        } catch (e) {
-          print('Error speaking the language name: $e');
-        }
-        // Switch back to the target language
-        await _flutterTts!.setLanguage(currentLanguage);
-      }
-
-      try {
-        await _flutterTts!.speak(line);
-      } catch (e) {
-        print('Error speaking the text: $e');
       }
     }
   }
