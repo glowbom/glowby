@@ -33,6 +33,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
 - **New!** Image Generation powered by **DALL·E** (watch a [quick demo](https://twitter.com/jacobilin/status/1649910120988696576))
+- **New!** Multilingual Translations (watch a [quick demo](https://twitter.com/jacobilin/status/1651084311431622658))
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
