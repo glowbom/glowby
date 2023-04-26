@@ -83,6 +83,16 @@ class TextToSpeech {
       await _flutterTts!.speak(text);
       await completer.future;
     } else {
+      // Speak the initial text in the default language
+      String initialText = text.split('1.')[0];
+      if (initialText != '') {
+        await _flutterTts!.setLanguage(language);
+        await setSpeechRate(language);
+        await _flutterTts!.speak(initialText);
+        await completer.future;
+        completer = Completer<void>();
+      }
+
       List<String> lines = text.split('\n');
       for (String line in lines) {
         String currentLanguage = language;
