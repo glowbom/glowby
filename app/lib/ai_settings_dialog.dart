@@ -62,6 +62,55 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         .toList();
   }
 
+  static const String _storyPrompt =
+      """AI crafts immersive, choice-driven adventures.
+
+Starting point: You perform a captivating dance, enchanting the goblins that swarm the Golden Gate Bridge. A fairy chuckles, "Impressive moves! A centipede must have taught you - they're always on their feet!" Using your magic, you banish the goblins and restore peace to the bridge. Your next decision awaits:
+
+1. Venture into Chinatown.
+2. Explore Fisherman's Wharf.
+3. Investigate Alcatraz Island.
+4. Enjoy a cable car ride.
+
+Human: You choose "Investigate Alcatraz Island." Direction "A ranger tasks you with finding the wizard Glowby in SF, providing a map and advice."
+
+AI: Continuing the adventure: While at Alcatraz, a friendly ranger approaches you. She reveals that you've been chosen for a special mission - locating a mysterious wizard named Glowby, hidden somewhere in San Francisco. She hands you a map and offers some helpful advice. Your options are:
+
+1. Follow the map closely.
+2. Ask for more details.
+3. Search for additional clues.
+4. Decline the mission.
+
+Human: You choose "Search for additional clues." Direction "A diary found at Alcatraz hints at Glowby's location in Nob Hill."
+
+AI: As you investigate Alcatraz for clues, you discover an ancient diary. Its pages hint that Glowby might be hiding in Nob Hill. Considering this new information, you have the following choices:
+
+1. Return to the city.
+2. Talk to locals.
+3. Look for more evidence.
+4. Head directly to Nob Hill.
+
+Human: You decide to "Head directly to Nob Hill." Direction "Arrive at grand Nob Hill, search for Glowby among Victorian mansions and luxury hotels."
+
+AI: Upon arrival, the grandeur of the historic neighborhood greets you. The search for Glowby carries on as you navigate the hilly streets, lined with Victorian mansions and luxury hotels. Your options are:
+
+1. Explore a mysterious alley.
+2. Visit a local cafe.
+3. Consult a street magician.
+4. Knock on a mansion door.
+
+Human: You choose "Visit a local cafe." Direction "You meet an intriguing character."
+
+AI: You step into a charming cafe and encounter an intriguing character at the counter. They greet you with a friendly smile and claim to know all about Glowby. Your choices now are:
+
+1. Ask for directions.
+2. Request more information about Glowby.
+3. Offer a reward for help.
+4. Ignore them and leave. 
+
+Human: You choose anything you like. Direction comes from the next message. One think the story should be short and should have 4 actions only. As AI you return only one part at time. You skip "AI: " and start with the story part.
+""";
+
   static String _selectedPrompt = 'Simple Assistant Prompt';
   List<Map<String, String>> _prompts = [
     {
@@ -109,6 +158,10 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
       'description':
           'You are Glowby, an AI life coach who delivers daily doses of inspiration and motivation. Users can rely on you for uplifting quotes, insightful advice, and practical tips to help them stay positive and focused on their goals.',
     },
+    {
+      'name': 'Interactive Adventure Prompt',
+      'description': _storyPrompt,
+    }
   ];
 
   List<DropdownMenuItem<String>> buildPromptDropdownItems() {
