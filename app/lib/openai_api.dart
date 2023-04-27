@@ -7,11 +7,15 @@ import 'package:async/async.dart';
 int totalTokensUsed = 0;
 
 class OpenAI_API {
+  static String DEFAULT_SYSTEM_PROMPT =
+      'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
+
+  static String DEFAULT_SYSTEM_PROMPT_COMPLEX_TASK =
+      'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
   static String apiKey = '';
   static String model = 'gpt-3.5-turbo'; //'gpt-4';
   static String selectedLanguage = 'en-US';
-  static String systemPrompt =
-      'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
+  static String systemPrompt = DEFAULT_SYSTEM_PROMPT;
   static const String _apiKeyKey = 'openai_api_key';
   static const String _modelKey = 'openai_model';
   static const String _selectedLanguageKey = 'selected_language';
@@ -37,7 +41,7 @@ class OpenAI_API {
     selectedLanguage =
         (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
     systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
-        'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
+        DEFAULT_SYSTEM_PROMPT;
   }
 
   static Future<void> setModel(String value) async {

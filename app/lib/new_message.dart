@@ -303,6 +303,10 @@ class _NewMessageState extends State<NewMessage> {
                 onSubmitted: (value) {
                   if (_enteredMessage.trim().isNotEmpty) {
                     _sendMessage();
+                    // Clear the content of the TextEditingController after sending the message
+                    Future.delayed(Duration(microseconds: 500), () {
+                      _controller.clear();
+                    });
                   }
                 },
                 keyboardType: TextInputType.multiline,
