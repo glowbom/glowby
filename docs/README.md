@@ -34,6 +34,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
 - **New!** Image Generation powered by **DALL·E** (watch a [quick demo](https://twitter.com/jacobilin/status/1649910120988696576))
 - **New!** Multilingual Translations (watch a [quick demo](https://twitter.com/jacobilin/status/1651084311431622658))
+- **New!** Interactive Adventure (watch a [quick demo](https://twitter.com/jacobilin/status/1651449595447369729))
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
 - Voice input and output for a smooth and intuitive user experience
@@ -180,6 +181,12 @@ If the answer to a question is not found locally, the app will make a server req
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
 
 To experience the Autonomous Mode demo with sound, check out this [Twitter post](https://twitter.com/jacobilin/status/1648870682972004352).
+
+### Interactive Adventure
+
+![Interactive Adventure](https://user-images.githubusercontent.com/2455891/234763801-0b636f31-74e1-4f57-8978-a52938981f14.gif)
+
+It lets you embark on captivating, choice-driven narratives, where your decisions shape the story.
 
 ## Star History
 
