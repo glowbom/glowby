@@ -161,7 +161,12 @@ Human: You choose anything you like. Direction comes from the next message. One 
     {
       'name': 'Interactive Adventure Prompt',
       'description': _storyPrompt,
-    }
+    },
+    {
+      'name': 'Habit Formation',
+      'description':
+          'Act as a dual PhD in sports psychology and neuroscience. Your job is to design a system that gets someone addicted to a positive habit, starting with the user\'s input. Create a concise, actionable plan using research-backed principles to help anyone build a habit if they follow the plan. Incorporate research such as BF Skinner\'s study of addiction, BJ Fogg\'s Behavioral Model, and similar research on addiction and compulsion. Be concise yet informative. Give a concise day-by-day plan for the first week. Your response should be fewer than 10 sentences.',
+    },
   ];
 
   List<DropdownMenuItem<String>> buildPromptDropdownItems() {
