@@ -61,6 +61,13 @@ class OpenAI_API {
   }
 
   static Future<String?> generateImageUrl(String description) async {
+    // Check if the description is safe
+    bool descriptionIsSafe = await isInputSafe(description);
+    if (!descriptionIsSafe) {
+      throw Exception(
+          'The input provided is not considered safe. Please provide a different input.');
+    }
+
     final queryUrl = 'https://api.openai.com/v1/images/generations';
     final headers = {
       'Content-Type': 'application/json',
@@ -100,37 +107,40 @@ class OpenAI_API {
     if (kDebugMode) {
       print('isInputSafe called with input: $input');
     }
-    final apiUrl = 'https://api.openai.com/v1/moderation/classify';
+
+    // Replace this URL with your AWS Lambda function URL
+    final lambdaUrl = 'YOUR_LAMBDA_FUNCTION_URL';
 
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $apiKey',
     };
 
     final data = {
-      'model': 'content-moderator',
-      'prompt': input,
+      'input': input,
     };
 
     try {
+      print('calling lambda function with input: $input and url: $lambdaUrl');
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(lambdaUrl),
         headers: headers,
         body: jsonEncode(data),
       );
       if (kDebugMode) {
-        print('isInputSafe response: ${response.body}');
+        print('isInputSafe response status code: ${response.statusCode}');
+        print('isInputSafe response headers: ${response.headers}');
+        print('isInputSafe response body: ${response.body}');
       }
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
-        String? moderationStatus = responseBody['data']['classification'];
-        return moderationStatus == 'safe';
+        bool moderationStatus = responseBody['isSafe'];
+        return moderationStatus;
       } else {
         if (kDebugMode) {
           print('isInputSafe error: Status code ${response.statusCode}');
         }
-        throw Exception('Failed to get response from OpenAI Moderation API.');
+        throw Exception('Failed to get response from Lambda function.');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -204,13 +214,13 @@ class OpenAI_API {
     int tries = 0;
 
     // Check if the message is safe
-    /*bool messageIsSafe = await isInputSafe(inputMessage);
+    bool messageIsSafe = await isInputSafe(inputMessage);
     if (!messageIsSafe) {
       finalResponse =
           'Sorry, the input provided is not considered safe. Please provide a different input.';
       completer.complete(finalResponse);
       return;
-    }*/
+    }
 
     while (tries < maxTries) {
       if (kDebugMode) {
