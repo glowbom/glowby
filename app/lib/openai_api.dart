@@ -203,6 +203,15 @@ class OpenAI_API {
     String inputMessage = message;
     int tries = 0;
 
+    // Check if the message is safe
+    /*bool messageIsSafe = await isInputSafe(inputMessage);
+    if (!messageIsSafe) {
+      finalResponse =
+          'Sorry, the input provided is not considered safe. Please provide a different input.';
+      completer.complete(finalResponse);
+      return;
+    }*/
+
     while (tries < maxTries) {
       if (kDebugMode) {
         print('inputMessage = $inputMessage');
