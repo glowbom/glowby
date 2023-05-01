@@ -12,6 +12,7 @@ Experience Glowby Basic in action with our live demo hosted on GitHub Pages [her
 ![GitHub Repo stars](https://img.shields.io/github/stars/glowbom/glowby?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/GlowbomCorp?style=social)](https://twitter.com/GlowbomCorp)
 [![Discord Follow](https://dcbadge.vercel.app/api/server/jpWW6vB4Jk?style=flat)](https://discord.gg/jpWW6vB4Jk)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/glowbom/glowby/blob/main/LICENSE)
 
 
 ## See It in Action 
