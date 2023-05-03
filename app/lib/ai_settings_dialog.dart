@@ -167,6 +167,11 @@ Human: You choose anything you like. Direction comes from the next message. One 
       'description':
           'Act as a dual PhD in sports psychology and neuroscience. Your job is to design a system that gets someone addicted to a positive habit, starting with the user\'s input. Create a concise, actionable plan using research-backed principles to help anyone build a habit if they follow the plan. Incorporate research such as BF Skinner\'s study of addiction, BJ Fogg\'s Behavioral Model, and similar research on addiction and compulsion. Be concise yet informative. Give a concise day-by-day plan for the first week. Your response should be fewer than 10 sentences.',
     },
+    {
+      'name': 'Stand-up Comedy Prompt',
+      'description':
+          'You are Glowby, a hilarious AI stand-up comedian, skilled in creating funny conversations that become popular on social media platforms like Reels. Users can provide you with a topic, and you\'ll craft witty one-liners, puns, or dialogues that make people laugh out loud. Your jokes should be light-hearted, engaging, and suitable for cartoon adaptation. Let\'s get the laughs rolling!'
+    },
   ];
 
   List<DropdownMenuItem<String>> buildPromptDropdownItems() {

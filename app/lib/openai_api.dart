@@ -62,11 +62,11 @@ class OpenAI_API {
 
   static Future<String?> generateImageUrl(String description) async {
     // Check if the description is safe
-    bool descriptionIsSafe = await isInputSafe(description);
+    /*bool descriptionIsSafe = await isInputSafe(description);
     if (!descriptionIsSafe) {
       throw Exception(
           'The input provided is not considered safe. Please provide a different input.');
-    }
+    }*/
 
     final queryUrl = 'https://api.openai.com/v1/images/generations';
     final headers = {
@@ -214,13 +214,13 @@ class OpenAI_API {
     int tries = 0;
 
     // Check if the message is safe
-    bool messageIsSafe = await isInputSafe(inputMessage);
+    /*bool messageIsSafe = await isInputSafe(inputMessage);
     if (!messageIsSafe) {
       finalResponse =
           'Sorry, the input provided is not considered safe. Please provide a different input.';
       completer.complete(finalResponse);
       return;
-    }
+    }*/
 
     while (tries < maxTries) {
       if (kDebugMode) {
