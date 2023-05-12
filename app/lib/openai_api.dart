@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
+import 'dart:io' as io;
 
 int totalTokensUsed = 0;
 
@@ -36,7 +37,9 @@ class OpenAI_API {
   }
 
   static Future<void> loadOat() async {
-    apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+    apiKey = await _secureStorage.read(key: _apiKeyKey) ??
+        io.Platform.environment['OPENAI_API_KEY'] ??
+        '';
     model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
     selectedLanguage =
         (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
