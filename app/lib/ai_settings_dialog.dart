@@ -15,13 +15,48 @@ class AiSettingsDialog extends StatefulWidget {
 
   @override
   _AiSettingsDialogState createState() => _AiSettingsDialogState();
+
+  static void selectPrompt(String userInput) {
+    for (var prompt in _AiSettingsDialogState._prompts) {
+      if (prompt['description'] == userInput) {
+        _AiSettingsDialogState._selectedPrompt = prompt['name']!;
+        break;
+      }
+    }
+  }
+
+  static void loadDialogValues(selectedModelInput, selectedLanguageInput,
+      systemPromptInput, autonomousModeInput) {
+    _AiSettingsDialogState._selectedPrompt = 'Simple Assistant Prompt';
+    _AiSettingsDialogState._selectedModel = OpenAI_API.model;
+    _AiSettingsDialogState._systemPrompt = OpenAI_API.systemPrompt;
+    _AiSettingsDialogState._selectedLanguage = OpenAI_API.selectedLanguage;
+    _AiSettingsDialogState._autonomousMode = false;
+
+    if (selectedModelInput != null && selectedModelInput != '') {
+      _AiSettingsDialogState._selectedModel = selectedModelInput;
+    }
+
+    if (selectedLanguageInput != null && selectedLanguageInput != '') {
+      _AiSettingsDialogState._selectedLanguage = selectedLanguageInput;
+    }
+
+    if (systemPromptInput != null && systemPromptInput != '') {
+      _AiSettingsDialogState._systemPrompt = systemPromptInput;
+      selectPrompt(systemPromptInput);
+    }
+
+    if (autonomousModeInput != null) {
+      _AiSettingsDialogState._autonomousMode = autonomousModeInput;
+    }
+  }
 }
 
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
   static bool _voiceEnabled = true;
 
-  String _selectedModel = OpenAI_API.model;
-  String _systemPrompt = OpenAI_API.systemPrompt;
+  static String _selectedModel = OpenAI_API.model;
+  static String _systemPrompt = OpenAI_API.systemPrompt;
   final TextEditingController _systemPromptController = TextEditingController();
 
   static String _selectedLanguage = OpenAI_API.selectedLanguage;
@@ -112,7 +147,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
 """;
 
   static String _selectedPrompt = 'Simple Assistant Prompt';
-  List<Map<String, String>> _prompts = [
+  static List<Map<String, String>> _prompts = [
     {
       'name': 'Complex Task Prompt',
       'description':

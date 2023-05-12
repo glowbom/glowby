@@ -17,8 +17,27 @@ class ChatScreen extends StatefulWidget {
   final List<Map<String, Object>> _questions;
   final String _name;
   final bool _voice;
+  final String? _selectedModel;
+  final String? _selectedLanguage;
+  final String? _systemPrompt;
+  final bool? _allowEnterKey;
+  final bool? _allowDataImport;
+  final bool? _autonomousMode;
+  final bool? _enableAi;
+  final bool? _showAiSettings;
 
-  ChatScreen(this._name, this._questions, this._voice);
+  ChatScreen(
+      this._name,
+      this._questions,
+      this._voice,
+      this._selectedModel,
+      this._selectedLanguage,
+      this._systemPrompt,
+      this._allowEnterKey,
+      this._allowDataImport,
+      this._autonomousMode,
+      this._enableAi,
+      this._showAiSettings);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -42,6 +61,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _voiceEnabled = widget._voice;
+    AiSettingsDialog.loadDialogValues(widget._selectedModel,
+        widget._selectedLanguage, widget._systemPrompt, widget._autonomousMode);
+
     OpenAI_API.loadOat().then((_) {
       setState(() {});
     });
