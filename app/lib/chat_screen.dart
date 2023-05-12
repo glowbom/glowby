@@ -391,7 +391,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: <Widget>[
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
-                        child: Text('Enter API Key'),
+                        child: Text(
+                          'Enter API Key',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         onPressed: _showApiKeyDialog,
                       ),
                     // Add the AI Settings button conditionally
@@ -401,7 +404,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: ElevatedButton(
-                            child: Text('AI Settings'),
+                            child: Text(
+                              'AI Settings',
+                              style: TextStyle(color: Colors.white),
+                            ),
                             onPressed: _showAiSettingsDialog,
                           ),
                         ),

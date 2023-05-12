@@ -176,7 +176,10 @@ class _TalkState extends State<Talk> {
           actions: [
             if (_allowDataImport != null && _allowDataImport == true)
               IconButton(
-                icon: Icon(Icons.file_upload),
+                icon: Icon(
+                  Icons.file_upload,
+                  color: Colors.white,
+                ),
                 onPressed: _startFilePicker,
               ),
           ],

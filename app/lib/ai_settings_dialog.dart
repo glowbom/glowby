@@ -334,7 +334,10 @@ Human: You choose anything you like. Direction comes from the next message. One 
           },
         ),
         ElevatedButton(
-          child: Text('Save Settings'),
+          child: Text(
+            'Save Settings',
+            style: TextStyle(color: Colors.white),
+          ),
           onPressed: () => _saveSettings(context),
         ),
       ],

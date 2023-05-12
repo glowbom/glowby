@@ -112,7 +112,10 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
           },
         ),
         ElevatedButton(
-          child: Text('Save API Key'),
+          child: Text(
+            'Save API Key',
+            style: TextStyle(color: Colors.white),
+          ),
           onPressed: () => _saveApiKey(context),
         ),
       ],
