@@ -48,8 +48,8 @@ class _TalkState extends State<Talk> {
       _allowEnterKey = _content['ai_allow_enter_key'] ?? true;
       _allowDataImport = _content['ai_allow_data_import'] ?? true;
       _autonomousMode = _content['ai_autonomous_mode'] ?? false;
-      _enableAi = _content['ai_enable'] ?? true;
-      _showAiSettings = _content['ai_show_settings'] ?? true;
+      _enableAi = _content['ai_enable_ai'] ?? true;
+      _showAiSettings = _content['ai_show_ai_settings'] ?? true;
 
       _pressed100();
     } else {
@@ -64,8 +64,8 @@ class _TalkState extends State<Talk> {
             _allowEnterKey = _content['ai_allow_enter_key'] ?? true;
             _allowDataImport = _content['ai_allow_data_import'] ?? true;
             _autonomousMode = _content['ai_autonomous_mode'] ?? false;
-            _enableAi = _content['ai_enable'] ?? true;
-            _showAiSettings = _content['ai_show_settings'] ?? true;
+            _enableAi = _content['ai_enable_ai'] ?? true;
+            _showAiSettings = _content['ai_show_ai_settings'] ?? true;
 
             _questions = buildQuestions(_content['questions']);
             _pressed100();
@@ -174,10 +174,11 @@ class _TalkState extends State<Talk> {
           ),
           centerTitle: true,
           actions: [
-            IconButton(
-              icon: Icon(Icons.file_upload),
-              onPressed: _startFilePicker,
-            ),
+            if (_allowDataImport != null && _allowDataImport == true)
+              IconButton(
+                icon: Icon(Icons.file_upload),
+                onPressed: _startFilePicker,
+              ),
           ],
         ),
         body: _appScreen == 'Loading'
@@ -198,7 +199,6 @@ class _TalkState extends State<Talk> {
                     _selectedLanguage,
                     _systemPrompt,
                     _allowEnterKey,
-                    _allowDataImport,
                     _autonomousMode,
                     _enableAi,
                     _showAiSettings,

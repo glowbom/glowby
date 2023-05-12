@@ -25,6 +25,7 @@ class Ai {
   Future<List<Message>> message(
     String message, {
     List<Map<String, String?>> previousMessages = const [],
+    bool aiEnabled = true,
   }) async {
     List<Map<String, Object>> foundQuestions = _findMatchingQuestions(message);
 
@@ -33,7 +34,7 @@ class Ai {
     }
 
     // Call the OpenAI API if no matching questions are found locally
-    if (OpenAI_API.oat().isNotEmpty) {
+    if (aiEnabled && OpenAI_API.oat().isNotEmpty) {
       newtworkOperation = await OpenAI_API.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
       String response = await newtworkOperation!.value;

@@ -38,9 +38,11 @@ class NewMessage extends StatefulWidget {
   final List<Message> _messages;
   final List<Map<String, Object>>? _questions;
   final String? _name;
+  final bool? _enableAi;
   final Function(String) onAutonomousModeMessage;
 
   NewMessage(this._refresh, this._messages, this._questions, this._name,
+      this._enableAi,
       {required this.onAutonomousModeMessage});
 
   @override
@@ -149,8 +151,10 @@ class _NewMessageState extends State<NewMessage> {
       final description = pattern != null
           ? message.replaceAll(RegExp(pattern, caseSensitive: false), '').trim()
           : '';
-      print('description: $description');
-      if (description.isNotEmpty) {
+      //print('description: $description');
+      //print('enableAi: ${widget._enableAi}');
+      if (description.isNotEmpty &&
+          (widget._enableAi == null || widget._enableAi!)) {
         Message drawingMessage = Message(
           text: Utils.getRandomImageGenerationFunnyMessage(),
           createdAt: Timestamp.now(),
@@ -238,7 +242,8 @@ class _NewMessageState extends State<NewMessage> {
       });
 
       var response = await ai.message(message,
-          previousMessages: formattedPreviousMessages);
+          previousMessages: formattedPreviousMessages,
+          aiEnabled: widget._enableAi == null ? true : widget._enableAi!);
 
       if (_stopRequested) {
         return;

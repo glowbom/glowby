@@ -21,7 +21,6 @@ class ChatScreen extends StatefulWidget {
   final String? _selectedLanguage;
   final String? _systemPrompt;
   final bool? _allowEnterKey;
-  final bool? _allowDataImport;
   final bool? _autonomousMode;
   final bool? _enableAi;
   final bool? _showAiSettings;
@@ -34,7 +33,6 @@ class ChatScreen extends StatefulWidget {
       this._selectedLanguage,
       this._systemPrompt,
       this._allowEnterKey,
-      this._allowDataImport,
       this._autonomousMode,
       this._enableAi,
       this._showAiSettings);
@@ -376,6 +374,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 _messages,
                 widget._questions,
                 widget._name,
+                widget._enableAi,
                 onAutonomousModeMessage: (String userInput) async {
                   List<String> tasks = await _generateTasks(userInput);
                   setState(() {
@@ -390,19 +389,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    ElevatedButton(
-                      child: Text('Enter API Key'),
-                      onPressed: _showApiKeyDialog,
-                    ),
+                    if (widget._allowEnterKey != null && widget._allowEnterKey!)
+                      ElevatedButton(
+                        child: Text('Enter API Key'),
+                        onPressed: _showApiKeyDialog,
+                      ),
                     // Add the AI Settings button conditionally
                     if (OpenAI_API.oat().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: ElevatedButton(
-                          child: Text('AI Settings'),
-                          onPressed: _showAiSettingsDialog,
+                      if (widget._showAiSettings != null &&
+                          widget._showAiSettings!)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: ElevatedButton(
+                            child: Text('AI Settings'),
+                            onPressed: _showAiSettingsDialog,
+                          ),
                         ),
-                      ),
                   ],
                 ),
               ),
