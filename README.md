@@ -67,6 +67,7 @@ We're constantly working to improve our project and have several exciting featur
 
 ### Functionality
 - Local Storage
+- Backend Service for API Calls
 
 ### Monetization
 - Adding a paywall
