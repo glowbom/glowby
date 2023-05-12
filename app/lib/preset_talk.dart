@@ -13,6 +13,14 @@ class _TalkState extends State<Talk> {
   String? _mainColor;
   bool? _voice = false;
   List<Map<String, Object>> _questions = [];
+  String? _selectedModel;
+  String? _selectedLanguage;
+  String? _systemPrompt;
+  bool? _allowEnterKey;
+  bool? _allowDataImport;
+  bool? _autonomousMode;
+  bool? _enableAi;
+  bool? _showAiSettings;
 
   _TalkState();
 
@@ -34,6 +42,15 @@ class _TalkState extends State<Talk> {
       _title = _content['title'];
       _mainColor = _content['main_color'] ?? 'Blue';
       _voice = _content['voice'] ?? false;
+      _selectedModel = _content['ai_selected_model'];
+      _selectedLanguage = _content['ai_selected_language'];
+      _systemPrompt = _content['ai_system_prompt'];
+      _allowEnterKey = _content['ai_allow_enter_key'] ?? true;
+      _allowDataImport = _content['ai_allow_data_import'] ?? true;
+      _autonomousMode = _content['ai_autonomous_mode'] ?? false;
+      _enableAi = _content['ai_enable'] ?? true;
+      _showAiSettings = _content['ai_show_settings'] ?? true;
+
       _pressed100();
     } else {
       loadContentFromAssets().then((value) => setState(() {
@@ -41,6 +58,15 @@ class _TalkState extends State<Talk> {
             _title = _content['title'];
             _mainColor = _content['main_color'] ?? 'Blue';
             _voice = _content['voice'] ?? false;
+            _selectedModel = _content['ai_selected_model'];
+            _selectedLanguage = _content['ai_selected_language'];
+            _systemPrompt = _content['ai_system_prompt'];
+            _allowEnterKey = _content['ai_allow_enter_key'] ?? true;
+            _allowDataImport = _content['ai_allow_data_import'] ?? true;
+            _autonomousMode = _content['ai_autonomous_mode'] ?? false;
+            _enableAi = _content['ai_enable'] ?? true;
+            _showAiSettings = _content['ai_show_settings'] ?? true;
+
             _questions = buildQuestions(_content['questions']);
             _pressed100();
           }));
