@@ -190,7 +190,7 @@ If the answer to a question is not found locally, the app will make a server req
 
 ### AI-Agent Settings
 
-Using [Glowbom.com](https://www.glowbom.com), you can adjust AI-agent settings, allowing you to customize your AI assistant according to your specific needs. From the Glowbom AI-agent project editor, you can select your preferred AI model, adjust your system prompts, and even choose the voice for your voice-based AI-agent app.
+Using [Glowbom.com](https://www.glowbom.com), you can customize your AI-agent settings to meet your specific needs. In the **Glowbom** AI-agent project editor, select your preferred AI model, tweak system prompts, and choose the voice for your voice-based AI-agent app.
 
 ![AI Agent Settings](https://github.com/glowbom/glowby/assets/2455891/e82bf935-d7d3-4073-b072-a89c1c96b130)
 
