@@ -188,6 +188,13 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
+### AI-Agent Settings
+
+Using [Glowbom.com](https://www.glowbom.com), you can adjust AI-agent settings, allowing you to customize your AI assistant according to your specific needs. From the Glowbom AI-agent project editor, you can select your preferred AI model, adjust your system prompts, and even choose the voice for your voice-based AI-agent app.
+
+![AI Agent Settings](https://github.com/glowbom/glowby/assets/2455891/e82bf935-d7d3-4073-b072-a89c1c96b130)
+
+
 ### Autonomous Mode (Experimental)
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
