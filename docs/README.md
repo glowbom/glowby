@@ -67,6 +67,7 @@ We're constantly working to improve our project and have several exciting featur
 
 ### Functionality
 - Local Storage
+- Backend Service for API Calls
 
 ### Monetization
 - Adding a paywall
@@ -186,6 +187,17 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/232735288-abb5f9d8-3d51-4170-a6dd-a967e7d8ae30.gif)
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
+
+### AI-Agent Settings
+
+Using [Glowbom.com](https://www.glowbom.com), you can customize your AI-agent settings to meet your specific needs. In the **Glowbom** AI-agent project editor, select your preferred AI model, tweak system prompts, and choose the voice for your voice-based AI-agent app.
+
+![AI Agent Settings](https://github.com/glowbom/glowby/assets/2455891/e82bf935-d7d3-4073-b072-a89c1c96b130)
+
+After setting up your preferences on [Glowbom.com](https://www.glowbom.com), you can easily import the settings into Glowby Basic. Simply import the Glowbom data file using the **Import** button located at the top right corner of the Glowbom project editor. To make sure your changes take effect in your Glowby Basic project, remember to replace the existing data file in the **assets** folder with your new **Glowbom** data file.
+
+![Glowby Basic Import](https://github.com/glowbom/glowby/assets/2455891/462c9915-1d63-4a10-9fa5-31965d4df33a)
+
 
 ### Autonomous Mode (Experimental)
 
