@@ -194,7 +194,7 @@ Using [Glowbom.com](https://www.glowbom.com), you can customize your AI-agent se
 
 ![AI Agent Settings](https://github.com/glowbom/glowby/assets/2455891/e82bf935-d7d3-4073-b072-a89c1c96b130)
 
-After setting up your preferences on [Glowbom.com](https://www.glowbom.com), you can easily import the settings into Glowby Basic. Simply import the Glowbom data file using the **Import** button located at the top right corner of the Glowbom project editor. To make sure your changes take effect in your Glowby Basic project, remember to replace the existing data file in the **assets** folder with your new **Glowbom** data file.
+After setting up your preferences on [Glowbom.com](https://www.glowbom.com), you can easily import the settings into Glowby Basic. Simply import the Glowbom data file using the **Import** button located at the top right corner of your virtual assistant. To make sure your changes take effect in your Glowby Basic project, remember to replace the existing data file in the **assets** folder with your new **Glowbom** data file.
 
 ![Glowby Basic Import](https://github.com/glowbom/glowby/assets/2455891/462c9915-1d63-4a10-9fa5-31965d4df33a)
 
