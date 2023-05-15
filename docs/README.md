@@ -115,7 +115,7 @@ flutter pub get
 
 
 ```
-flutter run
+flutter run -d chrome --web-renderer html
 ```
 
 ## Deployment
