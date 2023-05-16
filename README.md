@@ -67,6 +67,7 @@ We're constantly working to improve our project and have several exciting featur
 
 ### Functionality
 - Local Storage
+- Backend Service for API Calls
 
 ### Monetization
 - Adding a paywall
@@ -114,7 +115,7 @@ flutter pub get
 
 
 ```
-flutter run
+flutter run -d chrome --web-renderer html
 ```
 
 ## Deployment
@@ -187,6 +188,17 @@ One of the powerful features of Glowby Basic is the ability to pre-set questions
 
 If the answer to a question is not found locally, the app will make a server request to retrieve the relevant information, ensuring that users receive accurate and helpful responses.
 
+### AI-Agent Settings
+
+Using [Glowbom.com](https://www.glowbom.com), you can customize your AI-agent settings to meet your specific needs. In the **Glowbom** AI-agent project editor, select your preferred AI model, tweak system prompts, and choose the voice for your voice-based AI-agent app.
+
+![AI Agent Settings](https://github.com/glowbom/glowby/assets/2455891/e82bf935-d7d3-4073-b072-a89c1c96b130)
+
+After setting up your preferences on [Glowbom.com](https://www.glowbom.com), you can easily import the settings into Glowby Basic. Simply import the Glowbom data file using the **Import** button located at the top right corner of your virtual assistant. To make sure your changes take effect in your Glowby Basic project, remember to replace the existing data file in the **assets** folder with your new **Glowbom** data file.
+
+![Glowby Basic Import](https://github.com/glowbom/glowby/assets/2455891/462c9915-1d63-4a10-9fa5-31965d4df33a)
+
+
 ### Autonomous Mode (Experimental)
 
 ![Glowby Basic Demo](https://user-images.githubusercontent.com/2455891/233034444-9457c62c-3fc3-47f3-bd08-198093ea9c76.gif)
@@ -208,8 +220,9 @@ If this project helps you create voice AI assistant apps faster, please consider
 
 ## Contributing
 
-We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub.
+We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub. Please remember to maintain a respectful and professional tone in all communications.
 
+We value the participation of each member of the community and want all contributors to have an enjoyable and fulfilling experience. Accordingly, all contributors are expected to show respect and courtesy to others in all our interactions.
 
 ## License
 
