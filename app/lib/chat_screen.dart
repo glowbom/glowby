@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web/tasks_view.dart';
 
 import 'ai.dart';
@@ -24,6 +26,7 @@ class ChatScreen extends StatefulWidget {
   final bool? _autonomousMode;
   final bool? _enableAi;
   final bool? _showAiSettings;
+  final bool? _dnsgs;
 
   ChatScreen(
       this._name,
@@ -35,7 +38,8 @@ class ChatScreen extends StatefulWidget {
       this._allowEnterKey,
       this._autonomousMode,
       this._enableAi,
-      this._showAiSettings);
+      this._showAiSettings,
+      this._dnsgs);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -329,6 +333,90 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void _showSocialLinksDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Share Glowby'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                _buildLinkItem('GitHub Repository',
+                    'https://github.com/glowbom/glowby', context),
+                Padding(padding: EdgeInsets.all(10.0)),
+                _buildLinkItem(
+                    'Feature List',
+                    'https://twitter.com/jacobilin/status/1649443429347397632',
+                    context),
+                Padding(padding: EdgeInsets.all(10.0)),
+                _buildLinkItem(
+                    'Website (glowbom.com)', 'https://glowbom.com/', context),
+                Padding(padding: EdgeInsets.all(10.0)),
+                _buildLinkItem('Twitter: @GlowbomCorp',
+                    'https://twitter.com/GlowbomCorp', context),
+                Padding(padding: EdgeInsets.all(10.0)),
+                _buildLinkItem(
+                    'YouTube Channel',
+                    'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw',
+                    context),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLinkItem(String text, String url, BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            child: Text(
+              text,
+              style: TextStyle(
+                color:
+                    Colors.blue, // Change this color to match your app's theme
+                decoration: TextDecoration.underline,
+              ),
+            ),
+            onTap: () async {
+              if (await canLaunchUrlString(url)) {
+                await launchUrlString(url);
+              } else {
+                throw 'Could not launch $url';
+              }
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.copy),
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: url)).then((value) {
+              // Show a snackbar or toast indicating the link was copied
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Link copied to clipboard!'),
+                ),
+              );
+              Navigator.of(context).pop();
+            });
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -389,6 +477,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    // Add the Social Links button
+                    if (widget._dnsgs! == false)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: IconButton(
+                          icon: Icon(Icons.share),
+                          onPressed: _showSocialLinksDialog,
+                        ),
+                      ),
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
                         child: Text(

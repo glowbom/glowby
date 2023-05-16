@@ -21,6 +21,7 @@ class _TalkState extends State<Talk> {
   bool? _autonomousMode;
   bool? _enableAi;
   bool? _showAiSettings;
+  bool? _dnsgs;
 
   _TalkState();
 
@@ -125,11 +126,11 @@ class _TalkState extends State<Talk> {
   }
 
   void _pressed100() {
-    bool? dnsgs = _content != null && _content.containsKey('dnsgs')
+    _dnsgs = _content != null && _content.containsKey('dnsgs')
         ? _content['dnsgs']
         : false;
 
-    if (dnsgs == true) {
+    if (_dnsgs == true) {
       setState(() {
         _appScreen = 'Test100';
       });
@@ -205,6 +206,7 @@ class _TalkState extends State<Talk> {
                     _autonomousMode,
                     _enableAi,
                     _showAiSettings,
+                    _dnsgs,
                   ),
       ),
     );
