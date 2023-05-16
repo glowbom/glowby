@@ -220,8 +220,9 @@ If this project helps you create voice AI assistant apps faster, please consider
 
 ## Contributing
 
-We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub.
+We're excited to have you join our community and contribute to Glowby Basic! Whether you're interested in fixing bugs, adding new features, or improving documentation, your contributions are welcome. Feel free to open issues and submit pull requests on GitHub. Please remember to maintain a respectful and professional tone in all communications.
 
+We value the participation of each member of the community and want all contributors to have an enjoyable and fulfilling experience. Accordingly, all contributors are expected to show respect and courtesy to others in all our interactions.
 
 ## License
 
