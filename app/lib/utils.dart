@@ -4,7 +4,17 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
 
+import 'package:url_launcher/url_launcher_string.dart';
+
 class Utils {
+  static void launchURL(String url) async {
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   // List of image command patterns
   static List<String> imageCommandPatterns = [
     r'\b(draw|paint|generate|create|show) (me )?(a |an )?(pic|picture|image|illustration|drawing)\b',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:web/openai_api.dart';
+import 'package:web/utils.dart';
 
 class ApiKeyDialog extends StatefulWidget {
   @override
@@ -32,14 +32,6 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     );
   }
 
-  void _launchURL(String url) async {
-    if (await canLaunchUrlString(url)) {
-      await launchUrlString(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -55,8 +47,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   '→ OpenAI Dashboard',
                   style: TextStyle(color: Colors.blue),
                 ),
-                onTap: () =>
-                    _launchURL('https://platform.openai.com/account/api-keys'),
+                onTap: () => Utils.launchURL(
+                    'https://platform.openai.com/account/api-keys'),
               ),
               SizedBox(height: 10),
               Text('API Key is stored locally and not shared.'),
@@ -77,7 +69,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   'API Key not working? Click Here.',
                   style: TextStyle(color: Colors.blue),
                 ),
-                onTap: () => _launchURL(
+                onTap: () => Utils.launchURL(
                     'https://platform.openai.com/account/billing/overview'),
               ),
               Text('Ensure billing info is added in OpenAI Billing.'),
@@ -87,8 +79,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   'The Price is about 100,000 words per \$1',
                   style: TextStyle(color: Colors.blue),
                 ),
-                onTap: () =>
-                    _launchURL('https://openai.com/pricing#language-models'),
+                onTap: () => Utils.launchURL(
+                    'https://openai.com/pricing#language-models'),
               ),
               Text('ChatGPT Plus subscription not required.'),
             ],

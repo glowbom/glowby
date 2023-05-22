@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:web/openai_api.dart';
 import 'package:web/text_to_speech.dart';
+import 'package:web/utils.dart';
 
 class AiSettingsDialog extends StatefulWidget {
   final Function(bool) onVoiceEnabledChanged;
@@ -54,6 +55,7 @@ class AiSettingsDialog extends StatefulWidget {
 
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
   static bool _voiceEnabled = true;
+  bool _isGPT4Selected = false;
 
   static String _selectedModel = OpenAI_API.model;
   static String _systemPrompt = OpenAI_API.systemPrompt;
@@ -231,6 +233,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
   void initState() {
     super.initState();
     _systemPromptController.text = _systemPrompt;
+    _isGPT4Selected = _selectedModel == 'gpt-4';
   }
 
   void _saveSettings(BuildContext context) {
@@ -276,9 +279,22 @@ Human: You choose anything you like. Direction comes from the next message. One 
                 onChanged: (value) {
                   setState(() {
                     _selectedModel = value!;
+                    _isGPT4Selected = value == 'gpt-4';
                   });
                 },
               ),
+              SizedBox(height: 10),
+              if (_isGPT4Selected) SizedBox(height: 10),
+              if (_isGPT4Selected) Text('If you don\'t have access GPT-4,'),
+              if (_isGPT4Selected)
+                InkWell(
+                  child: Text(
+                    '→ you will need to join the waitlist',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  onTap: () => Utils.launchURL(
+                      'https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4'),
+                ),
               SizedBox(height: 10),
               Text('System Prompt:'),
               DropdownButton<String>(
