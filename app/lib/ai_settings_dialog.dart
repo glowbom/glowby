@@ -267,6 +267,11 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     value: 'gpt-4',
                     child: Text('GPT-4 (Advanced, Limited Beta)'),
                   ),
+                  /*DropdownMenuItem<String>(
+                    value: 'gpt-4-32k',
+                    child: Text('GPT-4-32k (Advanced, Limited Beta)'),
+                  ),*/
+                  // uncomment the following lines to enable an extended 32,000 token context-length model gpt-4-32k
                 ],
                 onChanged: (value) {
                   setState(() {

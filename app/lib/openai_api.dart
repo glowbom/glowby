@@ -314,6 +314,7 @@ class OpenAI_API {
           if (kDebugMode) {
             print('Error: $e');
           }
+          break;
         }
       }
     }
