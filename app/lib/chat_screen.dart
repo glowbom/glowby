@@ -26,6 +26,8 @@ class ChatScreen extends StatefulWidget {
   final bool? _autonomousMode;
   final bool? _enableAi;
   final bool? _showAiSettings;
+  // this will be used with the upcoming features
+  // ignore: unused_field
   final bool? _dnsgs;
 
   ChatScreen(

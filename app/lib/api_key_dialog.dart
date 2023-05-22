@@ -9,7 +9,9 @@ class ApiKeyDialog extends StatefulWidget {
 
 class _ApiKeyDialogState extends State<ApiKeyDialog> {
   final _apiKeyController = TextEditingController();
+  final _huggingFaceTokenController = TextEditingController();
   String _apiKey = '';
+  String _huggingFaceToken = '';
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
 
   void _saveApiKey(BuildContext context) {
     OpenAI_API.setOat(_apiKey);
+    //HuggingFace_API.setToken(_huggingFaceToken);
     Navigator.pop(context); // Hide the dialog
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -83,6 +86,19 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                     'https://openai.com/pricing#language-models'),
               ),
               Text('ChatGPT Plus subscription not required.'),
+              SizedBox(height: 20),
+              Text('Enter your Hugging Face Token:'),
+              TextField(
+                controller: _huggingFaceTokenController,
+                obscureText: true,
+                decoration: InputDecoration(
+                    labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                onChanged: (value) {
+                  setState(() {
+                    _huggingFaceToken = value;
+                  });
+                },
+              ),
             ],
           ),
         ),
@@ -94,6 +110,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
             setState(() {
               _apiKeyController.clear();
               _apiKey = '';
+              _huggingFaceTokenController.clear();
+              _huggingFaceToken = '';
             });
           },
         ),
