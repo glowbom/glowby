@@ -12,7 +12,7 @@ class HuggingFace_API {
 ]
 ''';
   static String _model = 'google/flan-t5-large';
-  static String _systemMessage = '';
+  static String _systemMessage = 'You are Glowby, an assistant.';
   static const String _apiKeyKey = 'huggingface_api_key';
   static const String _templateKey = 'huggingface_template';
   static const String _modelKey = 'huggingface_model';
@@ -104,9 +104,9 @@ class HuggingFace_API {
     };
 
     final body = jsonEncode({
-      'inputs':
-          //'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around. User entered: ' +
-          text,
+      'inputs': _systemMessage == ''
+          ? text
+          : text + ' [System message]: ' + _systemMessage,
     });
 
     if (kDebugMode) {

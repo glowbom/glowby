@@ -242,7 +242,8 @@ class OpenAI_API {
         finalResponse = finalResponse
             .replaceAll('assistant: ', '')
             .replaceAll('previousMessages: ', '')
-            .replaceAll('user: ', '');
+            .replaceAll('user: ', '')
+            .replaceAll('[System message]: ', '');
       }
     }
 

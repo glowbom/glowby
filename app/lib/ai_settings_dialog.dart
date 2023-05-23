@@ -61,7 +61,10 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
 
   static String _selectedModel = OpenAI_API.model;
   static String _systemPrompt = OpenAI_API.systemPrompt;
+  static String _systemHuggingFacePrompt = HuggingFace_API.systemMessage();
   final TextEditingController _systemPromptController = TextEditingController();
+  final TextEditingController _systemPromptHuggingFaceController =
+      TextEditingController();
   final TextEditingController _modelIdController = TextEditingController();
   final TextEditingController _templateController = TextEditingController();
 
@@ -241,6 +244,8 @@ Human: You choose anything you like. Direction comes from the next message. One 
     _isHuggingFaceSelected = _selectedModel == 'huggingface';
     _modelIdController.text = HuggingFace_API.model();
     _templateController.text = HuggingFace_API.template();
+    _systemHuggingFacePrompt = HuggingFace_API.systemMessage();
+    _systemPromptHuggingFaceController.text = _systemHuggingFacePrompt;
   }
 
   void _saveSettings(BuildContext context) {
@@ -249,6 +254,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
     OpenAI_API.setSelectedLanguage(_selectedLanguage);
     HuggingFace_API.setModel(_modelIdController.text);
     HuggingFace_API.setTemplate(_templateController.text);
+    HuggingFace_API.setSystemMessage(_systemHuggingFacePrompt);
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog
@@ -341,7 +347,9 @@ Human: You choose anything you like. Direction comes from the next message. One 
                       'https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4'),
                 ),
               SizedBox(height: 10),
-              if (!_isHuggingFaceSelected) Text('System Prompt:'),
+              Text(_isHuggingFaceSelected
+                  ? 'System Message:'
+                  : 'System Prompt:'),
               if (!_isHuggingFaceSelected)
                 DropdownButton<String>(
                   value: _selectedPrompt,
@@ -362,6 +370,17 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   ),
                   onChanged: (value) {
                     _systemPrompt = value;
+                  },
+                ),
+              if (_isHuggingFaceSelected)
+                TextField(
+                  controller: _systemPromptHuggingFaceController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Enter system message',
+                  ),
+                  onChanged: (value) {
+                    _systemHuggingFacePrompt = value;
                   },
                 ),
               CheckboxListTile(
