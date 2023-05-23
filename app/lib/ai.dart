@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:web/hugging_face_api.dart';
+
 import 'openai_api.dart';
 import 'timestamp.dart';
 import 'message.dart';
@@ -38,12 +40,23 @@ class Ai {
       newtworkOperation = await OpenAI_API.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
       String response = await newtworkOperation!.value;
+      String poweredTitle = OpenAI_API.model == 'gpt-4'
+          ? 'Powered by GPT-4'
+          : OpenAI_API.model == 'gpt-3.5-turbo'
+              ? 'Powered by GPT-3.5'
+              : OpenAI_API.model == 'huggingface'
+                  ? HuggingFace_API.model()
+                  : '';
       return [
         Message(
           text: response,
           createdAt: Timestamp.now(),
           userId: defaultUserId,
-          username: _name == '' ? 'AI' : _name,
+          username: _name == ''
+              ? 'AI'
+              : poweredTitle == ''
+                  ? _name
+                  : ('$_name ($poweredTitle)'),
         ),
       ];
     }
