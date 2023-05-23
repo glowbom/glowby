@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web/hugging_face_api.dart';
 import 'package:web/openai_api.dart';
 import 'package:web/text_to_speech.dart';
 import 'package:web/utils.dart';
@@ -56,10 +57,13 @@ class AiSettingsDialog extends StatefulWidget {
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
   static bool _voiceEnabled = true;
   bool _isGPT4Selected = false;
+  bool _isHuggingFaceSelected = false;
 
   static String _selectedModel = OpenAI_API.model;
   static String _systemPrompt = OpenAI_API.systemPrompt;
   final TextEditingController _systemPromptController = TextEditingController();
+  final TextEditingController _modelIdController = TextEditingController();
+  final TextEditingController _templateController = TextEditingController();
 
   static String _selectedLanguage = OpenAI_API.selectedLanguage;
 
@@ -234,12 +238,17 @@ Human: You choose anything you like. Direction comes from the next message. One 
     super.initState();
     _systemPromptController.text = _systemPrompt;
     _isGPT4Selected = _selectedModel == 'gpt-4';
+    _isHuggingFaceSelected = _selectedModel == 'huggingface';
+    _modelIdController.text = HuggingFace_API.model();
+    _templateController.text = HuggingFace_API.template();
   }
 
   void _saveSettings(BuildContext context) {
     OpenAI_API.setModel(_selectedModel);
     OpenAI_API.setSystemPrompt(_systemPrompt);
     OpenAI_API.setSelectedLanguage(_selectedLanguage);
+    HuggingFace_API.setModel(_modelIdController.text);
+    HuggingFace_API.setTemplate(_templateController.text);
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog
@@ -270,6 +279,10 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     value: 'gpt-4',
                     child: Text('GPT-4 (Advanced, Limited Beta)'),
                   ),
+                  DropdownMenuItem<String>(
+                    value: 'huggingface',
+                    child: Text('Hugging Face'),
+                  ),
                   /*DropdownMenuItem<String>(
                     value: 'gpt-4-32k',
                     child: Text('GPT-4-32k (Advanced, Limited Beta)'),
@@ -280,10 +293,42 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   setState(() {
                     _selectedModel = value!;
                     _isGPT4Selected = value == 'gpt-4';
+                    _isHuggingFaceSelected = value == 'huggingface';
                   });
                 },
               ),
               SizedBox(height: 10),
+              if (_isHuggingFaceSelected)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(height: 10),
+                    Text('Hugging Face Model ID:'),
+                    TextField(
+                      controller:
+                          _modelIdController, // Use TextEditingController to retrieve user input
+                      decoration: InputDecoration(
+                        labelText: 'Model ID',
+                      ),
+                      onChanged: (value) {
+                        // Update your modelId variable here
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Text('Response Format'),
+                    TextField(
+                      controller:
+                          _templateController, // Use TextEditingController to retrieve user input
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        labelText: 'Template (*** is the response)',
+                      ),
+                      onChanged: (value) {
+                        // Update your template variable here
+                      },
+                    ),
+                  ],
+                ),
               if (_isGPT4Selected) SizedBox(height: 10),
               if (_isGPT4Selected) Text('If you don\'t have access GPT-4,'),
               if (_isGPT4Selected)
@@ -296,27 +341,29 @@ Human: You choose anything you like. Direction comes from the next message. One 
                       'https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4'),
                 ),
               SizedBox(height: 10),
-              Text('System Prompt:'),
-              DropdownButton<String>(
-                value: _selectedPrompt,
-                items: buildPromptDropdownItems(),
-                onChanged: (value) {
-                  setState(() {
-                    _promptChanged(value);
-                  });
-                },
-              ),
-              _buildAutonomousModeCheckbox(),
-              TextField(
-                controller: _systemPromptController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Enter system prompt',
+              if (!_isHuggingFaceSelected) Text('System Prompt:'),
+              if (!_isHuggingFaceSelected)
+                DropdownButton<String>(
+                  value: _selectedPrompt,
+                  items: buildPromptDropdownItems(),
+                  onChanged: (value) {
+                    setState(() {
+                      _promptChanged(value);
+                    });
+                  },
                 ),
-                onChanged: (value) {
-                  _systemPrompt = value;
-                },
-              ),
+              if (!_isHuggingFaceSelected) _buildAutonomousModeCheckbox(),
+              if (!_isHuggingFaceSelected)
+                TextField(
+                  controller: _systemPromptController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Enter system prompt',
+                  ),
+                  onChanged: (value) {
+                    _systemPrompt = value;
+                  },
+                ),
               CheckboxListTile(
                 title: Text('Enable voice'),
                 value: _AiSettingsDialogState._voiceEnabled,

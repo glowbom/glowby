@@ -5,7 +5,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HuggingFace_API {
   static String apiKey = '';
+  static String _template = '''[
+  {
+    "generated_text": "***"
+  }
+]
+''';
+  static String _model = 'google/flan-t5-large';
   static const String _apiKeyKey = 'huggingface_api_key';
+  static const String _templateKey = 'huggingface_template';
+  static const String _modelKey = 'huggingface_model';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
@@ -23,6 +32,26 @@ class HuggingFace_API {
 
   static Future<void> loadOat() async {
     apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+    _template = await _secureStorage.read(key: _templateKey) ?? '';
+    _model = await _secureStorage.read(key: _modelKey) ?? '';
+  }
+
+  static String model() {
+    return _model;
+  }
+
+  static void setModel(model) {
+    _model = model;
+    _secureStorage.write(key: _modelKey, value: _model);
+  }
+
+  static String template() {
+    return _template;
+  }
+
+  static void setTemplate(template) {
+    _template = template;
+    _secureStorage.write(key: _templateKey, value: _template);
   }
 
   static String? _findValueByTemplate(dynamic value, dynamic template) {
@@ -47,10 +76,14 @@ class HuggingFace_API {
     return null;
   }
 
+  static Future<String?> generate(String text) async {
+    return await _generate(_model, text, _template);
+  }
+
   // Examples:
   // generate('facebook/bart-large-cnn', 'What\'s the best way to play a guitar?', '[{"summary_text": "***"}]');
   // generate('google/flan-t5-large', 'What\'s the best way to play a guitar?', '[{"generated_text": "***"}]');
-  static Future<String?> generate(
+  static Future<String?> _generate(
       String modelId, String text, String template) async {
     final queryUrl = 'https://api-inference.huggingface.co/models/$modelId';
     final headers = {
