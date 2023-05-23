@@ -228,7 +228,7 @@ class OpenAI_API {
     String? finalResponse = '';
 
     if (HuggingFace_API.apiKey != '') {
-      print(previousMessages);
+      //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
       if (previousMessages.length > 0) {
         finalResponse = await HuggingFace_API.generate(

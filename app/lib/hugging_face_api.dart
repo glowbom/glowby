@@ -93,8 +93,8 @@ class HuggingFace_API {
 
     final body = jsonEncode({
       'inputs':
-          'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around. User entered: ' +
-              text,
+          //'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around. User entered: ' +
+          text,
     });
 
     if (kDebugMode) {
