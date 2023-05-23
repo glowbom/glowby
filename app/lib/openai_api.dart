@@ -213,6 +213,13 @@ class OpenAI_API {
     return completer.operation;
   }
 
+  static String formatPrevMessages(
+      List<Map<String, String?>> previousMessages) {
+    return previousMessages.map((message) {
+      return "${message['role']}: ${message['content']}";
+    }).join(', ');
+  }
+
   static Future<void> _getResponseFromHuggingFace(
     String message,
     CancelableCompleter<String> completer, {
@@ -221,7 +228,22 @@ class OpenAI_API {
     String? finalResponse = '';
 
     if (HuggingFace_API.apiKey != '') {
-      finalResponse = await HuggingFace_API.generate(message);
+      print(previousMessages);
+      String formattedPrevMessages = formatPrevMessages(previousMessages);
+      if (previousMessages.length > 0) {
+        finalResponse = await HuggingFace_API.generate(
+            message + ' previousMessages: ' + formattedPrevMessages);
+      } else {
+        finalResponse = await HuggingFace_API.generate(message);
+      }
+
+      print('finalResponse: $finalResponse');
+      if (finalResponse != null) {
+        finalResponse = finalResponse
+            .replaceAll('assistant: ', '')
+            .replaceAll('previousMessages: ', '')
+            .replaceAll('user: ', '');
+      }
     }
 
     completer.complete(finalResponse);
