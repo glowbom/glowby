@@ -114,6 +114,10 @@ class HuggingFace_API {
       return 'Please enter your Hugging Face Access Token in the settings.';
     }
 
+    if (modelId == '') {
+      return 'Please enter Model ID in the settings.';
+    }
+
     final queryUrl = 'https://api-inference.huggingface.co/models/$modelId';
     final headers = {
       'Content-Type': 'application/json',

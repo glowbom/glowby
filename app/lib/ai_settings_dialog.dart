@@ -351,19 +351,18 @@ Human: You choose anything you like. Direction comes from the next message. One 
                       'https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4'),
                 ),
               SizedBox(height: 10),
-              Text(_isHuggingFaceSelected
-                  ? 'System Message:'
-                  : 'System Prompt:'),
+              if (!_isHuggingFaceSelected) Text('System Prompt:'),
               if (!_isHuggingFaceSelected)
-                DropdownButton<String>(
-                  value: _selectedPrompt,
-                  items: buildPromptDropdownItems(),
-                  onChanged: (value) {
-                    setState(() {
-                      _promptChanged(value);
-                    });
-                  },
-                ),
+                if (!_isHuggingFaceSelected)
+                  DropdownButton<String>(
+                    value: _selectedPrompt,
+                    items: buildPromptDropdownItems(),
+                    onChanged: (value) {
+                      setState(() {
+                        _promptChanged(value);
+                      });
+                    },
+                  ),
               if (!_isHuggingFaceSelected) _buildAutonomousModeCheckbox(),
               if (!_isHuggingFaceSelected)
                 TextField(
@@ -376,6 +375,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     _systemPrompt = value;
                   },
                 ),
+              /*if (_isHuggingFaceSelected) Text('System Message:'),
               if (_isHuggingFaceSelected)
                 TextField(
                   controller: _systemPromptHuggingFaceController,
@@ -399,7 +399,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                 ),
               if (_isHuggingFaceSelected) Divider(),
               if (_isHuggingFaceSelected) Text('Voice Settings:'),
-              if (_isHuggingFaceSelected) SizedBox(height: 10),
+              if (_isHuggingFaceSelected) SizedBox(height: 10),*/
               CheckboxListTile(
                 title: Text('Enable voice'),
                 value: _AiSettingsDialogState._voiceEnabled,
