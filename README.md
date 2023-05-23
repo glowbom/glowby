@@ -61,6 +61,11 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 ![Glowby Basic Image Generation](https://user-images.githubusercontent.com/2455891/233778560-47d8e011-03a8-41ad-a1fc-33827a033475.gif)
 
 
+### 🤗 Hosted Inference API
+
+![Glowby Basic 🤗 Hosted Inference API](https://github.com/glowbom/glowby/assets/2455891/732b72f8-8984-40f9-80ab-a4507c2410f7)
+
+
 ## Upcoming Features
 
 We're constantly working to improve our project and have several exciting features in development. Here's a sneak peek at what's coming soon:
@@ -68,7 +73,6 @@ We're constantly working to improve our project and have several exciting featur
 ### Functionality
 - Local Storage
 - Backend Service for API Calls
-- 🤗 Hosted Inference API
 
 ### Monetization
 - Adding a paywall
