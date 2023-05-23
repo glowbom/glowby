@@ -37,12 +37,18 @@ class OpenAI_API {
   }
 
   static Future<void> loadOat() async {
-    apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
-    model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
-    selectedLanguage =
-        (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
-    systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
-        DEFAULT_SYSTEM_PROMPT;
+    try {
+      apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+      model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
+      selectedLanguage =
+          (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
+      systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
+          DEFAULT_SYSTEM_PROMPT;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading OAT: $e');
+      }
+    }
 
     await HuggingFace_API.loadOat();
   }

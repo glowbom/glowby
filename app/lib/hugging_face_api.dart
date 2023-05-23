@@ -35,18 +35,25 @@ class HuggingFace_API {
   }
 
   static Future<void> loadOat() async {
-    apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
-    _template = await _secureStorage.read(key: _templateKey) ??
-        '''[
+    try {
+      apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+      _template = await _secureStorage.read(key: _templateKey) ??
+          '''[
   {
     "generated_text": "***"
   }
 ]
 ''';
-    _model =
-        await _secureStorage.read(key: _modelKey) ?? 'google/flan-t5-large';
-    _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
-    _sendMessages = await _secureStorage.read(key: _sendMessagesKey) == 'true';
+      _model =
+          await _secureStorage.read(key: _modelKey) ?? 'google/flan-t5-large';
+      _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
+      _sendMessages =
+          await _secureStorage.read(key: _sendMessagesKey) == 'true';
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading OAT: $e');
+      }
+    }
   }
 
   static bool sendMessages() {

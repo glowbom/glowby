@@ -35,7 +35,7 @@ class _TalkState extends State<Talk> {
   @override
   void initState() {
     super.initState();
-    OpenAI_API.setOat('');
+    OpenAI_API.apiKey = '';
     initializeTalkState();
   }
 
