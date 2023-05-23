@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
+import 'package:web/hugging_face_api.dart';
 
 int totalTokensUsed = 0;
 
@@ -192,16 +193,42 @@ class OpenAI_API {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
 
-    // Wrap the _getResponseFromOpenAI with the cancelable completer
-    _getResponseFromOpenAI(
-      message,
-      completer,
-      previousMessages: previousMessages,
-      maxTries: maxTries,
-      customSystemPrompt: customSystemPrompt,
-    );
+    if (OpenAI_API.model == 'huggingface') {
+      _getResponseFromHuggingFace(
+        message,
+        completer,
+        previousMessages: previousMessages,
+      );
+    } else {
+      // Wrap the _getResponseFromOpenAI with the cancelable completer
+      _getResponseFromOpenAI(
+        message,
+        completer,
+        previousMessages: previousMessages,
+        maxTries: maxTries,
+        customSystemPrompt: customSystemPrompt,
+      );
+    }
 
     return completer.operation;
+  }
+
+  static Future<void> _getResponseFromHuggingFace(
+    String message,
+    CancelableCompleter<String> completer, {
+    List<Map<String, String?>> previousMessages = const [],
+  }) async {
+    String? finalResponse = '';
+
+    if (HuggingFace_API.apiKey != '') {
+      finalResponse = await HuggingFace_API.generate(message);
+    }
+
+    completer.complete(finalResponse);
+
+    // Explicitly return null to avoid
+
+    return null;
   }
 
   static Future<void> _getResponseFromOpenAI(
