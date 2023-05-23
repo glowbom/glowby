@@ -58,6 +58,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   static bool _voiceEnabled = true;
   bool _isGPT4Selected = false;
   bool _isHuggingFaceSelected = false;
+  bool _sendMessageHistory = false;
 
   static String _selectedModel = OpenAI_API.model;
   static String _systemPrompt = OpenAI_API.systemPrompt;
@@ -245,6 +246,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
     _modelIdController.text = HuggingFace_API.model();
     _templateController.text = HuggingFace_API.template();
     _systemHuggingFacePrompt = HuggingFace_API.systemMessage();
+    _sendMessageHistory = HuggingFace_API.sendMessages();
     _systemPromptHuggingFaceController.text = _systemHuggingFacePrompt;
   }
 
@@ -254,6 +256,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
     OpenAI_API.setSelectedLanguage(_selectedLanguage);
     HuggingFace_API.setModel(_modelIdController.text);
     HuggingFace_API.setTemplate(_templateController.text);
+    HuggingFace_API.setSendMessages(_sendMessageHistory);
     HuggingFace_API.setSystemMessage(_systemHuggingFacePrompt);
 
     // Save the system prompt to use with API calls
@@ -383,6 +386,19 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     _systemHuggingFacePrompt = value;
                   },
                 ),
+              if (_isHuggingFaceSelected)
+                CheckboxListTile(
+                  title: Text('Send message history'),
+                  value: _sendMessageHistory,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _sendMessageHistory = value!;
+                    });
+                  },
+                ),
+              if (_isHuggingFaceSelected) Divider(),
+              if (_isHuggingFaceSelected) Text('Voice Settings:'),
+              if (_isHuggingFaceSelected) SizedBox(height: 10),
               CheckboxListTile(
                 title: Text('Enable voice'),
                 value: _AiSettingsDialogState._voiceEnabled,

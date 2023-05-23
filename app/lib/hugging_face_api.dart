@@ -13,10 +13,12 @@ class HuggingFace_API {
 ''';
   static String _model = 'google/flan-t5-large';
   static String _systemMessage = 'You are Glowby, an assistant.';
+  static bool _sendMessages = false;
   static const String _apiKeyKey = 'huggingface_api_key';
   static const String _templateKey = 'huggingface_template';
   static const String _modelKey = 'huggingface_model';
   static const String _systemMessageKey = 'huggingface_system_message';
+  static const String _sendMessagesKey = 'huggingface_send_messages';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
@@ -37,6 +39,17 @@ class HuggingFace_API {
     _template = await _secureStorage.read(key: _templateKey) ?? '';
     _model = await _secureStorage.read(key: _modelKey) ?? '';
     _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
+    _sendMessages = await _secureStorage.read(key: _sendMessagesKey) == 'true';
+  }
+
+  static bool sendMessages() {
+    return _sendMessages;
+  }
+
+  static void setSendMessages(bool sendMessages) {
+    _sendMessages = sendMessages;
+    _secureStorage.write(
+        key: _sendMessagesKey, value: _sendMessages.toString());
   }
 
   static String systemMessage() {
