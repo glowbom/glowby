@@ -23,6 +23,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       setState(() {
         _apiKey = OpenAI_API.oat();
         _apiKeyController.text = _apiKey;
+        _huggingFaceToken = HuggingFace_API.oat();
+        _huggingFaceTokenController.text = _huggingFaceToken;
       });
     });
   }
@@ -88,7 +90,19 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                     'https://openai.com/pricing#language-models'),
               ),
               Text('ChatGPT Plus subscription not required.'),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
+              Divider(),
+              SizedBox(height: 10),
+              Text('Get your Access Token:'),
+              InkWell(
+                child: Text(
+                  '→ Hugging Face Dashboard',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                onTap: () =>
+                    Utils.launchURL('https://huggingface.co/settings/tokens'),
+              ),
+              SizedBox(height: 10),
               Text('Enter your Hugging Face Token:'),
               TextField(
                 controller: _huggingFaceTokenController,
@@ -101,6 +115,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   });
                 },
               ),
+              SizedBox(height: 20),
             ],
           ),
         ),
