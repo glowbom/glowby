@@ -12,7 +12,7 @@ class HuggingFace_API {
 ]
 ''';
   static String _model = 'google/flan-t5-large';
-  static String _systemMessage = 'You are Glowby, an assistant.';
+  static String _systemMessage = '';
   static bool _sendMessages = false;
   static const String _apiKeyKey = 'huggingface_api_key';
   static const String _templateKey = 'huggingface_template';

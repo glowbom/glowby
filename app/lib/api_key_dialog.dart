@@ -20,13 +20,11 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     super.initState();
 
     OpenAI_API.loadOat().then((_) {
-      HuggingFace_API.loadOat().then((_) {
-        setState(() {
-          _apiKey = OpenAI_API.oat();
-          _apiKeyController.text = _apiKey;
-          _huggingFaceToken = HuggingFace_API.oat();
-          _huggingFaceTokenController.text = _huggingFaceToken;
-        });
+      setState(() {
+        _apiKey = OpenAI_API.oat();
+        _apiKeyController.text = _apiKey;
+        _huggingFaceToken = HuggingFace_API.oat();
+        _huggingFaceTokenController.text = _huggingFaceToken;
       });
     });
   }
@@ -94,6 +92,11 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
               Text('ChatGPT Plus subscription not required.'),
               SizedBox(height: 10),
               Divider(),
+              SizedBox(height: 10),
+              Text(
+                '🤗 Hosted Inference API',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               SizedBox(height: 10),
               Text('Get your Access Token:'),
               InkWell(

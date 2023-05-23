@@ -43,6 +43,8 @@ class OpenAI_API {
         (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
     systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
         DEFAULT_SYSTEM_PROMPT;
+
+    await HuggingFace_API.loadOat();
   }
 
   static Future<void> setModel(String value) async {
