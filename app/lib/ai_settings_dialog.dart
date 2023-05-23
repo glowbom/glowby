@@ -240,6 +240,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
   @override
   void initState() {
     super.initState();
+    _selectedModel = OpenAI_API.model;
     _systemPromptController.text = _systemPrompt;
     _isGPT4Selected = _selectedModel == 'gpt-4';
     _isHuggingFaceSelected = _selectedModel == 'huggingface';

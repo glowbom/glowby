@@ -247,6 +247,9 @@ class OpenAI_API {
             .replaceAll('user: ', '')
             .replaceAll('[System message]: ', '');
       }
+    } else {
+      finalResponse =
+          'Please enter your Hugging Face Access Token in the settings.';
     }
 
     completer.complete(finalResponse);

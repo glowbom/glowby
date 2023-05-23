@@ -110,6 +110,10 @@ class HuggingFace_API {
   // generate('google/flan-t5-large', 'What\'s the best way to play a guitar?', '[{"generated_text": "***"}]');
   static Future<String?> _generate(
       String modelId, String text, String template) async {
+    if (apiKey == '') {
+      return 'Please enter your Hugging Face Access Token in the settings.';
+    }
+
     final queryUrl = 'https://api-inference.huggingface.co/models/$modelId';
     final headers = {
       'Content-Type': 'application/json',
@@ -145,7 +149,7 @@ class HuggingFace_API {
 
       return generatedText;
     } else {
-      throw Exception('Failed to generate summary');
+      return 'Sorry, there was an error processing your request. Please try again later.';
     }
   }
 }
