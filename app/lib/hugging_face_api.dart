@@ -12,9 +12,11 @@ class HuggingFace_API {
 ]
 ''';
   static String _model = 'google/flan-t5-large';
+  static String _systemMessage = '';
   static const String _apiKeyKey = 'huggingface_api_key';
   static const String _templateKey = 'huggingface_template';
   static const String _modelKey = 'huggingface_model';
+  static const String _systemMessageKey = 'huggingface_system_message';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
@@ -34,6 +36,16 @@ class HuggingFace_API {
     apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
     _template = await _secureStorage.read(key: _templateKey) ?? '';
     _model = await _secureStorage.read(key: _modelKey) ?? '';
+    _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
+  }
+
+  static String systemMessage() {
+    return _systemMessage;
+  }
+
+  static void setSystemMessage(systemMessage) {
+    _systemMessage = systemMessage;
+    _secureStorage.write(key: _systemMessageKey, value: _systemMessage);
   }
 
   static String model() {
