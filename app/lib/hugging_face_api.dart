@@ -36,8 +36,15 @@ class HuggingFace_API {
 
   static Future<void> loadOat() async {
     apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
-    _template = await _secureStorage.read(key: _templateKey) ?? '';
-    _model = await _secureStorage.read(key: _modelKey) ?? '';
+    _template = await _secureStorage.read(key: _templateKey) ??
+        '''[
+  {
+    "generated_text": "***"
+  }
+]
+''';
+    _model =
+        await _secureStorage.read(key: _modelKey) ?? 'google/flan-t5-large';
     _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
     _sendMessages = await _secureStorage.read(key: _sendMessagesKey) == 'true';
   }

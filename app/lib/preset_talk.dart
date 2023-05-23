@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:web/openai_api.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
 import 'dart:html' as html;
@@ -34,6 +35,7 @@ class _TalkState extends State<Talk> {
   @override
   void initState() {
     super.initState();
+    OpenAI_API.setOat('');
     initializeTalkState();
   }
 
