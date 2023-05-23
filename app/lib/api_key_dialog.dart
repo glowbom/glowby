@@ -20,11 +20,13 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     super.initState();
 
     OpenAI_API.loadOat().then((_) {
-      setState(() {
-        _apiKey = OpenAI_API.oat();
-        _apiKeyController.text = _apiKey;
-        _huggingFaceToken = HuggingFace_API.oat();
-        _huggingFaceTokenController.text = _huggingFaceToken;
+      HuggingFace_API.loadOat().then((_) {
+        setState(() {
+          _apiKey = OpenAI_API.oat();
+          _apiKeyController.text = _apiKey;
+          _huggingFaceToken = HuggingFace_API.oat();
+          _huggingFaceTokenController.text = _huggingFaceToken;
+        });
       });
     });
   }

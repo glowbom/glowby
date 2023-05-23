@@ -281,7 +281,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   ),
                   DropdownMenuItem<String>(
                     value: 'huggingface',
-                    child: Text('Hugging Face'),
+                    child: Text('Hugging Face (Experimental)'),
                   ),
                   /*DropdownMenuItem<String>(
                     value: 'gpt-4-32k',
