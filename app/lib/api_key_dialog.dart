@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:web/openai_api.dart';
 import 'package:web/utils.dart';
 
+import 'hugging_face_api.dart';
+
 class ApiKeyDialog extends StatefulWidget {
   @override
   _ApiKeyDialogState createState() => _ApiKeyDialogState();
@@ -27,7 +29,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
 
   void _saveApiKey(BuildContext context) {
     OpenAI_API.setOat(_apiKey);
-    //HuggingFace_API.setToken(_huggingFaceToken);
+    HuggingFace_API.setOat(_huggingFaceToken);
     Navigator.pop(context); // Hide the dialog
 
     ScaffoldMessenger.of(context).showSnackBar(
