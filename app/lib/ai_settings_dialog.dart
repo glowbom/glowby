@@ -270,6 +270,14 @@ Human: You choose anything you like. Direction comes from the next message. One 
 
   @override
   Widget build(BuildContext context) {
+    if (HuggingFace_API.oat() == '' && _selectedModel == 'huggingface') {
+      OpenAI_API.setModel(_selectedModel);
+      setState(() {
+        _isHuggingFaceSelected = false;
+        _isGPT4Selected = false;
+        _selectedModel = 'gpt-3.5-turbo';
+      });
+    }
     return AlertDialog(
       title: Text('AI Settings'),
       content: Container(
@@ -289,10 +297,11 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     value: 'gpt-4',
                     child: Text('GPT-4 (Advanced, Limited Beta)'),
                   ),
-                  DropdownMenuItem<String>(
-                    value: 'huggingface',
-                    child: Text('Hugging Face (Experimental)'),
-                  ),
+                  if (HuggingFace_API.oat() != '')
+                    DropdownMenuItem<String>(
+                      value: 'huggingface',
+                      child: Text('Hugging Face (Experimental)'),
+                    ),
                   /*DropdownMenuItem<String>(
                     value: 'gpt-4-32k',
                     child: Text('GPT-4-32k (Advanced, Limited Beta)'),
@@ -314,6 +323,15 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   children: <Widget>[
                     SizedBox(height: 10),
                     Text('Hugging Face Model ID:'),
+                    SizedBox(height: 6),
+                    InkWell(
+                      child: Text(
+                        '→ Browse available models',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                      onTap: () => Utils.launchURL(
+                          'https://huggingface.co/models?pipeline_tag=text2text-generation&sort=downloads'),
+                    ),
                     TextField(
                       controller:
                           _modelIdController, // Use TextEditingController to retrieve user input

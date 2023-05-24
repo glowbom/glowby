@@ -93,34 +93,46 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
               SizedBox(height: 10),
               Divider(),
               SizedBox(height: 10),
-              Text(
-                '🤗 Hosted Inference API',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              Text('Get your Access Token:'),
-              InkWell(
-                child: Text(
-                  '→ Hugging Face Dashboard',
-                  style: TextStyle(color: Colors.blue),
+              ExpansionTile(
+                title: Text(
+                  '🤗 Hosted Inference API',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                onTap: () =>
-                    Utils.launchURL('https://huggingface.co/settings/tokens'),
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10),
+                        Text('Get your Access Token:'),
+                        InkWell(
+                          child: Text(
+                            '→ Hugging Face Dashboard',
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                          onTap: () => Utils.launchURL(
+                              'https://huggingface.co/settings/tokens'),
+                        ),
+                        SizedBox(height: 10),
+                        Text('Enter your Hugging Face Token:'),
+                        TextField(
+                          controller: _huggingFaceTokenController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                              labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                          onChanged: (value) {
+                            setState(() {
+                              _huggingFaceToken = value;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 10),
-              Text('Enter your Hugging Face Token:'),
-              TextField(
-                controller: _huggingFaceTokenController,
-                obscureText: true,
-                decoration: InputDecoration(
-                    labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
-                onChanged: (value) {
-                  setState(() {
-                    _huggingFaceToken = value;
-                  });
-                },
-              ),
-              SizedBox(height: 20),
             ],
           ),
         ),
