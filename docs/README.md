@@ -64,7 +64,9 @@ To experience the Autonomous Mode demo with sound, check out this [Twitter post]
 
 ### 🤗 Hosted Inference API
 
-![Glowby Basic 🤗 Hosted Inference API](https://github.com/glowbom/glowby/assets/2455891/732b72f8-8984-40f9-80ab-a4507c2410f7)
+![Glowby Basic 🤗 Hosted Inference API](https://github.com/glowbom/glowby/assets/2455891/9d76f02c-6139-44e8-9b16-6fbf429ae3e5)
+
+**Glowby Basic** supports the 🤗 **Hosted Inference API** for [text-to-text generation models](https://huggingface.co/models?pipeline_tag=text2text-generation&sort=downloads). [Here's how it works...](https://twitter.com/jacobilin/status/1661537585985126402)
 
 
 ## Upcoming Features
