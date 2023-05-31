@@ -7,7 +7,7 @@ import 'dart:html' as html;
 
 var _content;
 
-class _TalkState extends State<Talk> {
+class TalkState extends State<Talk> {
   var _appScreen = 'Loading';
 
   String? _title;
@@ -24,7 +24,7 @@ class _TalkState extends State<Talk> {
   bool? _showAiSettings;
   bool? _dnsgs;
 
-  _TalkState();
+  TalkState();
 
   Future<dynamic> loadContentFromAssets() async {
     String data =
@@ -225,7 +225,7 @@ class Talk extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _TalkState();
+    return TalkState();
   }
 }
 
