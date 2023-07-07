@@ -295,7 +295,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   ),
                   DropdownMenuItem<String>(
                     value: 'gpt-4',
-                    child: Text('GPT-4 (Advanced, Limited Beta)'),
+                    child: Text('GPT-4 (Advanced)'),
                   ),
                   if (HuggingFace_API.oat() != '')
                     DropdownMenuItem<String>(
@@ -356,17 +356,6 @@ Human: You choose anything you like. Direction comes from the next message. One 
                       },
                     ),
                   ],
-                ),
-              if (_isGPT4Selected) SizedBox(height: 10),
-              if (_isGPT4Selected) Text('If you don\'t have access GPT-4,'),
-              if (_isGPT4Selected)
-                InkWell(
-                  child: Text(
-                    '→ you will need to join the waitlist',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                  onTap: () => Utils.launchURL(
-                      'https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4'),
                 ),
               SizedBox(height: 10),
               if (!_isHuggingFaceSelected) Text('System Prompt:'),
