@@ -77,6 +77,7 @@ We're constantly working to improve our project and have several exciting featur
 - Local Storage
 - Backend Service for API Calls
 - AI Extensions
+- Anthropic Claude
 
 ### Monetization
 - Adding a paywall
