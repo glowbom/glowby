@@ -78,6 +78,10 @@ We're constantly working to improve our project and have several exciting featur
 - Backend Service for API Calls
 - AI Extensions
 - Anthropic Claude
+- Assistants API
+- GPT-4 Turbo with Vision
+- DALL·E 3
+- OpenAI's text-to-speech
 
 ### Monetization
 - Adding a paywall
