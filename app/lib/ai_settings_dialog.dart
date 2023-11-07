@@ -242,7 +242,8 @@ Human: You choose anything you like. Direction comes from the next message. One 
     super.initState();
     _selectedModel = OpenAI_API.model;
     _systemPromptController.text = _systemPrompt;
-    _isGPT4Selected = _selectedModel == 'gpt-4';
+    _isGPT4Selected =
+        _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = _selectedModel == 'huggingface';
     _modelIdController.text = HuggingFace_API.model();
     _templateController.text = HuggingFace_API.template();
@@ -297,6 +298,10 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     value: 'gpt-4',
                     child: Text('GPT-4 (Advanced)'),
                   ),
+                  DropdownMenuItem<String>(
+                    value: 'gpt-4-1106-preview',
+                    child: Text('GPT-4 Turbo (Preview)'),
+                  ),
                   if (HuggingFace_API.oat() != '')
                     DropdownMenuItem<String>(
                       value: 'huggingface',
@@ -311,7 +316,8 @@ Human: You choose anything you like. Direction comes from the next message. One 
                 onChanged: (value) {
                   setState(() {
                     _selectedModel = value!;
-                    _isGPT4Selected = value == 'gpt-4';
+                    _isGPT4Selected =
+                        value == 'gpt-4' || value == 'gpt-4-1106-preview';
                     _isHuggingFaceSelected = value == 'huggingface';
                   });
                 },

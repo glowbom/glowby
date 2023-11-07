@@ -44,9 +44,11 @@ class Ai {
           ? 'Powered by GPT-4'
           : OpenAI_API.model == 'gpt-3.5-turbo'
               ? 'Powered by GPT-3.5'
-              : OpenAI_API.model == 'huggingface'
-                  ? HuggingFace_API.model()
-                  : '';
+              : OpenAI_API.model == 'gpt-4-1106-preview'
+                  ? 'Powered by GPT-4 Turbo'
+                  : OpenAI_API.model == 'huggingface'
+                      ? HuggingFace_API.model()
+                      : '';
       return [
         Message(
           text: response,
