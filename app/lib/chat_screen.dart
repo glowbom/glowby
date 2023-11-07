@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:web/tasks_view.dart';
+import 'package:glowby/tasks_view.dart';
 
 import 'ai.dart';
 import 'ai_settings_dialog.dart';

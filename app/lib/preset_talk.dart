@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:web/openai_api.dart';
+import 'package:glowby/openai_api.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
 import 'dart:html' as html;

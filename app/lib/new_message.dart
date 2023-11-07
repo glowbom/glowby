@@ -6,8 +6,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:web/ai_settings_dialog.dart';
-import 'package:web/utils.dart';
+import 'package:glowby/ai_settings_dialog.dart';
+import 'package:glowby/utils.dart';
 
 import 'message.dart';
 import 'openai_api.dart';

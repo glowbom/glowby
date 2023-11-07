@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
-import 'package:web/hugging_face_api.dart';
+import 'package:glowby/hugging_face_api.dart';
 
 int totalTokensUsed = 0;
 

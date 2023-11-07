@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:web/hugging_face_api.dart';
+import 'package:glowby/hugging_face_api.dart';
 
 import 'openai_api.dart';
 import 'timestamp.dart';

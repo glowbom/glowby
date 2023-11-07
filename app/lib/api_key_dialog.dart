@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:web/openai_api.dart';
-import 'package:web/utils.dart';
+import 'package:glowby/openai_api.dart';
+import 'package:glowby/utils.dart';
 
 import 'hugging_face_api.dart';
 

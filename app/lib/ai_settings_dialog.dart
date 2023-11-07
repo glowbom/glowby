@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:web/hugging_face_api.dart';
-import 'package:web/openai_api.dart';
-import 'package:web/text_to_speech.dart';
-import 'package:web/utils.dart';
+import 'package:glowby/hugging_face_api.dart';
+import 'package:glowby/openai_api.dart';
+import 'package:glowby/text_to_speech.dart';
+import 'package:glowby/utils.dart';
 
 class AiSettingsDialog extends StatefulWidget {
   final Function(bool) onVoiceEnabledChanged;
