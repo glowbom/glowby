@@ -246,3 +246,7 @@ Glowby Basic is released under the [MIT License](https://opensource.org/licenses
 
 If you have any questions or need assistance, feel free to reach out to us on [Twitter](https://twitter.com/glowbomcorp).
 
+## Glowby for ChatGPT
+
+Glowby GPT is available [here](https://glowbom.com/glowby/gpt).
+
