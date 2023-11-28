@@ -154,6 +154,22 @@ class TalkState extends State<Talk> {
       debugShowCheckedModeBanner: false,
       title: 'Chat',
       theme: ThemeData(
+        useMaterial3: true,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.pressed)) {
+                  // Color when the button is pressed
+                  return Colors.purple;
+                }
+                // Default color
+                return Colors.black;
+              },
+            ),
+            // ... other button properties like foregroundColor for text color
+          ),
+        ),
         textSelectionTheme: TextSelectionThemeData(
           selectionColor: Colors.grey, // Change this to your desired color
         ),
