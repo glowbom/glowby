@@ -335,6 +335,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // ignore: unused_element
   void _showSocialLinksDialog() {
     showDialog(
       context: context,
