@@ -56,7 +56,7 @@ class AiSettingsDialog extends StatefulWidget {
 
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
   static bool _voiceEnabled = true;
-  bool _isGPT4Selected = false;
+  //bool _isGPT4Selected = false;
   bool _isHuggingFaceSelected = false;
   bool _sendMessageHistory = false;
 
@@ -242,8 +242,8 @@ Human: You choose anything you like. Direction comes from the next message. One 
     super.initState();
     _selectedModel = OpenAI_API.model;
     _systemPromptController.text = _systemPrompt;
-    _isGPT4Selected =
-        _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
+    //_isGPT4Selected =
+    //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = _selectedModel == 'huggingface';
     _modelIdController.text = HuggingFace_API.model();
     _templateController.text = HuggingFace_API.template();
@@ -275,7 +275,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
       OpenAI_API.setModel(_selectedModel);
       setState(() {
         _isHuggingFaceSelected = false;
-        _isGPT4Selected = false;
+        //_isGPT4Selected = false;
         _selectedModel = 'gpt-3.5-turbo';
       });
     }
@@ -316,8 +316,8 @@ Human: You choose anything you like. Direction comes from the next message. One 
                 onChanged: (value) {
                   setState(() {
                     _selectedModel = value!;
-                    _isGPT4Selected =
-                        value == 'gpt-4' || value == 'gpt-4-1106-preview';
+                    //_isGPT4Selected =
+                    //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
                     _isHuggingFaceSelected = value == 'huggingface';
                   });
                 },
