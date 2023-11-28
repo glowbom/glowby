@@ -154,6 +154,15 @@ class TalkState extends State<Talk> {
       debugShowCheckedModeBanner: false,
       title: 'Chat',
       theme: ThemeData(
+        primaryColor: _mainColor == 'Green'
+            ? Color.fromRGBO(85, 185, 158, 1)
+            : _mainColor == 'Blue'
+                ? Colors.blue
+                : _mainColor == 'Red'
+                    ? Colors.red
+                    : _mainColor == 'Black'
+                        ? Colors.black
+                        : Colors.grey,
         useMaterial3: true,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
@@ -164,11 +173,60 @@ class TalkState extends State<Talk> {
                   return Colors.purple;
                 }
                 // Default color
-                return Colors.black;
+                return _mainColor == 'Green'
+                    ? Color.fromRGBO(85, 185, 158, 1)
+                    : _mainColor == 'Blue'
+                        ? Colors.blue
+                        : _mainColor == 'Red'
+                            ? Colors.red
+                            : _mainColor == 'Black'
+                                ? Colors.black
+                                : Colors.grey;
               },
             ),
             // ... other button properties like foregroundColor for text color
           ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          // Define the focused border with a black underline
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+                color: _mainColor == 'Green'
+                    ? Color.fromRGBO(85, 185, 158, 1)
+                    : _mainColor == 'Blue'
+                        ? Colors.blue
+                        : _mainColor == 'Red'
+                            ? Colors.red
+                            : _mainColor == 'Black'
+                                ? Colors.black
+                                : Colors.grey),
+          ),
+          // Define the enabled border with a black underline
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+                color: _mainColor == 'Green'
+                    ? Color.fromRGBO(85, 185, 158, 1)
+                    : _mainColor == 'Blue'
+                        ? Colors.blue
+                        : _mainColor == 'Red'
+                            ? Colors.red
+                            : _mainColor == 'Black'
+                                ? Colors.black
+                                : Colors.grey),
+          ),
+          // Defines the color of the label text when the TextField is focused or hovered
+          labelStyle: TextStyle(
+              color: _mainColor == 'Green'
+                  ? Color.fromRGBO(85, 185, 158, 1)
+                  : _mainColor == 'Blue'
+                      ? Colors.blue
+                      : _mainColor == 'Red'
+                          ? Colors.red
+                          : _mainColor == 'Black'
+                              ? Colors.black
+                              : Colors.grey),
+          // You can also define the hover color if needed
+          // hoverColor: Colors.black,
         ),
         textSelectionTheme: TextSelectionThemeData(
           selectionColor: Colors.grey, // Change this to your desired color
@@ -188,7 +246,15 @@ class TalkState extends State<Talk> {
           title: Text(
             _title != null ? _title! : 'Chat App',
             style: TextStyle(
-              color: Colors.white,
+              color: _mainColor == 'Green'
+                  ? Color.fromRGBO(85, 185, 158, 1)
+                  : _mainColor == 'Blue'
+                      ? Colors.blue
+                      : _mainColor == 'Red'
+                          ? Colors.red
+                          : _mainColor == 'Black'
+                              ? Colors.black
+                              : Colors.grey,
             ),
           ),
           centerTitle: true,
@@ -197,7 +263,15 @@ class TalkState extends State<Talk> {
               IconButton(
                 icon: Icon(
                   Icons.file_upload,
-                  color: Colors.white,
+                  color: _mainColor == 'Green'
+                      ? Color.fromRGBO(85, 185, 158, 1)
+                      : _mainColor == 'Blue'
+                          ? Colors.blue
+                          : _mainColor == 'Red'
+                              ? Colors.red
+                              : _mainColor == 'Black'
+                                  ? Colors.black
+                                  : Colors.grey,
                 ),
                 onPressed: _startFilePicker,
               ),

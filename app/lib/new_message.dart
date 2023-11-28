@@ -292,6 +292,7 @@ class _NewMessageState extends State<NewMessage> {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: TextField(
+                cursorColor: Theme.of(context).primaryColor,
                 textInputAction: TextInputAction.none,
                 focusNode: _focusNode,
                 autofocus: true,
@@ -299,6 +300,7 @@ class _NewMessageState extends State<NewMessage> {
                 textCapitalization: TextCapitalization.sentences,
                 autocorrect: true,
                 enableSuggestions: true,
+                style: TextStyle(color: Theme.of(context).primaryColor),
                 decoration: InputDecoration(labelText: 'Send message...'),
                 onChanged: (value) {
                   setState(() {
