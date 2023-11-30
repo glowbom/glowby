@@ -281,6 +281,27 @@ class _NewMessageState extends State<NewMessage> {
     ai.getCurrentNetworkOperation()?.cancel();
   }
 
+  /* method for opening a pain window */
+  void _openPainWindow() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pain Window'),
+          content: Text('This is the pain window content.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -329,6 +350,14 @@ class _NewMessageState extends State<NewMessage> {
                 _isRecording ? Icons.record_voice_over : Icons.keyboard_voice,
               ),
               onPressed: _voiceMessage,
+            ),
+          if (kIsWeb && !_isProcessing)
+            IconButton(
+              color: Theme.of(context).primaryColor,
+              icon: Icon(
+                Icons.brush,
+              ),
+              onPressed: _openPainWindow,
             ),
           if (_isProcessing)
             IconButton(
