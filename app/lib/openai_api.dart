@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
 import 'package:glowby/hugging_face_api.dart';
+import 'package:glowby/pulze_ai_api.dart';
 
 int totalTokensUsed = 0;
 
@@ -201,6 +202,13 @@ class OpenAI_API {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
 
+if (OpenAI_API.model == 'pulzeai') {
+      _getResponseFromPulzeAI(
+        message,
+        completer,
+        previousMessages: previousMessages,
+      );
+    } else 
     if (OpenAI_API.model == 'huggingface') {
       _getResponseFromHuggingFace(
         message,
@@ -256,6 +264,44 @@ class OpenAI_API {
     } else {
       finalResponse =
           'Please enter your Hugging Face Access Token in the settings.';
+    }
+
+    completer.complete(finalResponse);
+
+    // Explicitly return null to avoid
+
+    return null;
+  }
+
+  static Future<void> _getResponseFromPulzeAI(
+    String message,
+    CancelableCompleter<String> completer, {
+    List<Map<String, String?>> previousMessages = const [],
+  }) async {
+    String? finalResponse = '';
+
+    if (PulzeAI_API.apiKey != '') {
+      
+      //print(previousMessages);
+      String formattedPrevMessages = formatPrevMessages(previousMessages);
+      if (previousMessages.length > 0 && PulzeAI_API.sendMessages()) {
+        finalResponse = await PulzeAI_API.generate(
+            message + ' previousMessages: ' + formattedPrevMessages);
+      } else {
+        finalResponse = await PulzeAI_API.generate(message);
+      }
+
+      //print('finalResponse: $finalResponse');
+      if (finalResponse != null) {
+        finalResponse = finalResponse
+            .replaceAll('assistant: ', '')
+            .replaceAll('previousMessages: ', '')
+            .replaceAll('user: ', '')
+            .replaceAll('[System message]: ', '');
+      }
+    } else {
+      finalResponse =
+          'Please enter your Puzle AI Access Token in the settings.';
     }
 
     completer.complete(finalResponse);

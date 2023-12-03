@@ -48,7 +48,7 @@ class Ai {
                   ? 'Powered by GPT-4 Turbo'
                   : OpenAI_API.model == 'huggingface'
                       ? HuggingFace_API.model()
-                      : '';
+                      : OpenAI_API.model == 'pulzeai' ? 'Powered by PulzeAI' : '';
       return [
         Message(
           text: response,

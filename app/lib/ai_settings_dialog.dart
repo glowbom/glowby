@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:glowby/hugging_face_api.dart';
+import 'package:glowby/pulze_ai_api.dart';
 import 'package:glowby/openai_api.dart';
 import 'package:glowby/text_to_speech.dart';
 import 'package:glowby/utils.dart';
@@ -306,6 +307,11 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     DropdownMenuItem<String>(
                       value: 'huggingface',
                       child: Text('Hugging Face (Experimental)'),
+                    ),
+                  if (PulzeAI_API.oat() != '')
+                    DropdownMenuItem<String>(
+                      value: 'pulzeai',
+                      child: Text('Pulze.ai'),
                     ),
                   /*DropdownMenuItem<String>(
                     value: 'gpt-4-32k',
