@@ -3,6 +3,7 @@ import 'package:glowby/openai_api.dart';
 import 'package:glowby/utils.dart';
 
 import 'hugging_face_api.dart';
+import 'pulze_ai_api.dart';
 
 class ApiKeyDialog extends StatefulWidget {
   @override
@@ -12,8 +13,10 @@ class ApiKeyDialog extends StatefulWidget {
 class _ApiKeyDialogState extends State<ApiKeyDialog> {
   final _apiKeyController = TextEditingController();
   final _huggingFaceTokenController = TextEditingController();
+  final _pulzeAiController = TextEditingController();
   String _apiKey = '';
   String _huggingFaceToken = '';
+  String _pulzeAiToken = '';
 
   @override
   void initState() {
@@ -25,6 +28,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
         _apiKeyController.text = _apiKey;
         _huggingFaceToken = HuggingFace_API.oat();
         _huggingFaceTokenController.text = _huggingFaceToken;
+        _pulzeAiToken = PulzeAI_API.oat();
+        _pulzeAiController.text = _pulzeAiToken;
       });
     });
   }
@@ -32,6 +37,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
   void _saveApiKey(BuildContext context) {
     OpenAI_API.setOat(_apiKey);
     HuggingFace_API.setOat(_huggingFaceToken);
+    PulzeAI_API.setOat(_pulzeAiToken);
     Navigator.pop(context); // Hide the dialog
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -116,13 +122,13 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                         SizedBox(height: 10),
                         Text('Enter your Pulze.ai Token:'),
                         TextField(
-                          controller: _huggingFaceTokenController,
+                          controller: _pulzeAiController,
                           obscureText: true,
                           decoration: InputDecoration(
                               labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
                           onChanged: (value) {
                             setState(() {
-                              _huggingFaceToken = value;
+                              _pulzeAiToken = value;
                             });
                           },
                         ),
@@ -188,6 +194,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
               _apiKey = '';
               _huggingFaceTokenController.clear();
               _huggingFaceToken = '';
+              _pulzeAiController.clear();
+              _pulzeAiToken = '';
             });
           },
         ),
