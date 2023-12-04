@@ -82,6 +82,7 @@ We're constantly working to improve our project and have several exciting featur
 - GPT-4 Turbo with Vision
 - DALL·E 3
 - OpenAI's text-to-speech
+- Pulze.ai support
 
 ### Monetization
 - Adding a paywall
