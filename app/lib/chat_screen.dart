@@ -360,7 +360,6 @@ class _ChatScreenState extends State<ChatScreen> {
     cancelCurrentOperation();
   }
 
-  // ignore: unused_element
   void _showSocialLinksDialog() {
     showDialog(
       context: context,
@@ -413,7 +412,7 @@ class _ChatScreenState extends State<ChatScreen> {
               text,
               style: TextStyle(
                 color:
-                    Colors.blue, // Change this color to match your app's theme
+                    Colors.black, // Change this color to match your app's theme
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -506,14 +505,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     // Add the Social Links button
-                    /*if (widget._dnsgs! == false)
+                    if (widget._dnsgs! == false)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: IconButton(
                           icon: Icon(Icons.share),
                           onPressed: _showSocialLinksDialog,
                         ),
-                      ),*/
+                      ),
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
                         child: Text(
