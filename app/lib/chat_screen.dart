@@ -319,14 +319,45 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _stopAutonomousMode() {
+  // Inside your _ChatScreenState class
+
+  void setLoading(bool value) {
     setState(() {
-      _loading = false;
-      _stopRequested = true;
-      _autonomousMode = false;
-      _planImplementationInProgress = false;
-      _currentOperation?.cancel();
+      _loading = value;
     });
+  }
+
+  void setStopRequested(bool value) {
+    setState(() {
+      _stopRequested = value;
+    });
+  }
+
+  void setAutonomousMode(bool value) {
+    setState(() {
+      _autonomousMode = value;
+    });
+  }
+
+  void setPlanImplementationInProgress(bool value) {
+    setState(() {
+      _planImplementationInProgress = value;
+    });
+  }
+
+  void cancelCurrentOperation() {
+    if (_currentOperation != null) {
+      _currentOperation!.cancel();
+      _currentOperation = null; // Set to null after canceling
+    }
+  }
+
+  void _stopAutonomousMode() {
+    setLoading(false);
+    setStopRequested(true);
+    setAutonomousMode(false);
+    setPlanImplementationInProgress(false);
+    cancelCurrentOperation();
   }
 
   // ignore: unused_element
