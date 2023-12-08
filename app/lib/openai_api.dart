@@ -48,6 +48,7 @@ class OpenAI_API {
     }
 
     await HuggingFace_API.loadOat();
+    await PulzeAI_API.loadOat();
   }
 
   static Future<void> setModel(String value) async {
