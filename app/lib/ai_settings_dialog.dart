@@ -237,10 +237,16 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   void _promptChanged(String? value) {
     if (value != null) {
       GlobalSettings().selectedPrompt = value;
-      GlobalSettings().systemPrompt = GlobalSettings().prompts.firstWhere(
-              (prompt) => prompt['name'] == GlobalSettings().selectedPrompt)[
-          'description']!;
+      Map<String, dynamic> selectedPromptMap = GlobalSettings()
+          .prompts
+          .firstWhere((prompt) => prompt['name'] == value,
+              orElse: () =>
+                  {'name': value, 'description': ''} // Provide a default map
+              );
+
+      GlobalSettings().systemPrompt = selectedPromptMap['description'] ?? '';
       _systemPromptController.text = GlobalSettings().systemPrompt;
+      GlobalSettings().autonomousMode = false;
     }
   }
 
