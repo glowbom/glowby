@@ -31,6 +31,15 @@ class _TasksViewState extends State<TasksView> {
     _tasks = widget.tasks;
   }
 
+  @override
+  void dispose() {
+    // Dispose the controllers to prevent memory leaks
+    _newTaskController.dispose();
+    _inputFocusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   Widget _buildTaskItem(int index) {
     if (index == _selectedTaskIndex) {
       return TextFormField(
