@@ -367,6 +367,9 @@ class _ChatScreenState extends State<ChatScreen> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
+                _buildLinkItem(
+                    'Glowby GPT', 'https://glowbom.com/glowby/gpt', context),
+                Padding(padding: EdgeInsets.all(10.0)),
                 _buildLinkItem('GitHub Repository',
                     'https://github.com/glowbom/glowby', context),
                 Padding(padding: EdgeInsets.all(10.0)),

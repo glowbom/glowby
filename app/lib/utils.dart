@@ -7,7 +7,7 @@ import 'dart:html' as html;
 import 'package:url_launcher/url_launcher_string.dart';
 
 class Utils {
-  static void launchURL(String url) async {
+  static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
     } else {

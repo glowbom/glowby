@@ -22,10 +22,6 @@ class PulzeAI_API {
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
-    if (apiKey == '') {
-      loadOat();
-    }
-
     return apiKey;
   }
 
@@ -119,54 +115,59 @@ class PulzeAI_API {
     return await _generate(_model, text, _template);
   }
 
-  // Examples:
-  // generate('facebook/bart-large-cnn', 'What\'s the best way to play a guitar?', '[{"summary_text": "***"}]');
-  // generate('google/flan-t5-large', 'What\'s the best way to play a guitar?', '[{"generated_text": "***"}]');
   static Future<String?> _generate(
-    String modelId, String text, String template) async {
-  if (apiKey == '') {
-    return 'Please enter your Pulze AI Access Token in the settings.';
-  }
-
-  final queryUrl = 'https://api.pulze.ai/v1/completions/';
-  final headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer $apiKey',
-    'Pulze-Labels': '{"hello": "world"}', // Added Pulze-Labels header
-  };
-
-  final body = jsonEncode({
-    'model': modelId, // Specify the model
-    'prompt': _systemMessage == '' ? text : text + ' [System message]: ' + _systemMessage,
-    'max_tokens': 7, // Added max_tokens
-    'temperature': 0, // Added temperature
-  });
-
-  if (kDebugMode) {
-    print('Request URL: $queryUrl');
-  }
-
-  final response =
-      await http.post(Uri.parse(queryUrl), headers: headers, body: body);
-
-  if (kDebugMode) {
-    print('Response Status Code: ${response.statusCode}');
-    print('Response Body: ${response.body}');
-  }
-
-  if (response.statusCode == 200) {
-    final jsonResponse = jsonDecode(response.body);
-    final templateJson = jsonDecode(template);
-    final generatedText = _findValueByTemplate(jsonResponse, templateJson);
-
-    if (kDebugMode) {
-      print('Generated Text: $generatedText');
+      String modelId, String text, String template) async {
+    if (apiKey == '') {
+      return 'Please enter your Pulze AI Access Token in the settings.';
     }
 
-    return generatedText;
-  } else {
-    return 'Sorry, there was an error processing your request. Please try again later.';
-  }
-}
+    final queryUrl = 'https://api.pulze.ai/v1/completions/';
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $apiKey',
+      'Pulze-Labels': '{"hello": "world"}', // Added Pulze-Labels header
+    };
 
+    final body = jsonEncode({
+      'model': modelId, // Specify the model
+      'prompt': _systemMessage == ''
+          ? text
+          : text + ' [System message]: ' + _systemMessage,
+      'max_tokens': 7, // Added max_tokens
+      'temperature': 0, // Added temperature
+    });
+
+    try {
+      if (kDebugMode) {
+        print('Request URL: $queryUrl');
+      }
+
+      final response =
+          await http.post(Uri.parse(queryUrl), headers: headers, body: body);
+
+      if (kDebugMode) {
+        print('Response Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        final templateJson = jsonDecode(template);
+        final generatedText = _findValueByTemplate(jsonResponse, templateJson);
+
+        if (kDebugMode) {
+          print('Generated Text: $generatedText');
+        }
+
+        return generatedText;
+      } else {
+        return 'Sorry, there was an error processing your request. Please try again later.';
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('An exception occurred: $e');
+      }
+      return 'An error occurred while processing your request.';
+    }
+  }
 }

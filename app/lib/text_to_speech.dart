@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
-  FlutterTts? _flutterTts;
+  FlutterTts _flutterTts = FlutterTts();
 
   static final Map<String, String> _languageCodes = {
     'American English': 'en-US',
@@ -51,9 +51,9 @@ class TextToSpeech {
         currentLanguage.contains('ru') ||
         currentLanguage.contains('pt') ||
         currentLanguage.contains('pl')) {
-      await _flutterTts!.setSpeechRate(1);
+      await _flutterTts.setSpeechRate(1);
     } else {
-      await _flutterTts!.setSpeechRate(0.85);
+      await _flutterTts.setSpeechRate(0.85);
     }
   }
 
@@ -65,22 +65,18 @@ class TextToSpeech {
       return;
     }
 
-    if (_flutterTts == null) {
-      _flutterTts = FlutterTts();
-    }
-
     bool containsLanguageCode =
         _languageCodes.keys.any((key) => text.contains(key + ':'));
 
     Completer<void> completer = Completer<void>();
-    _flutterTts!.setCompletionHandler(() {
+    _flutterTts.setCompletionHandler(() {
       completer.complete();
     });
 
     if (!containsLanguageCode) {
-      await _flutterTts!.setLanguage(language);
+      await _flutterTts.setLanguage(language);
       await setSpeechRate(language);
-      await _flutterTts!.speak(text);
+      await _flutterTts.speak(text);
       await completer.future;
     } else {
       // Speak the initial text in the default language
@@ -89,9 +85,9 @@ class TextToSpeech {
       String initialText = text.substring(0, matches.first.start);
 
       if (initialText.isNotEmpty) {
-        await _flutterTts!.setLanguage(language);
+        await _flutterTts.setLanguage(language);
         await setSpeechRate(language);
-        await _flutterTts!.speak(initialText);
+        await _flutterTts.speak(initialText);
         await completer.future;
         completer = Completer<void>();
       }
@@ -104,9 +100,9 @@ class TextToSpeech {
             // Speak the part before the colon with the default language.
             String beforeColon = line.split(entry.key + ':')[0];
             if (beforeColon != '') {
-              await _flutterTts!.setLanguage(currentLanguage);
+              await _flutterTts.setLanguage(currentLanguage);
               await setSpeechRate(currentLanguage);
-              await _flutterTts!.speak(beforeColon + ' ' + entry.key);
+              await _flutterTts.speak(beforeColon + ' ' + entry.key);
               await completer.future;
               completer = Completer<void>();
             }
@@ -114,9 +110,9 @@ class TextToSpeech {
             // Speak the part after the colon with the appropriate language.
             String afterColon = line.split(entry.key + ':')[1];
             currentLanguage = entry.value;
-            await _flutterTts!.setLanguage(currentLanguage);
+            await _flutterTts.setLanguage(currentLanguage);
             await setSpeechRate(currentLanguage);
-            await _flutterTts!.speak(afterColon);
+            await _flutterTts.speak(afterColon);
             await completer.future;
             completer = Completer<void>();
             break;
