@@ -25,10 +25,6 @@ class OpenAI_API {
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
-    if (apiKey == '') {
-      loadOat();
-    }
-
     return apiKey;
   }
 
@@ -202,14 +198,13 @@ class OpenAI_API {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
 
-if (OpenAI_API.model == 'pulzeai') {
+    if (OpenAI_API.model == 'pulzeai') {
       _getResponseFromPulzeAI(
         message,
         completer,
         previousMessages: previousMessages,
       );
-    } else 
-    if (OpenAI_API.model == 'huggingface') {
+    } else if (OpenAI_API.model == 'huggingface') {
       _getResponseFromHuggingFace(
         message,
         completer,
@@ -281,7 +276,6 @@ if (OpenAI_API.model == 'pulzeai') {
     String? finalResponse = '';
 
     if (PulzeAI_API.apiKey != '') {
-      
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
       if (previousMessages.length > 0 && PulzeAI_API.sendMessages()) {

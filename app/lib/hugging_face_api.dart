@@ -22,10 +22,6 @@ class HuggingFace_API {
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() {
-    if (apiKey == '') {
-      loadOat();
-    }
-
     return apiKey;
   }
 

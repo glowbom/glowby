@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:glowby/openai_api.dart';
+import 'package:glowby/pulze_ai_api.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
 import 'dart:html' as html;
+
+import 'hugging_face_api.dart';
 
 var _content;
 
@@ -32,11 +35,19 @@ class TalkState extends State<Talk> {
     return json.decode(data);
   }
 
+  Future<void> loadAPIKeys() async {
+    await OpenAI_API.loadOat();
+    await HuggingFace_API.loadOat();
+    await PulzeAI_API.loadOat();
+  }
+
   @override
   void initState() {
     super.initState();
     OpenAI_API.apiKey = '';
-    initializeTalkState();
+    HuggingFace_API.apiKey = '';
+    PulzeAI_API.apiKey = '';
+    loadAPIKeys().then((value) => initializeTalkState());
   }
 
   void initializeTalkState() {
