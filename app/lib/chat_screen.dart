@@ -26,8 +26,6 @@ class ChatScreen extends StatefulWidget {
   final bool? _autonomousMode;
   final bool? _enableAi;
   final bool? _showAiSettings;
-  // this will be used with the upcoming features
-  // ignore: unused_field
   final bool? _dnsgs;
 
   ChatScreen(
@@ -65,7 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _voiceEnabled = widget._voice;
-    AiSettingsDialog.loadDialogValues(widget._selectedModel,
+    GlobalSettings().loadDialogValues(widget._selectedModel,
         widget._selectedLanguage, widget._systemPrompt, widget._autonomousMode);
 
     OpenAI_API.loadOat().then((_) {
@@ -81,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
             _messages[0].userId == '007' &&
             _planImplementationInProgress == false) {
           textToSpeech.speakText(_messages[0].text,
-              language: AiSettingsDialog.selectedLanguage);
+              language: GlobalSettings().selectedLanguage);
         }
       } catch (e) {
         print('Error: $e'); // Log the exception
@@ -217,10 +215,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (_planName == 'Unnamed Plan') {
       textToSpeech.speakText('You plan is ready',
-          language: AiSettingsDialog.selectedLanguage);
+          language: GlobalSettings().selectedLanguage);
     } else {
       textToSpeech.speakText('You plan to ${_planName} is ready',
-          language: AiSettingsDialog.selectedLanguage);
+          language: GlobalSettings().selectedLanguage);
     }
 
     return tasks;
@@ -248,7 +246,7 @@ class _ChatScreenState extends State<ChatScreen> {
         break;
       }
       textToSpeech.speakText('Moving on to the next task.',
-          language: AiSettingsDialog.selectedLanguage);
+          language: GlobalSettings().selectedLanguage);
       String taskMessage = "Moving on to the next task. ${_tasks[i]}";
       await _sendMessageOnBehalfOfUser(taskMessage,
           customSystemPrompt:
@@ -315,7 +313,7 @@ class _ChatScreenState extends State<ChatScreen> {
     refresh();
     if (!lastMessage) {
       await textToSpeech.speakText(response,
-          language: AiSettingsDialog.selectedLanguage);
+          language: GlobalSettings().selectedLanguage);
     }
   }
 

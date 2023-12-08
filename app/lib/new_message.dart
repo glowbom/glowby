@@ -106,7 +106,7 @@ class _NewMessageState extends State<NewMessage> {
       return;
     }
 
-    rv(AiSettingsDialog.selectedLanguage);
+    rv(GlobalSettings().selectedLanguage);
 
     setState(() {
       _isRecording = true;
@@ -206,7 +206,7 @@ class _NewMessageState extends State<NewMessage> {
       }
     }
     // Check if Autonomous mode is on
-    else if (AiSettingsDialog.autonomousMode) {
+    else if (GlobalSettings().autonomousMode) {
       widget.onAutonomousModeMessage(
           message); // Call the callback function with the user's input
     } else {

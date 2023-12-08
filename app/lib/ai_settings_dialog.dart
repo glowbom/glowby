@@ -5,110 +5,30 @@ import 'package:glowby/openai_api.dart';
 import 'package:glowby/text_to_speech.dart';
 import 'package:glowby/utils.dart';
 
-class AiSettingsDialog extends StatefulWidget {
-  final Function(bool) onVoiceEnabledChanged;
+class GlobalSettings {
+  static final GlobalSettings _instance = GlobalSettings._internal();
 
-  AiSettingsDialog({required this.onVoiceEnabledChanged});
+  bool voiceEnabled = true;
+  String selectedLanguage = OpenAI_API.selectedLanguage;
+  bool autonomousMode = false;
+  String selectedModel = OpenAI_API.model;
+  String systemPrompt = OpenAI_API.systemPrompt;
+  String selectedPrompt = 'Simple Assistant Prompt';
+  String systemHuggingFacePrompt = HuggingFace_API.systemMessage();
 
-  static String get selectedLanguage =>
-      _AiSettingsDialogState._selectedLanguage;
-
-  static bool get voiceEnabled => _AiSettingsDialogState._voiceEnabled;
-  static bool get autonomousMode => _AiSettingsDialogState._autonomousMode;
-
-  @override
-  _AiSettingsDialogState createState() => _AiSettingsDialogState();
-
-  static void selectPrompt(String userInput) {
-    for (var prompt in _AiSettingsDialogState._prompts) {
-      if (prompt['description'] == userInput) {
-        _AiSettingsDialogState._selectedPrompt = prompt['name']!;
-        break;
-      }
-    }
+  factory GlobalSettings() {
+    return _instance;
   }
 
-  static void loadDialogValues(selectedModelInput, selectedLanguageInput,
-      systemPromptInput, autonomousModeInput) {
-    _AiSettingsDialogState._selectedPrompt = 'Simple Assistant Prompt';
-    _AiSettingsDialogState._selectedModel = OpenAI_API.model;
-    _AiSettingsDialogState._systemPrompt = OpenAI_API.systemPrompt;
-    _AiSettingsDialogState._selectedLanguage = OpenAI_API.selectedLanguage;
-    _AiSettingsDialogState._autonomousMode = false;
+  GlobalSettings._internal();
 
-    if (selectedModelInput != null && selectedModelInput != '') {
-      _AiSettingsDialogState._selectedModel = selectedModelInput;
-    }
-
-    if (selectedLanguageInput != null && selectedLanguageInput != '') {
-      _AiSettingsDialogState._selectedLanguage = selectedLanguageInput;
-    }
-
-    if (systemPromptInput != null && systemPromptInput != '') {
-      _AiSettingsDialogState._systemPrompt = systemPromptInput;
-      selectPrompt(systemPromptInput);
-    }
-
-    if (autonomousModeInput != null) {
-      _AiSettingsDialogState._autonomousMode = autonomousModeInput;
-    }
-  }
-}
-
-class _AiSettingsDialogState extends State<AiSettingsDialog> {
-  static bool _voiceEnabled = true;
-  //bool _isGPT4Selected = false;
-  bool _isHuggingFaceSelected = false;
-  bool _sendMessageHistory = false;
-
-  static String _selectedModel = OpenAI_API.model;
-  static String _systemPrompt = OpenAI_API.systemPrompt;
-  static String _systemHuggingFacePrompt = HuggingFace_API.systemMessage();
-  final TextEditingController _systemPromptController = TextEditingController();
-  final TextEditingController _systemPromptHuggingFaceController =
-      TextEditingController();
-  final TextEditingController _modelIdController = TextEditingController();
-  final TextEditingController _templateController = TextEditingController();
-
-  static String _selectedLanguage = OpenAI_API.selectedLanguage;
-
-  static bool _autonomousMode = false;
-
-  Widget _buildAutonomousModeCheckbox() {
-    if (_selectedPrompt == 'Complex Task Prompt') {
-      return CheckboxListTile(
-        title: Text('Autonomous Mode (Experimental)'),
-        value: _autonomousMode,
-        onChanged: (bool? value) {
-          setState(() {
-            _autonomousMode = value!;
-          });
-        },
-      );
-    }
-    return SizedBox.shrink();
-  }
-
-  static void _languageChanged(String? value) {
+  void languageChanged(String? value) {
     if (value != null) {
-      _selectedLanguage = value;
+      selectedLanguage = value;
     }
   }
 
-  List<DropdownMenuItem<String>> buildLanguageDropdownItems() {
-    Set<String> uniqueLanguageCodes =
-        Set<String>.from(TextToSpeech.languageCodes.values);
-    return uniqueLanguageCodes
-        .map((code) => DropdownMenuItem<String>(
-              value: code,
-              child: Text(TextToSpeech.languageCodes.entries
-                  .firstWhere((entry) => entry.value == code)
-                  .key),
-            ))
-        .toList();
-  }
-
-  static const String _storyPrompt =
+  static const String storyPrompt =
       """AI crafts immersive, choice-driven adventures.
 
 Starting point: You perform a captivating dance, enchanting the goblins that swarm the Golden Gate Bridge. A fairy chuckles, "Impressive moves! A centipede must have taught you - they're always on their feet!" Using your magic, you banish the goblins and restore peace to the bridge. Your next decision awaits:
@@ -157,8 +77,7 @@ AI: You step into a charming cafe and encounter an intriguing character at the c
 Human: You choose anything you like. Direction comes from the next message. One think the story should be short and should have 4 actions only. As AI you return only one part at time. You skip "AI: " and start with the story part.
 """;
 
-  static String _selectedPrompt = 'Simple Assistant Prompt';
-  static List<Map<String, String>> _prompts = [
+  List<Map<String, String>> prompts = [
     {
       'name': 'Complex Task Prompt',
       'description':
@@ -206,7 +125,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
     },
     {
       'name': 'Interactive Adventure Prompt',
-      'description': _storyPrompt,
+      'description': storyPrompt,
     },
     {
       'name': 'Habit Formation',
@@ -220,8 +139,94 @@ Human: You choose anything you like. Direction comes from the next message. One 
     },
   ];
 
+  void selectPrompt(String userInput) {
+    for (var prompt in prompts) {
+      if (prompt['description'] == userInput) {
+        selectedPrompt = prompt['name']!;
+        break;
+      }
+    }
+  }
+
+  void loadDialogValues(selectedModelInput, selectedLanguageInput,
+      systemPromptInput, autonomousModeInput) {
+    selectedPrompt = 'Simple Assistant Prompt';
+    selectedModel = OpenAI_API.model;
+    systemPrompt = OpenAI_API.systemPrompt;
+    selectedLanguage = OpenAI_API.selectedLanguage;
+    autonomousMode = false;
+
+    if (selectedModelInput != null && selectedModelInput != '') {
+      selectedModel = selectedModelInput;
+    }
+
+    if (selectedLanguageInput != null && selectedLanguageInput != '') {
+      selectedLanguage = selectedLanguageInput;
+    }
+
+    if (systemPromptInput != null && systemPromptInput != '') {
+      systemPrompt = systemPromptInput;
+      selectPrompt(systemPromptInput);
+    }
+
+    if (autonomousModeInput != null) {
+      autonomousMode = autonomousModeInput;
+    }
+  }
+
+  // ... other methods if necessary ...
+}
+
+class AiSettingsDialog extends StatefulWidget {
+  final Function(bool) onVoiceEnabledChanged;
+
+  AiSettingsDialog({required this.onVoiceEnabledChanged});
+
+  @override
+  _AiSettingsDialogState createState() => _AiSettingsDialogState();
+}
+
+class _AiSettingsDialogState extends State<AiSettingsDialog> {
+  bool _isHuggingFaceSelected = false;
+  bool _sendMessageHistory = false;
+
+  final TextEditingController _systemPromptController = TextEditingController();
+  final TextEditingController _systemPromptHuggingFaceController =
+      TextEditingController();
+  final TextEditingController _modelIdController = TextEditingController();
+  final TextEditingController _templateController = TextEditingController();
+
+  Widget _buildAutonomousModeCheckbox() {
+    if (GlobalSettings().selectedPrompt == 'Complex Task Prompt') {
+      return CheckboxListTile(
+        title: Text('Autonomous Mode (Experimental)'),
+        value: GlobalSettings().autonomousMode,
+        onChanged: (bool? value) {
+          setState(() {
+            GlobalSettings().autonomousMode = value!;
+          });
+        },
+      );
+    }
+    return SizedBox.shrink();
+  }
+
+  List<DropdownMenuItem<String>> buildLanguageDropdownItems() {
+    Set<String> uniqueLanguageCodes =
+        Set<String>.from(TextToSpeech.languageCodes.values);
+    return uniqueLanguageCodes
+        .map((code) => DropdownMenuItem<String>(
+              value: code,
+              child: Text(TextToSpeech.languageCodes.entries
+                  .firstWhere((entry) => entry.value == code)
+                  .key),
+            ))
+        .toList();
+  }
+
   List<DropdownMenuItem<String>> buildPromptDropdownItems() {
-    return _prompts
+    return GlobalSettings()
+        .prompts
         .map((prompt) => DropdownMenuItem<String>(
               value: prompt['name'],
               child: Text(prompt['name']!),
@@ -231,36 +236,38 @@ Human: You choose anything you like. Direction comes from the next message. One 
 
   void _promptChanged(String? value) {
     if (value != null) {
-      _selectedPrompt = value;
-      _systemPrompt = _prompts.firstWhere(
-          (prompt) => prompt['name'] == _selectedPrompt)['description']!;
-      _systemPromptController.text = _systemPrompt;
+      GlobalSettings().selectedPrompt = value;
+      GlobalSettings().systemPrompt = GlobalSettings().prompts.firstWhere(
+              (prompt) => prompt['name'] == GlobalSettings().selectedPrompt)[
+          'description']!;
+      _systemPromptController.text = GlobalSettings().systemPrompt;
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _selectedModel = OpenAI_API.model;
-    _systemPromptController.text = _systemPrompt;
+    GlobalSettings().selectedModel = OpenAI_API.model;
+    _systemPromptController.text = GlobalSettings().systemPrompt;
     //_isGPT4Selected =
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
-    _isHuggingFaceSelected = _selectedModel == 'huggingface';
+    _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _modelIdController.text = HuggingFace_API.model();
     _templateController.text = HuggingFace_API.template();
-    _systemHuggingFacePrompt = HuggingFace_API.systemMessage();
+    GlobalSettings().systemHuggingFacePrompt = HuggingFace_API.systemMessage();
     _sendMessageHistory = HuggingFace_API.sendMessages();
-    _systemPromptHuggingFaceController.text = _systemHuggingFacePrompt;
+    _systemPromptHuggingFaceController.text =
+        GlobalSettings().systemHuggingFacePrompt;
   }
 
   void _saveSettings(BuildContext context) {
-    OpenAI_API.setModel(_selectedModel);
-    OpenAI_API.setSystemPrompt(_systemPrompt);
-    OpenAI_API.setSelectedLanguage(_selectedLanguage);
+    OpenAI_API.setModel(GlobalSettings().selectedModel);
+    OpenAI_API.setSystemPrompt(GlobalSettings().systemPrompt);
+    OpenAI_API.setSelectedLanguage(GlobalSettings().selectedLanguage);
     HuggingFace_API.setModel(_modelIdController.text);
     HuggingFace_API.setTemplate(_templateController.text);
     HuggingFace_API.setSendMessages(_sendMessageHistory);
-    HuggingFace_API.setSystemMessage(_systemHuggingFacePrompt);
+    HuggingFace_API.setSystemMessage(GlobalSettings().systemHuggingFacePrompt);
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog
@@ -272,12 +279,13 @@ Human: You choose anything you like. Direction comes from the next message. One 
 
   @override
   Widget build(BuildContext context) {
-    if (HuggingFace_API.oat() == '' && _selectedModel == 'huggingface') {
-      OpenAI_API.setModel(_selectedModel);
+    if (HuggingFace_API.oat() == '' &&
+        GlobalSettings().selectedModel == 'huggingface') {
+      OpenAI_API.setModel(GlobalSettings().selectedModel);
       setState(() {
         _isHuggingFaceSelected = false;
         //_isGPT4Selected = false;
-        _selectedModel = 'gpt-3.5-turbo';
+        GlobalSettings().selectedModel = 'gpt-3.5-turbo';
       });
     }
     return AlertDialog(
@@ -289,7 +297,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
             children: <Widget>[
               Text('Choose AI Model:'),
               DropdownButton<String>(
-                value: _selectedModel,
+                value: GlobalSettings().selectedModel,
                 items: [
                   DropdownMenuItem<String>(
                     value: 'gpt-3.5-turbo',
@@ -321,7 +329,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                 ],
                 onChanged: (value) {
                   setState(() {
-                    _selectedModel = value!;
+                    GlobalSettings().selectedModel = value!;
                     //_isGPT4Selected =
                     //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
                     _isHuggingFaceSelected = value == 'huggingface';
@@ -374,7 +382,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
               if (!_isHuggingFaceSelected)
                 if (!_isHuggingFaceSelected)
                   DropdownButton<String>(
-                    value: _selectedPrompt,
+                    value: GlobalSettings().selectedPrompt,
                     items: buildPromptDropdownItems(),
                     onChanged: (value) {
                       setState(() {
@@ -391,7 +399,7 @@ Human: You choose anything you like. Direction comes from the next message. One 
                     labelText: 'Enter system prompt',
                   ),
                   onChanged: (value) {
-                    _systemPrompt = value;
+                    GlobalSettings().systemPrompt = value;
                   },
                 ),
               /*if (_isHuggingFaceSelected) Text('System Message:'),
@@ -421,10 +429,10 @@ Human: You choose anything you like. Direction comes from the next message. One 
               if (_isHuggingFaceSelected) SizedBox(height: 10),*/
               CheckboxListTile(
                 title: Text('Enable voice'),
-                value: _AiSettingsDialogState._voiceEnabled,
+                value: GlobalSettings().voiceEnabled,
                 onChanged: (bool? value) {
                   setState(() {
-                    _AiSettingsDialogState._voiceEnabled = value!;
+                    GlobalSettings().voiceEnabled = value!;
                   });
                   widget.onVoiceEnabledChanged(value!);
                 },
@@ -435,11 +443,11 @@ Human: You choose anything you like. Direction comes from the next message. One 
                   width: 220, // Width adjusted to match expanding triangle
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    value: _selectedLanguage,
+                    value: GlobalSettings().selectedLanguage,
                     items: buildLanguageDropdownItems(),
                     onChanged: (value) {
                       setState(() {
-                        _languageChanged(value);
+                        GlobalSettings().languageChanged(value);
                       });
                     },
                   ),
