@@ -264,55 +264,49 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _sendMessageOnBehalfOfUser(
-    String message, {
-    String? customSystemPrompt,
-    bool lastMessage = false,
-  }) async {
-    // Add the message to the list
+  void insertMessage(String message, String userId, String username) {
     _messages.insert(
         0,
         Message(
           text: message,
           createdAt: Timestamp.now(),
-          userId: 'Me',
-          username: 'Me',
+          userId: userId,
+          username: username,
         ));
+  }
 
-    //await textToSpeech.speakText(message,
-    //  language: AiSettingsDialog.selectedLanguage);
-
-    refresh();
-
-    String response = '';
-
-    // Convert previousMessages to the format expected by the API
+  Future<String> fetchResponseFromAPI(
+      String message, String? customSystemPrompt) async {
     List<Map<String, String?>> formattedPreviousMessages = _messages
-        .map((message) {
-          return {
-            'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
-            'content': message.text
-          };
-        })
+        .map((message) => {
+              'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+              'content': message.text
+            })
         .toList()
         .reversed
         .toList();
 
-    _currentOperation = await OpenAI_API.getResponseFromOpenAI(message,
-        previousMessages: formattedPreviousMessages,
-        customSystemPrompt: customSystemPrompt);
+    _currentOperation = await OpenAI_API.getResponseFromOpenAI(
+      message,
+      previousMessages: formattedPreviousMessages,
+      customSystemPrompt: customSystemPrompt,
+    );
 
-    response = await _currentOperation!.value;
+    return await _currentOperation!.value;
+  }
 
-    // Add the response to the list
-    _messages.insert(
-        0,
-        Message(
-          text: response,
-          createdAt: Timestamp.now(),
-          userId: '007',
-          username: widget._name == '' ? 'AI' : widget._name,
-        ));
+  Future<void> _sendMessageOnBehalfOfUser(
+    String message, {
+    String? customSystemPrompt,
+    bool lastMessage = false,
+  }) async {
+    insertMessage(message, 'Me', 'Me'); // Insert user's message
+    refresh(); // Refresh UI
+
+    String response = await fetchResponseFromAPI(message, customSystemPrompt);
+
+    insertMessage(response, '007',
+        widget._name == '' ? 'AI' : widget._name); // Insert AI's response
 
     // Update the UI
     if (lastMessage) {
