@@ -48,7 +48,9 @@ class Ai {
                   ? 'Powered by GPT-4 Turbo'
                   : OpenAI_API.model == 'huggingface'
                       ? HuggingFace_API.model()
-                      : OpenAI_API.model == 'pulzeai' ? 'Powered by PulzeAI' : '';
+                      : OpenAI_API.model == 'pulzeai'
+                          ? 'Powered by PulzeAI'
+                          : '';
       return [
         Message(
           text: response,
@@ -180,7 +182,7 @@ class Ai {
   Future<List<Message>> _generateResponseMessage(
       List<Map<String, Object>> foundQuestions) async {
     try {
-      Random rnd = Random(DateTime.now().millisecondsSinceEpoch);
+      Random rnd = Random.secure();
       List<String> messages = [];
 
       for (Map<String, Object> questionMap in foundQuestions) {

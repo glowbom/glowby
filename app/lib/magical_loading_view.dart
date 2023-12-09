@@ -9,6 +9,12 @@ class MagicalLoadingView extends StatefulWidget {
 class _MagicalLoadingViewState extends State<MagicalLoadingView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final Random _random = Random();
+
+  String getRandomMessage() {
+    int index = _random.nextInt(loadingMessages.length);
+    return loadingMessages[index];
+  }
 
   @override
   void initState() {
@@ -71,6 +77,9 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
 
 class _MagicalLoadingPainter extends CustomPainter {
   final double progress;
+  final Paint circlePaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 4;
 
   _MagicalLoadingPainter(this.progress);
 
@@ -81,10 +90,9 @@ class _MagicalLoadingPainter extends CustomPainter {
     final radius = min(size.width, size.height) / 4;
     final outerRadius = radius * (1 + 0.3 * sin(2 * pi * progress));
 
-    final circlePaint = Paint()
-      ..color = Colors.black.withOpacity(0.5 + 0.5 * sin(2 * pi * progress))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+    // Update paint properties that change with progress
+    circlePaint
+      ..color = Colors.black.withOpacity(0.5 + 0.5 * sin(2 * pi * progress));
 
     canvas.drawCircle(Offset(centerX, centerY), radius, circlePaint);
     canvas.drawCircle(Offset(centerX, centerY), outerRadius, circlePaint);
@@ -123,9 +131,3 @@ List<String> loadingMessages = [
   'Envisioning a successful future...',
   'Formulating a winning strategy...',
 ];
-
-String getRandomMessage() {
-  final random = Random();
-  int index = random.nextInt(loadingMessages.length);
-  return loadingMessages[index];
-}

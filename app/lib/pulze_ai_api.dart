@@ -4,7 +4,26 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class PulzeAI_API {
-  static String apiKey = '';
+  static final PulzeAI_API _instance = PulzeAI_API._privateConstructor();
+  factory PulzeAI_API() => _instance;
+  PulzeAI_API._privateConstructor();
+
+  String _apiKey = '';
+
+  static String oat() => PulzeAI_API()._oat();
+  static void setOat(String value) => PulzeAI_API()._setOat(value);
+  static void resetOat() => PulzeAI_API()._resetOat();
+
+  void _resetOat() {
+    _apiKey = '';
+  }
+
+  String _oat() => _apiKey;
+  Future<void> _setOat(String value) async {
+    _apiKey = value;
+    await _secureStorage.write(key: _apiKeyKey, value: _apiKey);
+  }
+
   static String _template = '''[
   {
     "generated_text": "***"
@@ -14,25 +33,16 @@ class PulzeAI_API {
   static String _model = 'google/flan-t5-large';
   static String _systemMessage = '';
   static bool _sendMessages = false;
-  static const String _apiKeyKey = 'huggingface_api_key';
-  static const String _templateKey = 'huggingface_template';
-  static const String _modelKey = 'huggingface_model';
-  static const String _systemMessageKey = 'huggingface_system_message';
-  static const String _sendMessagesKey = 'huggingface_send_messages';
+  static const String _apiKeyKey = 'pulze_ai_api_key';
+  static const String _templateKey = 'pulze_ai_template';
+  static const String _modelKey = 'pulze_ai_model';
+  static const String _systemMessageKey = 'pulze_ai_system_message';
+  static const String _sendMessagesKey = 'pulze_ai_send_messages';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
-
-  static String oat() {
-    return apiKey;
-  }
-
-  static void setOat(String value) async {
-    apiKey = value;
-    await _secureStorage.write(key: _apiKeyKey, value: apiKey);
-  }
 
   static Future<void> loadOat() async {
     try {
-      apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+      setOat(await _secureStorage.read(key: _apiKeyKey) ?? '');
       _template = await _secureStorage.read(key: _templateKey) ??
           '''[
   {
@@ -56,9 +66,9 @@ class PulzeAI_API {
     return _sendMessages;
   }
 
-  static void setSendMessages(bool sendMessages) {
+  static Future<void> setSendMessages(bool sendMessages) async {
     _sendMessages = sendMessages;
-    _secureStorage.write(
+    await _secureStorage.write(
         key: _sendMessagesKey, value: _sendMessages.toString());
   }
 
@@ -117,9 +127,11 @@ class PulzeAI_API {
 
   static Future<String?> _generate(
       String modelId, String text, String template) async {
-    if (apiKey == '') {
+    if (PulzeAI_API.oat() == '') {
       return 'Please enter your Pulze AI Access Token in the settings.';
     }
+
+    final apiKey = PulzeAI_API.oat();
 
     final queryUrl = 'https://api.pulze.ai/v1/completions/';
     final headers = {

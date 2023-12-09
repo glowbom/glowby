@@ -44,9 +44,9 @@ class TalkState extends State<Talk> {
   @override
   void initState() {
     super.initState();
-    OpenAI_API.apiKey = '';
-    HuggingFace_API.apiKey = '';
-    PulzeAI_API.apiKey = '';
+    OpenAI_API.resetOat();
+    HuggingFace_API.resetOat();
+    PulzeAI_API.resetOat();
     loadAPIKeys().then((value) => initializeTalkState());
   }
 

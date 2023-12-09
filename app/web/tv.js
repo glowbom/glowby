@@ -1,28 +1,34 @@
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const r = new SpeechRecognition();
-r.lang = 'en-US';
-r.interimResults = false;
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 
-r.addEventListener('result', (e) => {
-  let last = e.results.length - 1;
-  let text = e.results[last][0].transcript;
+if (SpeechRecognition != null) {
+  const r = new SpeechRecognition();
+  r.lang = "en-US";
+  r.interimResults = false;
 
-  console.log('last: ' + last);
-  console.log('text: ' + text);
+  r.addEventListener("result", (e) => {
+    let last = e.results.length - 1;
+    let text = e.results[last][0].transcript;
 
-  console.log('Confidence: ' + e.results[0][0].confidence);
+    console.log("last: " + last);
+    console.log("text: " + text);
 
-  vr(text);
+    console.log("Confidence: " + e.results[0][0].confidence);
 
-  // We will use the Socket.IO here later…
-});
+    vr(text);
 
-function rv(lang) {
-  if ((typeof(lang) !== 'undefined') && (lang !== null)) {
-    r.lang = lang;
-    console.log('switched to ' + lang);
+    // We will use the Socket.IO here later…
+  });
+
+  function rv(lang) {
+    if (typeof lang !== "undefined" && lang !== null) {
+      r.lang = lang;
+      console.log("switched to " + lang);
+    }
+
+    r.start();
+    console.log("recordVoice call");
   }
-
-  r.start();
-  console.log('recordVoice call');
+} else {
+  console.error("SpeechRecognition API not supported in this browser.");
 }

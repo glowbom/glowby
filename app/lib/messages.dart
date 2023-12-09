@@ -1,3 +1,5 @@
+import 'package:glowby/global_settings.dart';
+
 import 'message.dart';
 import 'message_bubble.dart';
 import 'package:flutter/material.dart';
@@ -34,8 +36,11 @@ class _MessagesState extends State<Messages> {
     ];
 
     for (final prefix in languagePrefixes) {
-      if (messageText.startsWith(prefix))
-        messageText = messageText.replaceAll(prefix, '');
+      if (messageText.startsWith(prefix)) {
+        // Replace only the first occurrence of the prefix
+        messageText = messageText.replaceFirst(prefix, '');
+        break; // Since we found the prefix, no need to check the rest
+      }
     }
 
     return messageText;
@@ -54,7 +59,7 @@ class _MessagesState extends State<Messages> {
         return MessageBubble(
           processedText,
           message.username,
-          message.userId == 'Me',
+          message.userId == GlobalSettings().userId,
           message.link,
           key: ValueKey(message.createdAt.toString()),
         );

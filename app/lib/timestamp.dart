@@ -80,7 +80,7 @@ class Timestamp implements Comparable<Timestamp> {
   @override
   int get hashCode => Object.hash(seconds, nanoseconds);
   @override
-  bool operator ==(dynamic o) =>
+  bool operator ==(Object o) =>
       o is Timestamp && o.seconds == seconds && o.nanoseconds == nanoseconds;
   @override
   int compareTo(Timestamp other) {

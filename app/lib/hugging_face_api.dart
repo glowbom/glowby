@@ -4,7 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class HuggingFace_API {
-  static String apiKey = '';
+  static final HuggingFace_API _instance =
+      HuggingFace_API._privateConstructor();
+  factory HuggingFace_API() => _instance;
+  HuggingFace_API._privateConstructor();
+
+  String _apiKey = '';
+
   static String _template = '''[
   {
     "generated_text": "***"
@@ -21,18 +27,23 @@ class HuggingFace_API {
   static const String _sendMessagesKey = 'huggingface_send_messages';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-  static String oat() {
-    return apiKey;
+  static String oat() => HuggingFace_API()._oat();
+  static void setOat(String value) => HuggingFace_API()._setOat(value);
+  static void resetOat() => HuggingFace_API()._resetOat();
+
+  void _resetOat() {
+    _apiKey = '';
   }
 
-  static void setOat(String value) async {
-    apiKey = value;
-    await _secureStorage.write(key: _apiKeyKey, value: apiKey);
+  String _oat() => _apiKey;
+  Future<void> _setOat(String value) async {
+    _apiKey = value;
+    await _secureStorage.write(key: 'huggingface_api_key', value: _apiKey);
   }
 
   static Future<void> loadOat() async {
     try {
-      apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+      setOat(await _secureStorage.read(key: _apiKeyKey) ?? '');
       _template = await _secureStorage.read(key: _templateKey) ??
           '''[
   {
@@ -56,10 +67,11 @@ class HuggingFace_API {
     return _sendMessages;
   }
 
-  static void setSendMessages(bool sendMessages) {
+  static Future<void> setSendMessages(bool sendMessages) async {
     _sendMessages = sendMessages;
-    _secureStorage.write(
-        key: _sendMessagesKey, value: _sendMessages.toString());
+    await _secureStorage
+        .write(key: _sendMessagesKey, value: _sendMessages.toString())
+        .then((value) => null);
   }
 
   static String systemMessage() {
@@ -120,7 +132,7 @@ class HuggingFace_API {
   // generate('google/flan-t5-large', 'What\'s the best way to play a guitar?', '[{"generated_text": "***"}]');
   static Future<String?> _generate(
       String modelId, String text, String template) async {
-    if (apiKey == '') {
+    if (oat() == '') {
       return 'Please enter your Hugging Face Access Token in the settings.';
     }
 
@@ -128,10 +140,11 @@ class HuggingFace_API {
       return 'Please enter Model ID in the settings.';
     }
 
+    final token = oat();
     final queryUrl = 'https://api-inference.huggingface.co/models/$modelId';
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $apiKey',
+      'Authorization': 'Bearer $token',
     };
 
     final body = jsonEncode({

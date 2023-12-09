@@ -34,9 +34,45 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     });
   }
 
+  bool isValidOpenAIKey(String key) =>
+      RegExp(r'^sk-[A-Za-z0-9-_]+$').hasMatch(key);
+
+  bool isValidHuggingFaceKey(String key) =>
+      RegExp(r'^[A-Za-z0-9-_]+$').hasMatch(key);
+
+  bool isValidPuzzleAIKey(String key) =>
+      RegExp(r'^sk-[A-Za-z0-9-_]+$').hasMatch(key);
+
   void _saveApiKey(BuildContext context) {
+    if (!_apiKey.isEmpty && !isValidOpenAIKey(_apiKey)) {
+      Navigator.pop(context); // Hide the dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('OpenAI API Key is invalid!')),
+      );
+      return;
+    }
+
     OpenAI_API.setOat(_apiKey);
+
+    if (!_huggingFaceToken.isEmpty &&
+        !isValidHuggingFaceKey(_huggingFaceToken)) {
+      Navigator.pop(context); // Hide the dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hugging Face Token is invalid!')),
+      );
+      return;
+    }
+
     HuggingFace_API.setOat(_huggingFaceToken);
+
+    if (!_pulzeAiToken.isEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
+      Navigator.pop(context); // Hide the dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Pulze API Key is invalid!')),
+      );
+      return;
+    }
+
     PulzeAI_API.setOat(_pulzeAiToken);
     Navigator.pop(context); // Hide the dialog
 
@@ -116,8 +152,8 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                             '→ Pulze.ai Dashboard',
                             style: TextStyle(color: Colors.blue),
                           ),
-                          onTap: () => Utils.launchURL(
-                              'https://platform.pulze.ai/'),
+                          onTap: () =>
+                              Utils.launchURL('https://platform.pulze.ai/'),
                         ),
                         SizedBox(height: 10),
                         Text('Enter your Pulze.ai Token:'),

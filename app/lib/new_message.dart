@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:glowby/ai_settings_dialog.dart';
+import 'package:glowby/global_settings.dart';
 import 'package:glowby/utils.dart';
 
 import 'message.dart';
@@ -136,8 +136,8 @@ class _NewMessageState extends State<NewMessage> {
       Message(
           text: _enteredMessage.trim(),
           createdAt: Timestamp.now(),
-          userId: 'Me',
-          username: 'Me'),
+          userId: GlobalSettings().userId,
+          username: GlobalSettings().userName),
     );
 
     final message = _enteredMessage.trim();

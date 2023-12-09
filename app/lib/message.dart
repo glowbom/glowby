@@ -21,12 +21,21 @@ class Message {
     required this.text,
     required this.createdAt,
     required this.userId,
-    required this.username,
+    this.username,
     this.link,
   });
 
   @override
   String toString() {
-    return 'Message(text: $text, createdAt: $createdAt, userId: $userId, username: $username, link: $link)';
+    List<String> parts = [
+      'Message(text: $text',
+      'createdAt: $createdAt',
+      'userId: $userId',
+    ];
+
+    if (username != null) parts.add('username: $username');
+    if (link != null) parts.add('link: $link');
+
+    return parts.join(', ') + ')';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:glowby/global_settings.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:glowby/tasks_view.dart';
 
@@ -298,7 +299,8 @@ class _ChatScreenState extends State<ChatScreen> {
     String? customSystemPrompt,
     bool lastMessage = false,
   }) async {
-    insertMessage(message, 'Me', 'Me'); // Insert user's message
+    insertMessage(message, GlobalSettings().userId,
+        GlobalSettings().userName); // Insert user's message
     refresh(); // Refresh UI
 
     String response = await fetchResponseFromAPI(message, customSystemPrompt);
