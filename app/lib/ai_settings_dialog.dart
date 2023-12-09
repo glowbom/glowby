@@ -95,14 +95,22 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         GlobalSettings().systemHuggingFacePrompt;
   }
 
-  void _saveSettings(BuildContext context) {
+  void _saveOpenAISettings() {
     OpenAI_API.setModel(GlobalSettings().selectedModel);
     OpenAI_API.setSystemPrompt(GlobalSettings().systemPrompt);
     OpenAI_API.setSelectedLanguage(GlobalSettings().selectedLanguage);
+  }
+
+  void _saveHuggingFaceSettings() {
     HuggingFace_API.setModel(_modelIdController.text);
     HuggingFace_API.setTemplate(_templateController.text);
     HuggingFace_API.setSendMessages(_sendMessageHistory);
     HuggingFace_API.setSystemMessage(GlobalSettings().systemHuggingFacePrompt);
+  }
+
+  void _saveSettings(BuildContext context) {
+    _saveOpenAISettings();
+    _saveHuggingFaceSettings();
 
     // Save the system prompt to use with API calls
     Navigator.pop(context); // Hide the dialog
