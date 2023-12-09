@@ -239,7 +239,7 @@ class OpenAI_API {
   }) async {
     String? finalResponse = '';
 
-    if (HuggingFace_API.apiKey != '') {
+    if (HuggingFace_API.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
       if (previousMessages.length > 0 && HuggingFace_API.sendMessages()) {
