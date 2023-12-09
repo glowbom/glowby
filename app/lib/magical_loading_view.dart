@@ -9,6 +9,12 @@ class MagicalLoadingView extends StatefulWidget {
 class _MagicalLoadingViewState extends State<MagicalLoadingView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final Random _random = Random();
+
+  String getRandomMessage() {
+    int index = _random.nextInt(loadingMessages.length);
+    return loadingMessages[index];
+  }
 
   @override
   void initState() {
@@ -125,9 +131,3 @@ List<String> loadingMessages = [
   'Envisioning a successful future...',
   'Formulating a winning strategy...',
 ];
-
-String getRandomMessage() {
-  final random = Random();
-  int index = random.nextInt(loadingMessages.length);
-  return loadingMessages[index];
-}
