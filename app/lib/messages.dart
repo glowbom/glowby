@@ -36,8 +36,11 @@ class _MessagesState extends State<Messages> {
     ];
 
     for (final prefix in languagePrefixes) {
-      if (messageText.startsWith(prefix))
-        messageText = messageText.replaceAll(prefix, '');
+      if (messageText.startsWith(prefix)) {
+        // Replace only the first occurrence of the prefix
+        messageText = messageText.replaceFirst(prefix, '');
+        break; // Since we found the prefix, no need to check the rest
+      }
     }
 
     return messageText;
