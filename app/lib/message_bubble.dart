@@ -69,13 +69,22 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  // Builds the message or link, depending on the provided data
-  // If a link is provided, it will display the link as a button or an image, depending on the message content
+  // This method checks if the message indicates an image should be displayed.
+  // The message 'image' is a special keyword in our system that tells the app to render an image from the provided link.
+  // This convention is used to differentiate between messages that are text and ones that should display an image.
+  // The link is expected to be a direct URL to an image resource.
+  // If the link does not result in a valid image, the image widget will handle the error and may fall back to a placeholder or error widget.
   Widget _buildMessageOrLink(BuildContext context) {
     if (link == null) {
       return _buildMessageText(context);
     } else if (message == 'image') {
-      return Image.network(link!);
+      return Image.network(
+        link!,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback for when the image fails to load
+          return _buildLinkButton(context);
+        },
+      );
     } else {
       return _buildLinkButton(context);
     }
