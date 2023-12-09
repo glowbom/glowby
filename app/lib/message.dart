@@ -21,7 +21,7 @@ class Message {
     required this.text,
     required this.createdAt,
     required this.userId,
-    required this.username,
+    this.username,
     this.link,
   });
 
