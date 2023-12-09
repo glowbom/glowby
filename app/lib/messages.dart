@@ -1,4 +1,4 @@
-import 'package:glowby/ai_settings_dialog.dart';
+import 'package:glowby/global_settings.dart';
 
 import 'message.dart';
 import 'message_bubble.dart';

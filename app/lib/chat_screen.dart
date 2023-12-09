@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:glowby/global_settings.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:glowby/tasks_view.dart';
 
