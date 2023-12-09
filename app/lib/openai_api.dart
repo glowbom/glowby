@@ -9,12 +9,31 @@ import 'package:glowby/pulze_ai_api.dart';
 int totalTokensUsed = 0;
 
 class OpenAI_API {
+  static final OpenAI_API _instance = OpenAI_API._privateConstructor();
+  factory OpenAI_API() => _instance;
+  OpenAI_API._privateConstructor();
+
+  String _apiKey = '';
+
+  static String oat() => OpenAI_API()._oat();
+  static void setOat(String value) => OpenAI_API()._setOat(value);
+  static void resetOat() => OpenAI_API()._resetOat();
+
+  void _resetOat() {
+    _apiKey = '';
+  }
+
+  String _oat() => _apiKey;
+  Future<void> _setOat(String value) async {
+    _apiKey = value;
+    await _secureStorage.write(key: _apiKeyKey, value: _apiKey);
+  }
+
   static String DEFAULT_SYSTEM_PROMPT =
       'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
 
   static String DEFAULT_SYSTEM_PROMPT_COMPLEX_TASK =
       'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
-  static String apiKey = '';
   static String model = 'gpt-3.5-turbo'; //'gpt-4';
   static String selectedLanguage = 'en-US';
   static String systemPrompt = DEFAULT_SYSTEM_PROMPT;
@@ -24,18 +43,9 @@ class OpenAI_API {
   static const String _systemPromptKey = 'openai_system_prompt';
   static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-  static String oat() {
-    return apiKey;
-  }
-
-  static void setOat(String value) async {
-    apiKey = value;
-    await _secureStorage.write(key: _apiKeyKey, value: apiKey);
-  }
-
   static Future<void> loadOat() async {
     try {
-      apiKey = await _secureStorage.read(key: _apiKeyKey) ?? '';
+      setOat(await _secureStorage.read(key: _apiKeyKey) ?? '');
       model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
       selectedLanguage =
           (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
@@ -74,6 +84,8 @@ class OpenAI_API {
       throw Exception(
           'The input provided is not considered safe. Please provide a different input.');
     }*/
+
+    final apiKey = OpenAI_API.oat();
 
     final queryUrl = 'https://api.openai.com/v1/images/generations';
     final headers = {
@@ -323,6 +335,8 @@ class OpenAI_API {
       completer.complete(finalResponse);
       return;
     }*/
+
+    final apiKey = OpenAI_API.oat();
 
     while (tries < maxTries) {
       if (kDebugMode) {
