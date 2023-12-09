@@ -64,6 +64,35 @@ class _TasksViewState extends State<TasksView> {
     }
   }
 
+  void _confirmDeletion(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this task?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                setState(() {
+                  _tasks.removeAt(index);
+                });
+                Navigator.of(context).pop(); // Dismiss the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildTaskList() {
     return ListView.separated(
       controller: _scrollController,
@@ -78,11 +107,7 @@ class _TasksViewState extends State<TasksView> {
               Expanded(child: _buildTaskItem(index)),
               IconButton(
                 icon: Icon(Icons.delete),
-                onPressed: () {
-                  setState(() {
-                    _tasks.removeAt(index);
-                  });
-                },
+                onPressed: () => _confirmDeletion(context, index),
               ),
             ],
           ),
