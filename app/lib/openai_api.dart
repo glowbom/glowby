@@ -288,7 +288,7 @@ class OpenAI_API {
   }) async {
     String? finalResponse = '';
 
-    if (PulzeAI_API.apiKey != '') {
+    if (PulzeAI_API.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
       if (previousMessages.length > 0 && PulzeAI_API.sendMessages()) {
