@@ -12,8 +12,9 @@ class MessageBubble extends StatelessWidget {
 
   // Launches the link if it is valid
   void _launchLink() async {
-    if (await canLaunchUrl(Uri.parse(link!))) {
-      await launchUrl(Uri.parse(link!));
+    final uri = Uri.parse(link!);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
       throw 'Could not launch $link';
     }
