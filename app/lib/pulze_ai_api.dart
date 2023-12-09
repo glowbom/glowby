@@ -66,9 +66,9 @@ class PulzeAI_API {
     return _sendMessages;
   }
 
-  static void setSendMessages(bool sendMessages) {
+  static Future<void> setSendMessages(bool sendMessages) async {
     _sendMessages = sendMessages;
-    _secureStorage.write(
+    await _secureStorage.write(
         key: _sendMessagesKey, value: _sendMessages.toString());
   }
 

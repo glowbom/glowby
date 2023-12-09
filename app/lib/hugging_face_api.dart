@@ -67,10 +67,11 @@ class HuggingFace_API {
     return _sendMessages;
   }
 
-  static void setSendMessages(bool sendMessages) {
+  static Future<void> setSendMessages(bool sendMessages) async {
     _sendMessages = sendMessages;
-    _secureStorage.write(
-        key: _sendMessagesKey, value: _sendMessages.toString());
+    await _secureStorage
+        .write(key: _sendMessagesKey, value: _sendMessages.toString())
+        .then((value) => null);
   }
 
   static String systemMessage() {
