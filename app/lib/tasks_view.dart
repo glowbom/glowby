@@ -18,22 +18,28 @@ class TasksView extends StatefulWidget {
   _TasksViewState createState() => _TasksViewState();
 }
 
-class _TasksViewState extends State<TasksView> {
+class _TasksViewState extends State<TasksView>
+    with SingleTickerProviderStateMixin {
   List<String> _tasks = [];
   final TextEditingController _newTaskController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   int? _selectedTaskIndex;
+  late AnimationController _delayController;
 
   @override
   void initState() {
     super.initState();
+    _delayController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 100),
+    );
     _tasks = widget.tasks;
   }
 
   @override
   void dispose() {
-    // Dispose the controllers to prevent memory leaks
+    _delayController.dispose();
     _newTaskController.dispose();
     _inputFocusNode.dispose();
     _scrollController.dispose();
@@ -118,24 +124,23 @@ class _TasksViewState extends State<TasksView> {
 
   Widget _buildAddTaskForm() {
     return TextFormField(
-      controller: _newTaskController,
-      focusNode: _inputFocusNode,
-      decoration: InputDecoration(labelText: 'Add a new task'),
-      onFieldSubmitted: (value) {
-        setState(() {
-          _tasks.add(value);
-          _newTaskController.clear();
-          _inputFocusNode.requestFocus();
+        controller: _newTaskController,
+        focusNode: _inputFocusNode,
+        decoration: InputDecoration(labelText: 'Add a new task'),
+        onFieldSubmitted: (value) {
+          setState(() {
+            _tasks.add(value);
+            _newTaskController.clear();
+            _inputFocusNode.requestFocus();
+          });
+          _delayController.forward(from: 0).then((_) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeOut,
+            );
+          });
         });
-        Future.delayed(Duration(milliseconds: 100)).then((_) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: Duration(milliseconds: 500),
-            curve: Curves.easeOut,
-          );
-        });
-      },
-    );
   }
 
   @override
