@@ -8,6 +8,9 @@ import 'package:glowby/utils.dart';
 class GlobalSettings {
   static final GlobalSettings _instance = GlobalSettings._internal();
 
+  String userId = 'Me';
+  String userName = 'Me';
+
   bool voiceEnabled = true;
   String selectedLanguage = OpenAI_API.selectedLanguage;
   bool autonomousMode = false;

@@ -136,8 +136,8 @@ class _NewMessageState extends State<NewMessage> {
       Message(
           text: _enteredMessage.trim(),
           createdAt: Timestamp.now(),
-          userId: 'Me',
-          username: 'Me'),
+          userId: GlobalSettings().userId,
+          username: GlobalSettings().userName),
     );
 
     final message = _enteredMessage.trim();

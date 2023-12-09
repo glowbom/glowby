@@ -1,3 +1,5 @@
+import 'package:glowby/ai_settings_dialog.dart';
+
 import 'message.dart';
 import 'message_bubble.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +56,7 @@ class _MessagesState extends State<Messages> {
         return MessageBubble(
           processedText,
           message.username,
-          message.userId == 'Me',
+          message.userId == GlobalSettings().userId,
           message.link,
           key: ValueKey(message.createdAt.toString()),
         );

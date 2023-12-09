@@ -298,7 +298,8 @@ class _ChatScreenState extends State<ChatScreen> {
     String? customSystemPrompt,
     bool lastMessage = false,
   }) async {
-    insertMessage(message, 'Me', 'Me'); // Insert user's message
+    insertMessage(message, GlobalSettings().userId,
+        GlobalSettings().userName); // Insert user's message
     refresh(); // Refresh UI
 
     String response = await fetchResponseFromAPI(message, customSystemPrompt);
