@@ -63,13 +63,26 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _voiceEnabled = widget._voice;
-    GlobalSettings().loadDialogValues(widget._selectedModel,
-        widget._selectedLanguage, widget._systemPrompt, widget._autonomousMode);
+    initializeVoiceEnabled();
+    loadGlobalSettings();
+    loadAPIKey();
+  }
 
-    OpenAI_API.loadOat().then((_) {
-      setState(() {});
-    });
+  void initializeVoiceEnabled() {
+    _voiceEnabled = widget._voice;
+  }
+
+  void loadGlobalSettings() {
+    GlobalSettings().loadDialogValues(
+      widget._selectedModel,
+      widget._selectedLanguage,
+      widget._systemPrompt,
+      widget._autonomousMode,
+    );
+  }
+
+  void loadAPIKey() {
+    OpenAI_API.loadOat().then((_) => setState(() {}));
   }
 
   // Refresh the chat screen and handle text-to-speech functionality
