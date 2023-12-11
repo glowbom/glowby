@@ -16,7 +16,7 @@ class MessageBubble extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      throw 'Could not launch $link';
+      throw Exception('Could not launch $link');
     }
   }
 
