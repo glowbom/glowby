@@ -85,21 +85,30 @@ class _ChatScreenState extends State<ChatScreen> {
     OpenAI_API.loadOat().then((_) => setState(() {}));
   }
 
-  // Refresh the chat screen and handle text-to-speech functionality
-  void refresh() {
+  // Refresh the UI state of the chat screen
+  void refreshUI() {
+    setState(() {});
+  }
+
+// Handle text-to-speech functionality independently
+  void handleTextToSpeech() {
     if (widget._voice && _voiceEnabled) {
       try {
         if (_messages.isNotEmpty &&
             _messages[0].userId == '007' &&
-            _planImplementationInProgress == false) {
+            !_planImplementationInProgress) {
           textToSpeech.speakText(_messages[0].text,
               language: GlobalSettings().selectedLanguage);
         }
       } catch (e) {
-        print('Error: $e'); // Log the exception
+        print('Error in text-to-speech: $e');
       }
     }
-    setState(() {});
+  }
+
+  void refresh() {
+    handleTextToSpeech();
+    refreshUI();
   }
 
   void _showApiKeyDialog() {
