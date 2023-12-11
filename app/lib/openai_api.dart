@@ -6,14 +6,13 @@ import 'package:async/async.dart';
 import 'package:glowby/hugging_face_api.dart';
 import 'package:glowby/pulze_ai_api.dart';
 
-int totalTokensUsed = 0;
-
 class OpenAI_API {
   static final OpenAI_API _instance = OpenAI_API._privateConstructor();
   factory OpenAI_API() => _instance;
   OpenAI_API._privateConstructor();
 
   String _apiKey = '';
+  static int _totalTokensUsed = 0;
 
   static String oat() => OpenAI_API()._oat();
   static void setOat(String value) => OpenAI_API()._setOat(value);
@@ -387,7 +386,7 @@ class OpenAI_API {
 
           // Add the tokens used in this response to the total tokens used
           int tokensUsed = responseBody['usage']['total_tokens'];
-          totalTokensUsed += tokensUsed;
+          _totalTokensUsed += tokensUsed;
 
           // Calculate the cost of the tokens used
           double cost = tokensUsed * 0.002 / 1000;
@@ -395,10 +394,10 @@ class OpenAI_API {
             // Print the tokens used and the cost to the console
             print('Tokens used in this response: $tokensUsed');
             print('Cost of this response: \$${cost.toStringAsFixed(5)}');
-            print('Total tokens used so far: $totalTokensUsed');
+            print('Total tokens used so far: $_totalTokensUsed');
           }
 
-          double totalCost = totalTokensUsed * 0.002 / 1000;
+          double totalCost = _totalTokensUsed * 0.002 / 1000;
           if (kDebugMode) {
             print('Total cost so far: \$${totalCost.toStringAsFixed(5)}');
           }
