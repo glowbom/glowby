@@ -390,41 +390,54 @@ class _ChatScreenState extends State<ChatScreen> {
           title: Text('Share Glowby'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
-                _buildLinkItem(
-                    'Glowby GPT', 'https://glowbom.com/glowby/gpt', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem('GitHub Repository',
-                    'https://github.com/glowbom/glowby', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'Feature List',
-                    'https://twitter.com/jacobilin/status/1649443429347397632',
-                    context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'Website (glowbom.com)', 'https://glowbom.com/', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem('Twitter: @GlowbomCorp',
-                    'https://twitter.com/GlowbomCorp', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'YouTube Channel',
-                    'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw',
-                    context),
-              ],
+              children: _buildLinkItems(context),
             ),
           ),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
       },
+    );
+  }
+
+  List<Widget> _buildLinkItems(BuildContext context) {
+    final links = [
+      {'title': 'Glowby GPT', 'url': 'https://glowbom.com/glowby/gpt'},
+      {
+        'title': 'GitHub Repository',
+        'url': 'https://github.com/glowbom/glowby'
+      },
+      {
+        'title': 'Feature List',
+        'url': 'https://twitter.com/jacobilin/status/1649443429347397632'
+      },
+      {'title': 'Website (glowbom.com)', 'url': 'https://glowbom.com/'},
+      {
+        'title': 'Twitter: @GlowbomCorp',
+        'url': 'https://twitter.com/GlowbomCorp'
+      },
+      {
+        'title': 'YouTube Channel',
+        'url': 'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw'
+      }
+    ];
+
+    return links
+        .map((link) => _buildLinkItem(link['title']!, link['url']!, context))
+        .toList();
+  }
+
+  Widget _buildLinkItem(String title, String url, BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: GestureDetector(
+        onTap: () => _launchURL(url),
+        child: Text(title),
+      ),
     );
   }
 
