@@ -132,51 +132,39 @@ class HuggingFace_API {
   // generate('google/flan-t5-large', 'What\'s the best way to play a guitar?', '[{"generated_text": "***"}]');
   static Future<String?> _generate(
       String modelId, String text, String template) async {
-    if (oat() == '') {
-      return 'Please enter your Hugging Face Access Token in the settings.';
+    if (!_isValidTokenAndModel(modelId)) {
+      return 'Invalid token or model ID';
     }
 
-    if (modelId == '') {
-      return 'Please enter Model ID in the settings.';
-    }
+    final response = await _makeRequest(modelId, text);
+    return _processResponse(response, template);
+  }
 
-    final token = oat();
+  static bool _isValidTokenAndModel(String modelId) {
+    return oat() != '' && modelId != '';
+  }
+
+  static Future<http.Response> _makeRequest(String modelId, String text) async {
     final queryUrl = 'https://api-inference.huggingface.co/models/$modelId';
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'Authorization': 'Bearer ${oat()}',
     };
-
     final body = jsonEncode({
-      'inputs': _systemMessage == ''
+      'inputs': _systemMessage.isEmpty
           ? text
-          : text + ' [System message]: ' + _systemMessage,
+          : '$text [System message]: $_systemMessage',
     });
 
-    if (kDebugMode) {
-      print('Request URL: $queryUrl');
+    return await http.post(Uri.parse(queryUrl), headers: headers, body: body);
+  }
+
+  static String? _processResponse(http.Response response, String template) {
+    if (response.statusCode != 200) {
+      return 'Error processing request';
     }
-
-    final response =
-        await http.post(Uri.parse(queryUrl), headers: headers, body: body);
-
-    if (kDebugMode) {
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-    }
-
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final templateJson = jsonDecode(template);
-      final generatedText = _findValueByTemplate(jsonResponse, templateJson);
-
-      if (kDebugMode) {
-        print('Generated Text: $generatedText');
-      }
-
-      return generatedText;
-    } else {
-      return 'Sorry, there was an error processing your request. Please try again later.';
-    }
+    final jsonResponse = jsonDecode(response.body);
+    final templateJson = jsonDecode(template);
+    return _findValueByTemplate(jsonResponse, templateJson);
   }
 }

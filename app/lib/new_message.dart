@@ -270,14 +270,25 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   void _stopProcessing() {
+    // Set the stop requested flag
     _stopRequested = true;
+
+    // Use setState to update the state and UI accordingly
     setState(() {
+      // Set the processing flag to false
       _isProcessing = false;
-      // Remove the typing message
-      widget._messages.removeAt(0);
+
+      // If there's a typing message, remove it
+      if (widget._messages.isNotEmpty &&
+          widget._messages[0].text == "typing...") {
+        widget._messages.removeAt(0);
+      }
+
+      // Refresh the widget to reflect the changes
       widget._refresh();
     });
 
+    // Cancel any ongoing network operation if it exists
     ai.getCurrentNetworkOperation()?.cancel();
   }
 

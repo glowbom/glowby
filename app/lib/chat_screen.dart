@@ -63,30 +63,52 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _voiceEnabled = widget._voice;
-    GlobalSettings().loadDialogValues(widget._selectedModel,
-        widget._selectedLanguage, widget._systemPrompt, widget._autonomousMode);
-
-    OpenAI_API.loadOat().then((_) {
-      setState(() {});
-    });
+    initializeVoiceEnabled();
+    loadGlobalSettings();
+    loadAPIKey();
   }
 
-  // Refresh the chat screen and handle text-to-speech functionality
-  void refresh() {
+  void initializeVoiceEnabled() {
+    _voiceEnabled = widget._voice;
+  }
+
+  void loadGlobalSettings() {
+    GlobalSettings().loadDialogValues(
+      widget._selectedModel,
+      widget._selectedLanguage,
+      widget._systemPrompt,
+      widget._autonomousMode,
+    );
+  }
+
+  void loadAPIKey() {
+    OpenAI_API.loadOat().then((_) => setState(() {}));
+  }
+
+  // Refresh the UI state of the chat screen
+  void refreshUI() {
+    setState(() {});
+  }
+
+// Handle text-to-speech functionality independently
+  void handleTextToSpeech() {
     if (widget._voice && _voiceEnabled) {
       try {
         if (_messages.isNotEmpty &&
             _messages[0].userId == '007' &&
-            _planImplementationInProgress == false) {
+            !_planImplementationInProgress) {
           textToSpeech.speakText(_messages[0].text,
               language: GlobalSettings().selectedLanguage);
         }
       } catch (e) {
-        print('Error: $e'); // Log the exception
+        print('Error in text-to-speech: $e');
       }
     }
-    setState(() {});
+  }
+
+  void refresh() {
+    handleTextToSpeech();
+    refreshUI();
   }
 
   void _showApiKeyDialog() {
@@ -368,42 +390,45 @@ class _ChatScreenState extends State<ChatScreen> {
           title: Text('Share Glowby'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
-                _buildLinkItem(
-                    'Glowby GPT', 'https://glowbom.com/glowby/gpt', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem('GitHub Repository',
-                    'https://github.com/glowbom/glowby', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'Feature List',
-                    'https://twitter.com/jacobilin/status/1649443429347397632',
-                    context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'Website (glowbom.com)', 'https://glowbom.com/', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem('Twitter: @GlowbomCorp',
-                    'https://twitter.com/GlowbomCorp', context),
-                Padding(padding: EdgeInsets.all(10.0)),
-                _buildLinkItem(
-                    'YouTube Channel',
-                    'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw',
-                    context),
-              ],
+              children: _buildLinkItems(context),
             ),
           ),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
       },
     );
+  }
+
+  List<Widget> _buildLinkItems(BuildContext context) {
+    final links = [
+      {'title': 'Glowby GPT', 'url': 'https://glowbom.com/glowby/gpt'},
+      {
+        'title': 'GitHub Repository',
+        'url': 'https://github.com/glowbom/glowby'
+      },
+      {
+        'title': 'Feature List',
+        'url': 'https://twitter.com/jacobilin/status/1649443429347397632'
+      },
+      {'title': 'Website (glowbom.com)', 'url': 'https://glowbom.com/'},
+      {
+        'title': 'Twitter: @GlowbomCorp',
+        'url': 'https://twitter.com/GlowbomCorp'
+      },
+      {
+        'title': 'YouTube Channel',
+        'url': 'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw'
+      }
+    ];
+
+    return links
+        .map((link) => _buildLinkItem(link['title']!, link['url']!, context))
+        .toList();
   }
 
   Widget _buildLinkItem(String text, String url, BuildContext context) {

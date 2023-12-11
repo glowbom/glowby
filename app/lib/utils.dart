@@ -11,7 +11,7 @@ class Utils {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
     } else {
-      throw 'Could not launch $url';
+      throw Exception('Could not launch $url');
     }
   }
 
@@ -55,10 +55,10 @@ class Utils {
         final base64Image = base64Encode(imageData);
         return base64Image;
       } else {
-        throw 'Failed to download image: ${response.statusCode}';
+        throw Exception('Failed to download image: ${response.statusCode}');
       }
     } catch (e) {
-      throw 'Failed to save image: ${e.toString()}';
+      throw Exception('Failed to save image: ${e.toString()}');
     }
   }
 

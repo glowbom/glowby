@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
+  static const String TYPING_INDICATOR = 'typing...';
+
   FlutterTts _flutterTts = FlutterTts();
 
   static final Map<String, String> _languageCodes = {
@@ -61,7 +63,7 @@ class TextToSpeech {
   static String? lastLanguage = null;
 
   Future<void> speakText(String text, {String language = 'en-US'}) async {
-    if (text == 'typing...') {
+    if (text == TYPING_INDICATOR) {
       return;
     }
 
