@@ -431,16 +431,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .toList();
   }
 
-  Widget _buildLinkItem(String title, String url, BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(10.0),
-      child: GestureDetector(
-        onTap: () => _launchURL(url),
-        child: Text(title),
-      ),
-    );
-  }
-
   Widget _buildLinkItem(String text, String url, BuildContext context) {
     return Row(
       children: [
