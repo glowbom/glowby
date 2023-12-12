@@ -102,22 +102,39 @@ class HuggingFace_API {
   }
 
   static String? _findValueByTemplate(dynamic value, dynamic template) {
-    if (value is List && template is List && value.length == template.length) {
-      for (int i = 0; i < value.length; i++) {
-        final result = _findValueByTemplate(value[i], template[i]);
-        if (result != null) {
-          return result;
-        }
-      }
+    if (value is List && template is List) {
+      return _processListByTemplate(value, template);
     } else if (value is Map && template is Map) {
-      for (var key in template.keys) {
-        final result = _findValueByTemplate(value[key], template[key]);
-        if (result != null) {
-          return result;
-        }
-      }
+      return _processMapByTemplate(
+          value as Map<String, dynamic>, template as Map<String, dynamic>);
     } else if (template == "***") {
-      return value;
+      return value.toString();
+    }
+
+    return null;
+  }
+
+  static String? _processListByTemplate(
+      List<dynamic> valueList, List<dynamic> templateList) {
+    if (valueList.length != templateList.length) return null;
+
+    for (int i = 0; i < valueList.length; i++) {
+      final result = _findValueByTemplate(valueList[i], templateList[i]);
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
+  static String? _processMapByTemplate(
+      Map<String, dynamic> valueMap, Map<String, dynamic> templateMap) {
+    for (var key in templateMap.keys) {
+      final result = _findValueByTemplate(valueMap[key], templateMap[key]);
+      if (result != null) {
+        return result;
+      }
     }
 
     return null;

@@ -50,7 +50,7 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
-  late var ai;
+  late Ai ai;
 
   final _controller = new TextEditingController();
   var _enteredMessage = '';
@@ -131,6 +131,31 @@ class _NewMessageState extends State<NewMessage> {
     _stopRequested = false;
     FocusScope.of(context).unfocus();
 
+    _addUserMessageToChat();
+
+    final message = _enteredMessage.trim();
+    _resetMessageInput();
+
+    if (Utils.isImageGenerationCommand(message)) {
+      await handleImageGenerationCommand(message);
+    }
+    // Check if Autonomous mode is on
+    else if (GlobalSettings().autonomousMode) {
+      handleAutonomousMode(
+          message); // Call the callback function with the user's input
+    } else {
+      await _processUserMessage(message);
+    }
+  }
+
+  void _resetMessageInput() {
+    _controller.value = TextEditingValue.empty;
+    _focusNode!.requestFocus();
+
+    _enteredMessage = '';
+  }
+
+  void _addUserMessageToChat() {
     widget._messages.insert(
       0,
       Message(
@@ -139,133 +164,128 @@ class _NewMessageState extends State<NewMessage> {
           userId: GlobalSettings().userId,
           username: GlobalSettings().userName),
     );
+  }
 
-    final message = _enteredMessage.trim();
-    _controller.value = TextEditingValue.empty;
-    _focusNode!.requestFocus();
+  Future<void> _processUserMessage(String message) async {
+    // Add a new message instance indicating that the AI is typing
+    Message typingMessage = Message(
+      text: 'typing...',
+      createdAt: Timestamp.now(),
+      userId: Ai.defaultUserId,
+      username: widget._name == '' ? 'AI' : widget._name,
+    );
+    widget._messages.insert(0, typingMessage);
+    widget._refresh();
 
-    _enteredMessage = '';
+    // Select the last 5 messages (excluding the user's input message)
+    int messageHistoryCount = min(20, widget._messages.length - 1);
+    List<Message> previousMessages =
+        widget._messages.sublist(1, messageHistoryCount + 1);
 
-    if (Utils.isImageGenerationCommand(message)) {
-      final pattern = Utils.getMatchingPattern(message);
-      final description = pattern != null
-          ? message.replaceAll(RegExp(pattern, caseSensitive: false), '').trim()
-          : '';
-      //print('description: $description');
-      //print('enableAi: ${widget._enableAi}');
-      if (description.isNotEmpty &&
-          (widget._enableAi == null || widget._enableAi!)) {
-        Message drawingMessage = Message(
-          text: Utils.getRandomImageGenerationFunnyMessage(),
-          createdAt: Timestamp.now(),
-          userId: Ai.defaultUserId,
-          username: widget._name == '' ? 'AI' : widget._name,
+    // Convert previousMessages to the format expected by the API
+    List<Map<String, String?>> formattedPreviousMessages = previousMessages
+        .map((message) {
+          return {
+            'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
+            'content': message.text
+          };
+        })
+        .toList()
+        .reversed
+        .toList();
+
+    setState(() {
+      _isProcessing = true; // Set to true before processing
+    });
+
+    var response = await ai.message(message,
+        previousMessages: formattedPreviousMessages,
+        aiEnabled: widget._enableAi == null ? true : widget._enableAi!);
+
+    if (_stopRequested) {
+      return;
+    }
+
+    setState(() {
+      _isProcessing = false; // Set to false after processing
+    });
+
+    // Remove the typing message instance when the response is received
+    widget._messages.remove(typingMessage);
+
+    if (response.length > 0) {
+      for (Message m in response) {
+        widget._messages.insert(
+          0,
+          m,
         );
-        widget._messages.insert(0, drawingMessage);
-        widget._refresh();
-
-        // Generate the image
-        try {
-          final imageUrl = (await OpenAI_API.generateImageUrl(description))!;
-          Message message = Message(
-            text: 'Here is your image!',
-            createdAt: Timestamp.now(),
-            userId: Ai.defaultUserId,
-            username: widget._name == '' ? 'AI' : widget._name,
-            link: imageUrl,
-          );
-
-          widget._messages.remove(drawingMessage);
-          widget._messages.insert(0, message);
-          widget._messages.insert(
-              0,
-              Message(
-                text: Utils.getRandomImageReadyMessage(),
-                createdAt: Timestamp.now(),
-                userId: Ai.defaultUserId,
-                username: widget._name == '' ? 'AI' : widget._name,
-              ));
-
-          widget._refresh();
-
-          Utils.downloadImage(imageUrl, description);
-        } catch (e) {
-          // Handle the exception and emit an error state
-          widget._messages.remove(drawingMessage);
-          Message message = Message(
-            text: 'Something went wrong. Please try again later.',
-            createdAt: Timestamp.now(),
-            userId: Ai.defaultUserId,
-            username: widget._name == '' ? 'AI' : widget._name,
-          );
-
-          widget._messages.remove(drawingMessage);
-          widget._messages.insert(0, message);
-          widget._refresh();
-        }
       }
     }
-    // Check if Autonomous mode is on
-    else if (GlobalSettings().autonomousMode) {
-      widget.onAutonomousModeMessage(
-          message); // Call the callback function with the user's input
-    } else {
-      // Add a new message instance indicating that the AI is typing
-      Message typingMessage = Message(
-        text: 'typing...',
+
+    widget._refresh();
+  }
+
+  Future<void> handleAutonomousMode(String message) async {
+    widget.onAutonomousModeMessage(message);
+  }
+
+  Future<void> handleImageGenerationCommand(String message) async {
+    final pattern = Utils.getMatchingPattern(message);
+    final description = pattern != null
+        ? message.replaceAll(RegExp(pattern, caseSensitive: false), '').trim()
+        : '';
+    //print('description: $description');
+    //print('enableAi: ${widget._enableAi}');
+    if (description.isNotEmpty &&
+        (widget._enableAi == null || widget._enableAi!)) {
+      Message drawingMessage = Message(
+        text: Utils.getRandomImageGenerationFunnyMessage(),
         createdAt: Timestamp.now(),
         userId: Ai.defaultUserId,
         username: widget._name == '' ? 'AI' : widget._name,
       );
-      widget._messages.insert(0, typingMessage);
+      widget._messages.insert(0, drawingMessage);
       widget._refresh();
 
-      // Select the last 5 messages (excluding the user's input message)
-      int messageHistoryCount = min(20, widget._messages.length - 1);
-      List<Message> previousMessages =
-          widget._messages.sublist(1, messageHistoryCount + 1);
+      // Generate the image
+      try {
+        final imageUrl = (await OpenAI_API.generateImageUrl(description))!;
+        Message message = Message(
+          text: 'Here is your image!',
+          createdAt: Timestamp.now(),
+          userId: Ai.defaultUserId,
+          username: widget._name == '' ? 'AI' : widget._name,
+          link: imageUrl,
+        );
 
-      // Convert previousMessages to the format expected by the API
-      List<Map<String, String?>> formattedPreviousMessages = previousMessages
-          .map((message) {
-            return {
-              'role': message.userId == Ai.defaultUserId ? 'assistant' : 'user',
-              'content': message.text
-            };
-          })
-          .toList()
-          .reversed
-          .toList();
-
-      setState(() {
-        _isProcessing = true; // Set to true before processing
-      });
-
-      var response = await ai.message(message,
-          previousMessages: formattedPreviousMessages,
-          aiEnabled: widget._enableAi == null ? true : widget._enableAi!);
-
-      if (_stopRequested) {
-        return;
-      }
-
-      setState(() {
-        _isProcessing = false; // Set to false after processing
-      });
-
-      // Remove the typing message instance when the response is received
-      widget._messages.remove(typingMessage);
-
-      if (response.length > 0) {
-        for (Message m in response) {
-          widget._messages.insert(
+        widget._messages.remove(drawingMessage);
+        widget._messages.insert(0, message);
+        widget._messages.insert(
             0,
-            m,
-          );
-        }
-      }
+            Message(
+              text: Utils.getRandomImageReadyMessage(),
+              createdAt: Timestamp.now(),
+              userId: Ai.defaultUserId,
+              username: widget._name == '' ? 'AI' : widget._name,
+            ));
 
-      widget._refresh();
+        widget._refresh();
+
+        Utils.downloadImage(imageUrl, description);
+      } catch (e) {
+        // Handle the exception and emit an error state
+        widget._messages.remove(drawingMessage);
+        Message message = Message(
+          text: 'Something went wrong. Please try again later.',
+          createdAt: Timestamp.now(),
+          userId: Ai.defaultUserId,
+          username: widget._name == '' ? 'AI' : widget._name,
+        );
+
+        widget._messages.remove(drawingMessage);
+        widget._messages.insert(0, message);
+        widget._refresh();
+      }
     }
   }
 
@@ -293,13 +313,13 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   /* method for opening a pain window */
-  void _openPainWindow() {
+  void _openPaintWindow() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pain Window'),
-          content: Text('This is the pain window content.'),
+          title: Text('Paint Window'),
+          content: Text('This is the paint window content.'),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
@@ -368,7 +388,7 @@ class _NewMessageState extends State<NewMessage> {
               icon: Icon(
                 Icons.brush,
               ),
-              onPressed: _openPainWindow,
+              onPressed: _openPaintWindow,
             ),
           if (_isProcessing)
             IconButton(

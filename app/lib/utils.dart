@@ -16,7 +16,7 @@ class Utils {
   }
 
   // List of image command patterns
-  static List<String> imageCommandPatterns = [
+  static final List<String> imageCommandPatterns = [
     r'\b(draw|paint|generate|create|show) (me )?(a |an )?(pic|picture|image|illustration|drawing)\b',
     r'\b(draw|paint|generate|create|show) this (for me)?\b',
     r'\b(can you )?(please )?(draw|paint|generate|create|show) (me )?(a |an )?(pic|picture|image|illustration|drawing)\b',

@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 /// A class representing the Messages widget, which displays a list of MessageBubble widgets.
 class Messages extends StatefulWidget {
   final List<Message> _messages;
-  final ScrollController controller = ScrollController();
 
   Messages(this._messages);
 
@@ -16,6 +15,20 @@ class Messages extends StatefulWidget {
 }
 
 class _MessagesState extends State<Messages> {
+  late ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   /// Replaces language prefixes in the message text.
   String _processMessageText(String messageText) {
     const List<String> languagePrefixes = [
@@ -51,7 +64,7 @@ class _MessagesState extends State<Messages> {
     return ListView.builder(
       reverse: true,
       itemCount: widget._messages.length,
-      controller: widget.controller,
+      controller: _controller,
       itemBuilder: (ctx, index) {
         final message = widget._messages[index];
         final processedText = _processMessageText(message.text);
