@@ -122,7 +122,7 @@ class PulzeAI_API {
       'prompt': _systemMessage == ''
           ? text
           : text + ' [System message]: ' + _systemMessage,
-      'max_tokens': 7, // Added max_tokens
+      'max_tokens': 300, // Added max_tokens
       'temperature': 0, // Added temperature
     });
 
