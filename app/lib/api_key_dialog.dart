@@ -11,6 +11,10 @@ class ApiKeyDialog extends StatefulWidget {
 }
 
 class _ApiKeyDialogState extends State<ApiKeyDialog> {
+  static const openAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
+  static const huggingFaceKeyPattern = r'^[A-Za-z0-9-_]+$';
+  static const pulzeAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
+
   final _apiKeyController = TextEditingController();
   final _huggingFaceTokenController = TextEditingController();
   final _pulzeAiController = TextEditingController();
@@ -34,14 +38,13 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     });
   }
 
-  bool isValidOpenAIKey(String key) =>
-      RegExp(r'^sk-[A-Za-z0-9-_]+$').hasMatch(key);
+  bool isValidOpenAIKey(String key) => RegExp(openAIKeyPattern).hasMatch(key);
 
   bool isValidHuggingFaceKey(String key) =>
-      RegExp(r'^[A-Za-z0-9-_]+$').hasMatch(key);
+      RegExp(huggingFaceKeyPattern).hasMatch(key);
 
   bool isValidPuzzleAIKey(String key) =>
-      RegExp(r'^sk-[A-Za-z0-9-_]+$').hasMatch(key);
+      RegExp(pulzeAIKeyPattern).hasMatch(key);
 
   void _saveApiKey(BuildContext context) {
     if (!_apiKey.isEmpty && !isValidOpenAIKey(_apiKey)) {
