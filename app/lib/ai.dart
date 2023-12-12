@@ -205,7 +205,7 @@ class Ai {
   Future<List<Message>> _generateResponseMessage(
       List<Map<String, Object>> foundQuestions) async {
     try {
-      Random rnd = Random.secure();
+      Random rnd = Random(DateTime.now().millisecondsSinceEpoch);
       List<String> messages = [];
 
       for (Map<String, Object> questionMap in foundQuestions) {
