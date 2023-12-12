@@ -68,21 +68,38 @@ class Ai {
     return [];
   }
 
+  /// Calculate the Jaro similarity between two strings.
+  ///
+  /// The Jaro similarity is a measure of the similarity between two strings.
+  /// The higher the Jaro similarity score, the more similar the two strings are,
+  /// with 1 being an exact match and 0 being no similarity.
+  ///
+  /// - `s1`: The first string to compare.
+  /// - `s2`: The second string to compare.
+  ///
+  /// Returns a double representing the Jaro similarity score.
   double jaroSimilarity(String s1, String s2) {
+    // Maximum distance to consider for matching characters.
     int maxDistance = (s1.length / 2).floor() - 1;
 
+    // Arrays to keep track of which characters in each string are matches.
     List<bool> matches1 = List.filled(s1.length, false);
     List<bool> matches2 = List.filled(s2.length, false);
 
+    // Number of matching characters and transpositions.
     int matches = 0;
     int transpositions = 0;
 
+    // First pass: find matching characters.
     for (int i = 0; i < s1.length; i++) {
+      // Determine the range of indices to check for matching characters in s2.
       int start = max(0, i - maxDistance);
       int end = min(i + maxDistance + 1, s2.length);
 
       for (int j = start; j < end; j++) {
+        // Skip if already matched or not equal.
         if (matches2[j]) continue;
+        // Mark as matched.
         if (s1[i] != s2[j]) continue;
         matches1[i] = true;
         matches2[j] = true;
@@ -91,16 +108,22 @@ class Ai {
       }
     }
 
+    // If no matches were found, the similarity is 0.
     if (matches == 0) return 0.0;
 
+    // Second pass: count transpositions.
     int k = 0;
     for (int i = 0; i < s1.length; i++) {
+      // Skip non-matching characters.
       if (!matches1[i]) continue;
+      // Find the next match in s2.
       while (!matches2[k]) k++;
+      // Count transposition if the characters don't match.
       if (s1[i] != s2[k]) transpositions++;
       k++;
     }
 
+    // Calculate the Jaro similarity.
     double m = matches.toDouble();
     return (m / s1.length + m / s2.length + (m - transpositions / 2) / m) / 3;
   }
