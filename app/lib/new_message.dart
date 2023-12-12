@@ -50,7 +50,7 @@ class NewMessage extends StatefulWidget {
 }
 
 class _NewMessageState extends State<NewMessage> {
-  late var ai;
+  late Ai ai;
 
   final _controller = new TextEditingController();
   var _enteredMessage = '';
