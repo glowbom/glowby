@@ -47,41 +47,33 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       RegExp(pulzeAIKeyPattern).hasMatch(key);
 
   void _saveApiKey(BuildContext context) {
+    String? errorMessage;
+
     if (!_apiKey.isEmpty && !isValidOpenAIKey(_apiKey)) {
-      Navigator.pop(context); // Hide the dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('OpenAI API Key is invalid!')),
-      );
-      return;
-    }
-
-    OpenAI_API.setOat(_apiKey);
-
-    if (!_huggingFaceToken.isEmpty &&
+      errorMessage = 'OpenAI API Key is invalid!';
+    } else if (!_huggingFaceToken.isEmpty &&
         !isValidHuggingFaceKey(_huggingFaceToken)) {
-      Navigator.pop(context); // Hide the dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hugging Face Token is invalid!')),
-      );
-      return;
+      errorMessage = 'Hugging Face Token is invalid!';
+    } else if (!_pulzeAiToken.isEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
+      errorMessage = 'Pulze API Key is invalid!';
     }
 
-    HuggingFace_API.setOat(_huggingFaceToken);
-
-    if (!_pulzeAiToken.isEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
+    if (errorMessage != null) {
+      // If there's an error, show the error message and exit the function after popping the dialog.
       Navigator.pop(context); // Hide the dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pulze API Key is invalid!')),
+        SnackBar(content: Text(errorMessage)),
       );
-      return;
+    } else {
+      // If all keys are valid, set them and show a success message.
+      OpenAI_API.setOat(_apiKey);
+      HuggingFace_API.setOat(_huggingFaceToken);
+      PulzeAI_API.setOat(_pulzeAiToken);
+      Navigator.pop(context); // Hide the dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('API Keys saved successfully!')),
+      );
     }
-
-    PulzeAI_API.setOat(_pulzeAiToken);
-    Navigator.pop(context); // Hide the dialog
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('API Key saved successfully!')),
-    );
   }
 
   bool _obscureApiKey = true;
