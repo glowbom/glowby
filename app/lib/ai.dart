@@ -11,10 +11,10 @@ import 'package:async/async.dart';
 class Ai {
   final List<Map<String, Object>>? _questions;
   final String? _name;
-  CancelableOperation<String>? newtworkOperation;
+  CancelableOperation<String>? networkOperation;
 
   CancelableOperation<String>? getCurrentNetworkOperation() {
-    return newtworkOperation;
+    return networkOperation;
   }
 
   static const String defaultUserId = '007';
@@ -37,9 +37,9 @@ class Ai {
 
     // Call the OpenAI API if no matching questions are found locally
     if (aiEnabled && OpenAI_API.oat().isNotEmpty) {
-      newtworkOperation = await OpenAI_API.getResponseFromOpenAI(message,
+      networkOperation = await OpenAI_API.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
-      String response = await newtworkOperation!.value;
+      String response = await networkOperation!.value;
       String poweredTitle = OpenAI_API.model == 'gpt-4'
           ? 'Powered by GPT-4'
           : OpenAI_API.model == 'gpt-3.5-turbo'
