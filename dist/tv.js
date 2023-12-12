@@ -28,5 +28,5 @@ if (SpeechRecognition != null) {
     //console.log("recordVoice call");
   }
 } else {
-  console.error("SpeechRecognition API not supported in this browser.");
+  //console.error("SpeechRecognition API not supported in this browser.");
 }
