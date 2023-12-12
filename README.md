@@ -36,6 +36,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 - **New!** Image Generation powered by **DALL·E** (watch a [quick demo](https://twitter.com/jacobilin/status/1649910120988696576))
 - **New!** Multilingual Translations (watch a [quick demo](https://twitter.com/jacobilin/status/1651084311431622658))
 - **New!** Interactive Adventure (watch a [quick demo](https://twitter.com/jacobilin/status/1651449595447369729))
+- **New!** Pulze.ai support
 - **New!** 🤗 [Hosted Inference API](https://huggingface.co/docs/api-inference/index) for [Text2Text Generation Models](https://huggingface.co/models?pipeline_tag=text2text-generation&sort=downloads)
 - Powerful, customizable voice-based AI assistant
 - Pre-set questions and answers using the [Glowbom builder](https://www.glowbom.com)
@@ -82,7 +83,6 @@ We're constantly working to improve our project and have several exciting featur
 - GPT-4 Turbo with Vision
 - DALL·E 3
 - OpenAI's text-to-speech
-- Pulze.ai support
 
 ### Monetization
 - Adding a paywall
