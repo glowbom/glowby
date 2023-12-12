@@ -313,13 +313,13 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   /* method for opening a pain window */
-  void _openPainWindow() {
+  void _openPaintWindow() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pain Window'),
-          content: Text('This is the pain window content.'),
+          title: Text('Paint Window'),
+          content: Text('This is the paint window content.'),
           actions: <Widget>[
             TextButton(
               child: Text('Close'),
@@ -388,7 +388,7 @@ class _NewMessageState extends State<NewMessage> {
               icon: Icon(
                 Icons.brush,
               ),
-              onPressed: _openPainWindow,
+              onPressed: _openPaintWindow,
             ),
           if (_isProcessing)
             IconButton(
