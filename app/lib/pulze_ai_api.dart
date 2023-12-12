@@ -30,7 +30,7 @@ class PulzeAI_API {
   }
 ]
 ''';
-  static String _model = 'google/flan-t5-large';
+  static String _model = 'pulze-v0';
   static String _systemMessage = '';
   static bool _sendMessages = false;
   static const String _apiKeyKey = 'pulze_ai_api_key';
@@ -50,8 +50,7 @@ class PulzeAI_API {
   }
 ]
 ''';
-      _model =
-          await _secureStorage.read(key: _modelKey) ?? 'google/flan-t5-large';
+      _model = await _secureStorage.read(key: _modelKey) ?? 'pulze-v0';
       _systemMessage = await _secureStorage.read(key: _systemMessageKey) ?? '';
       _sendMessages =
           await _secureStorage.read(key: _sendMessagesKey) == 'true';
@@ -99,28 +98,6 @@ class PulzeAI_API {
     _secureStorage.write(key: _templateKey, value: _template);
   }
 
-  static String? _findValueByTemplate(dynamic value, dynamic template) {
-    if (value is List && template is List && value.length == template.length) {
-      for (int i = 0; i < value.length; i++) {
-        final result = _findValueByTemplate(value[i], template[i]);
-        if (result != null) {
-          return result;
-        }
-      }
-    } else if (value is Map && template is Map) {
-      for (var key in template.keys) {
-        final result = _findValueByTemplate(value[key], template[key]);
-        if (result != null) {
-          return result;
-        }
-      }
-    } else if (template == "***") {
-      return value;
-    }
-
-    return null;
-  }
-
   static Future<String?> generate(String text) async {
     return await _generate(_model, text, _template);
   }
@@ -163,9 +140,12 @@ class PulzeAI_API {
       }
 
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final templateJson = jsonDecode(template);
-        final generatedText = _findValueByTemplate(jsonResponse, templateJson);
+        final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+        String receivedResponse =
+            responseBody['choices'][0]['text'].toString().trim();
+
+        // Add the current received response to the final response
+        final generatedText = receivedResponse;
 
         if (kDebugMode) {
           print('Generated Text: $generatedText');
