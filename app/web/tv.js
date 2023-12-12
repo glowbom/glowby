@@ -10,10 +10,10 @@ if (SpeechRecognition != null) {
     let last = e.results.length - 1;
     let text = e.results[last][0].transcript;
 
-    console.log("last: " + last);
-    console.log("text: " + text);
+    //console.log("last: " + last);
+    //console.log("text: " + text);
 
-    console.log("Confidence: " + e.results[0][0].confidence);
+    //console.log("Confidence: " + e.results[0][0].confidence);
 
     vr(text);
 
@@ -23,12 +23,12 @@ if (SpeechRecognition != null) {
   function rv(lang) {
     if (typeof lang !== "undefined" && lang !== null) {
       r.lang = lang;
-      console.log("switched to " + lang);
+      //console.log("switched to " + lang);
     }
 
     r.start();
-    console.log("recordVoice call");
+    //console.log("recordVoice call");
   }
 } else {
-  console.error("SpeechRecognition API not supported in this browser.");
+  //console.error("SpeechRecognition API not supported in this browser.");
 }
