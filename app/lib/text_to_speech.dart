@@ -4,6 +4,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
   static const String TYPING_INDICATOR = 'typing...';
+  static const double DEFAULT_SPEECH_RATE = 1.0;
+  static const double REDUCED_SPEECH_RATE = 0.85;
 
   FlutterTts _flutterTts = FlutterTts();
 
@@ -53,9 +55,9 @@ class TextToSpeech {
         currentLanguage.contains('ru') ||
         currentLanguage.contains('pt') ||
         currentLanguage.contains('pl')) {
-      await _flutterTts.setSpeechRate(1);
+      await _flutterTts.setSpeechRate(DEFAULT_SPEECH_RATE);
     } else {
-      await _flutterTts.setSpeechRate(0.85);
+      await _flutterTts.setSpeechRate(REDUCED_SPEECH_RATE);
     }
   }
 
