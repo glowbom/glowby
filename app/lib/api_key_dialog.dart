@@ -148,7 +148,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
               Divider(),
               ExpansionTile(
                 title: Text(
-                  'Pulze.ai',
+                  'Pulze',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 children: <Widget>[
@@ -161,14 +161,14 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                         Text('Get your Access Token:'),
                         InkWell(
                           child: Text(
-                            '→ Pulze.ai Dashboard',
+                            '→ Pulze Dashboard',
                             style: TextStyle(color: Colors.blue),
                           ),
                           onTap: () =>
                               Utils.launchURL('https://platform.pulze.ai/'),
                         ),
                         SizedBox(height: 10),
-                        Text('Enter your Pulze.ai Token:'),
+                        Text('Enter your Pulze Token:'),
                         TextField(
                           controller: _pulzeAiController,
                           obscureText: _obscureApiKeyPulze,

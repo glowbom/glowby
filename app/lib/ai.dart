@@ -49,7 +49,7 @@ class Ai {
                   : OpenAI_API.model == 'huggingface'
                       ? HuggingFace_API.model()
                       : OpenAI_API.model == 'pulzeai'
-                          ? 'Powered by PulzeAI'
+                          ? 'Powered by Pulze'
                           : '';
       return [
         Message(

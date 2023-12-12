@@ -162,7 +162,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                   if (PulzeAI_API.oat() != '')
                     DropdownMenuItem<String>(
                       value: 'pulzeai',
-                      child: Text('Pulze.ai'),
+                      child: Text('Pulze'),
                     ),
                   /*DropdownMenuItem<String>(
                     value: 'gpt-4-32k',
