@@ -173,7 +173,20 @@ class HuggingFace_API {
           : '$text [System message]: $_systemMessage',
     });
 
-    return await http.post(Uri.parse(queryUrl), headers: headers, body: body);
+    try {
+      return await http.post(Uri.parse(queryUrl), headers: headers, body: body);
+    } on http.ClientException catch (e) {
+      // Handle the exception related to the HTTP client
+      print('ClientException occurred: $e');
+      // Consider re-throwing the exception or returning an error response
+    } catch (e) {
+      // Handle other types of exceptions
+      print('An error occurred: $e');
+      // Consider re-throwing the exception or returning an error response
+    }
+
+    // If an error occurs, you might want to return a default response:
+    return http.Response('{"error": "An unexpected error occurred."}', 500);
   }
 
   static String? _processResponse(http.Response response, String template) {

@@ -16,8 +16,6 @@ if (SpeechRecognition != null) {
     //console.log("Confidence: " + e.results[0][0].confidence);
 
     vr(text);
-
-    // We will use the Socket.IO here later…
   });
 
   function rv(lang) {
