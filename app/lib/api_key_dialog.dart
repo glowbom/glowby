@@ -81,6 +81,10 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
     );
   }
 
+  bool _obscureApiKey = true;
+  bool _obscureApiKeyPulze = true;
+  bool _obscureApiKeyHuggingFace = true;
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -103,9 +107,22 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
               Text('API Key is stored locally and not shared.'),
               TextField(
                 controller: _apiKeyController,
-                obscureText: true,
+                obscureText: _obscureApiKey,
                 decoration: InputDecoration(
-                    labelText: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                  labelText: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      // Change the icon based on whether the text is obscured
+                      _obscureApiKey ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      // Update the state to toggle the obscure text value
+                      setState(() {
+                        _obscureApiKey = !_obscureApiKey;
+                      });
+                    },
+                  ),
+                ),
                 onChanged: (value) {
                   setState(() {
                     _apiKey = value;
@@ -159,9 +176,24 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                         Text('Enter your Pulze.ai Token:'),
                         TextField(
                           controller: _pulzeAiController,
-                          obscureText: true,
+                          obscureText: _obscureApiKeyPulze,
                           decoration: InputDecoration(
-                              labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                            labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                // Change the icon based on whether the text is obscured
+                                _obscureApiKeyPulze
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                // Update the state to toggle the obscure text value
+                                setState(() {
+                                  _obscureApiKeyPulze = !_obscureApiKeyPulze;
+                                });
+                              },
+                            ),
+                          ),
                           onChanged: (value) {
                             setState(() {
                               _pulzeAiToken = value;
@@ -202,9 +234,25 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                         Text('Enter your Hugging Face Token:'),
                         TextField(
                           controller: _huggingFaceTokenController,
-                          obscureText: true,
+                          obscureText: _obscureApiKeyHuggingFace,
                           decoration: InputDecoration(
-                              labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+                            labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                // Change the icon based on whether the text is obscured
+                                _obscureApiKeyHuggingFace
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                // Update the state to toggle the obscure text value
+                                setState(() {
+                                  _obscureApiKeyHuggingFace =
+                                      !_obscureApiKeyHuggingFace;
+                                });
+                              },
+                            ),
+                          ),
                           onChanged: (value) {
                             setState(() {
                               _huggingFaceToken = value;
