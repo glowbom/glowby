@@ -268,7 +268,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _stopRequested = false;
         break;
       }
-      textToSpeech.speakText('Moving on to the next task.',
+      await textToSpeech.speakText('Moving on to the next task.',
           language: GlobalSettings().selectedLanguage);
       String taskMessage = "Moving on to the next task. ${_tasks[i]}";
       await _sendMessageOnBehalfOfUser(taskMessage,
