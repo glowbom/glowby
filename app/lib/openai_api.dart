@@ -440,4 +440,72 @@ class OpenAI_API {
 
     return null;
   }
+
+  // Draw to Code Functionality
+
+  Future<String> getHtmlFromOpenAI(
+      String imageBase64, String userPrompt) async {
+    final systemPrompt = """
+You are a skilled web developer with expertise in Tailwind CSS. A user will provide a low-fidelity wireframe along with descriptive notes. Your task is to create a high-fidelity, responsive HTML webpage using Tailwind CSS and JavaScript, embedded within a single HTML file.
+
+- Embed additional CSS and JavaScript directly in the HTML file.
+- For images, use placeholders from Unsplash or solid color rectangles.
+- Draw inspiration for fonts, colors, and layouts from user-provided style references or wireframes.
+- For any previous design iterations, use the provided HTML to refine the design further.
+- Apply creative improvements to enhance the design.
+- Load JavaScript dependencies through JavaScript modules and unpkg.com.
+
+The final output should be a single HTML file, starting with "<html>". Avoid markdown, excessive newlines, and the character sequence "```".
+"""; // The system prompt
+
+    final openAIKey = _apiKey; // Replace with your actual API key
+    if (openAIKey.isEmpty) {
+      return '';
+    }
+
+    final url = Uri.parse("https://api.openai.com/v1/chat/completions");
+    var request = http.Request("POST", url)
+      ..headers.addAll({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $openAIKey',
+      })
+      ..body = jsonEncode({
+        "model": "gpt-4-vision-preview",
+        "temperature": 0,
+        "max_tokens": 4096,
+        "messages": [
+          {"role": "system", "content": systemPrompt},
+          {
+            "role": "user",
+            "content": [
+              {"image": "data:image/png;base64,$imageBase64"},
+              {
+                "text":
+                    "Turn this into a single html file using tailwind. The user describes this image as: $userPrompt"
+              }
+            ]
+          }
+        ],
+      });
+
+    try {
+      final response = await http.Response.fromStream(await request.send());
+
+      if (response.statusCode == 200) {
+        final decodedResponse = jsonDecode(response.body);
+        // Assuming 'html' is part of the response JSON structure
+        String html =
+            decodedResponse['choices']?.first['message']['content'] ?? '';
+        // Additional logic to handle the HTML content goes here
+        return html;
+      } else {
+        // Handle the error, maybe throw an exception
+        print('Failed to get HTML from OpenAI: ${response.body}');
+        return '';
+      }
+    } catch (e) {
+      print('Caught error: $e');
+      return '';
+    }
+  }
 }
