@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:glowby/global_settings.dart';
+import 'package:glowby/paint_window.dart';
 import 'package:glowby/utils.dart';
 
 import 'message.dart';
@@ -312,23 +313,12 @@ class _NewMessageState extends State<NewMessage> {
     ai.getCurrentNetworkOperation()?.cancel();
   }
 
-  /* method for opening a pain window */
+  /* method for opening a paint window */
   void _openPaintWindow() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Paint Window'),
-          content: Text('This is the paint window content.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
+        return PaintWindow();
       },
     );
   }
