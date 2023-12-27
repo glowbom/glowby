@@ -1,5 +1,5 @@
-import 'dart:ui' as ui;
 import 'dart:html';
+import 'dart:ui_web' as ui;
 
 import 'package:flutter/material.dart';
 

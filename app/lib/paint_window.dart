@@ -15,6 +15,9 @@ class PaintWindow extends StatefulWidget {
 }
 
 class _PaintWindowState extends State<PaintWindow> {
+  final int width = 600;
+  final int height = 300;
+
   List<Offset?> points = [];
   final TextEditingController nameController = TextEditingController();
   String creationName = '';
@@ -30,12 +33,12 @@ class _PaintWindowState extends State<PaintWindow> {
   Future<String> convertToBase64JpegWeb(List<Offset?> points) async {
     // Create a canvas element
     final html.CanvasElement canvas =
-        html.CanvasElement(width: 300, height: 300);
+        html.CanvasElement(width: width, height: height);
     final html.CanvasRenderingContext2D ctx = canvas.context2D;
 
     // Set the drawing properties
     ctx.fillStyle = 'white'; // Assuming a white background
-    ctx.fillRect(0, 0, 300, 300); // Fill the canvas with white color
+    ctx.fillRect(0, 0, width, height); // Fill the canvas with white color
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
 
@@ -80,8 +83,8 @@ class _PaintWindowState extends State<PaintWindow> {
     final ui.Picture picture = recorder.endRecording();
 
     // Convert the picture to an image
-    final ui.Image image =
-        await picture.toImage(300, 300); // Set the width and height as needed
+    final ui.Image image = await picture.toImage(
+        width, height); // Set the width and height as needed
     final ByteData? byteData =
         await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
@@ -93,8 +96,8 @@ class _PaintWindowState extends State<PaintWindow> {
     // Compress the image and get JPEG format Uint8List
     final Uint8List? imgBytes = await FlutterImageCompress.compressWithList(
       byteData.buffer.asUint8List(),
-      minWidth: 300,
-      minHeight: 300,
+      minWidth: width,
+      minHeight: height,
       quality: 100, // Adjust the quality as needed
       format: CompressFormat.jpeg,
     );
@@ -131,8 +134,8 @@ class _PaintWindowState extends State<PaintWindow> {
     final ui.Picture picture = recorder.endRecording();
 
     // Convert the picture to an image
-    final ui.Image image =
-        await picture.toImage(300, 300); // Set the width and height as needed
+    final ui.Image image = await picture.toImage(
+        width, height); // Set the width and height as needed
     final ByteData? byteData =
         await image.toByteData(format: ui.ImageByteFormat.png);
 
@@ -146,9 +149,14 @@ class _PaintWindowState extends State<PaintWindow> {
   }
 
   Future<void> callOpenAI() async {
+    if (isLoading) {
+      return;
+    }
+
     setState(() {
       isLoading = true;
     });
+
     // Convert points to a suitable format and call OpenAI method
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
@@ -160,10 +168,13 @@ class _PaintWindowState extends State<PaintWindow> {
     String htmlResponse =
         await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
 
-    print(htmlResponse);
+    String htmlContent = creationName;
 
-    // Find the indices of the custom delimiters
-    String htmlContent = htmlResponse.split("```html")[1].split('```')[0];
+    try {
+      htmlContent = htmlResponse.split("```html")[1].split('```')[0];
+    } catch (e) {
+      htmlContent = htmlResponse;
+    }
 
     Navigator.push(
       context,
@@ -174,10 +185,6 @@ class _PaintWindowState extends State<PaintWindow> {
         ),
       ),
     );
-
-    //imgBytes = imageBase64;
-
-    // Do something with htmlResponse
 
     setState(() {
       isLoading = false;
@@ -197,8 +204,8 @@ class _PaintWindowState extends State<PaintWindow> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: double.infinity,
-              height: 300,
+              width: width.toDouble(),
+              height: height.toDouble(),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
                 color: Colors.white,
