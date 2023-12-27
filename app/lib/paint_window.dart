@@ -207,7 +207,7 @@ class _PaintWindowState extends State<PaintWindow> {
     }
 
     return AlertDialog(
-      title: const Text('Magic Window'),
+      title: const Text('Magic Window (Powered by GPT-4 with Vision)'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -240,17 +240,20 @@ class _PaintWindowState extends State<PaintWindow> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(8.0),
-              child: TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name your creation',
-                ),
-                onChanged: (value) {
-                  creationName = value;
-                },
-              ),
-            ),
+                padding: EdgeInsets.all(8.0),
+                child: Container(
+                  width:
+                      width.toDouble(), // Set your desired maximum width here
+                  child: TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Name your creation',
+                    ),
+                    onChanged: (value) {
+                      creationName = value;
+                    },
+                  ),
+                )),
           ],
         ),
       ),
