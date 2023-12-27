@@ -482,7 +482,7 @@ The final output should be a single HTML file, starting with "<html>". Avoid mar
               {"type": "text", "text": userPrompt},
               {
                 "type": "image_url",
-                "image_url": {"url": "data:image/png;base64,$imageBase64"}
+                "image_url": {"url": "data:image/jpeg;base64,${imageBase64}"}
               }
             ]
           }

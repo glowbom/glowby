@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:glowby/openai_api.dart';
+import 'package:image/image.dart' as img;
+import 'dart:html' as html;
 
 class PaintWindow extends StatefulWidget {
   @override
@@ -16,11 +19,143 @@ class _PaintWindowState extends State<PaintWindow> {
   final TextEditingController nameController = TextEditingController();
   String creationName = '';
   bool isLoading = false;
+  Uint8List? imgBytes;
 
   @override
   void dispose() {
     nameController.dispose();
     super.dispose();
+  }
+
+  Future<String> convertToBase64JpegWeb(List<Offset?> points) async {
+    // Create a canvas element
+    final canvas = html.CanvasElement(width: 300, height: 300);
+    final ctx = canvas.context2D;
+
+    // Set your paint styles
+    ctx
+      ..fillStyle = 'white'
+      ..strokeStyle = 'black'
+      ..lineWidth = 2
+      ..beginPath();
+
+    // Draw your points onto the canvas
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        ctx.moveTo(points[i]!.dx, points[i]!.dy);
+        ctx.lineTo(points[i + 1]!.dx, points[i + 1]!.dy);
+      }
+    }
+
+    ctx
+      ..closePath()
+      ..stroke();
+
+    // Convert the canvas to a Data URL with a JPEG format
+    final String dataUrl = canvas.toDataUrl('image/jpeg', 1.0);
+
+    // Extract the base64 part of the Data URL
+    final String base64String = dataUrl.split(',')[1];
+
+    return base64String;
+  }
+
+  Future<String> convertToBase64Jpeg(List<Offset?> points) async {
+    // Create a picture recorder to record the canvas operations
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    // Draw your points here onto the canvas
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.0;
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+
+    // End recording the canvas operations
+    final ui.Picture picture = recorder.endRecording();
+
+    // Convert the picture to an image
+    final ui.Image image = await picture.toImage(300, 300);
+
+    // Get the byte data from the image in PNG format
+    final ByteData? byteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) {
+      print("Failed to obtain byte data from image");
+      return '';
+    }
+
+    // Decode the PNG data to an img.Image
+    final img.Image? decodedImage =
+        img.decodeImage(byteData.buffer.asUint8List());
+    if (decodedImage == null) {
+      print("Failed to decode image");
+      return '';
+    }
+
+    // Encode the img.Image to JPEG
+    final List<int> jpeg = img.encodeJpg(decodedImage);
+
+    // Base64 encode the JPEG bytes
+    final String base64String = base64Encode(Uint8List.fromList(jpeg));
+
+    return base64String;
+  }
+
+  // This function converts the drawing (list of points) to a base64 string
+  Future<String> convertToBase64Jpeg2(List<Offset?> points) async {
+    // Create a picture recorder to record the canvas operations
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(recorder);
+
+    // Draw your points here onto the canvas
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.0;
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+
+    // End recording the canvas operations
+    final ui.Picture picture = recorder.endRecording();
+
+    // Convert the picture to an image
+    final ui.Image image =
+        await picture.toImage(300, 300); // Set the width and height as needed
+    final ByteData? byteData =
+        await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+
+    if (byteData == null) {
+      print("Failed to obtain byte data from image");
+      return '';
+    }
+
+    // Compress the image and get JPEG format Uint8List
+    final Uint8List? imgBytes = await FlutterImageCompress.compressWithList(
+      byteData.buffer.asUint8List(),
+      minWidth: 300,
+      minHeight: 300,
+      quality: 100, // Adjust the quality as needed
+      format: CompressFormat.jpeg,
+    );
+
+    if (imgBytes == null) {
+      print("Failed to compress image");
+      return '';
+    }
+
+    // Base64 encode the JPEG bytes
+    final String base64String = base64Encode(imgBytes);
+
+    return base64String;
   }
 
   // This function converts the drawing (list of points) to a base64 string
@@ -64,12 +199,16 @@ class _PaintWindowState extends State<PaintWindow> {
     });
     // Convert points to a suitable format and call OpenAI method
     // For example, you might convert points to an image and then to base64
-    String imageBase64 =
-        await convertToBase64(points); // Implement this function
+    //String imageBase64 = await convertToBase64Jpeg(points);
+    String imageBase64 = await convertToBase64JpegWeb(points);
+    print(imageBase64);
+    //this.imgBytes = base64Decode(imageBase64); // Implement this function
 
-    String htmlResponse =
-        await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
-    print(htmlResponse);
+    //String htmlResponse =
+    //    await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
+    // print(htmlResponse);
+
+    //imgBytes = imageBase64;
 
     // Do something with htmlResponse
 
@@ -80,6 +219,10 @@ class _PaintWindowState extends State<PaintWindow> {
 
   @override
   Widget build(BuildContext context) {
+    if (imgBytes != null) {
+      return Image.memory(imgBytes!);
+    }
+
     return AlertDialog(
       title: const Text('Paint Window'),
       content: SingleChildScrollView(
