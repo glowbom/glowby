@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Additional styles if needed */
+    </style>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-xs mx-auto">
+      <div
+        id="display"
+        class="bg-gray-200 p-4 text-right text-2xl rounded mb-4"
+      >
+        0
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <button
+          class="col-span-1 bg-blue-500 text-white p-4 rounded"
+          onclick="appendNumber(1)"
+        >
+          1
+        </button>
+        <button
+          class="col-span-1 bg-blue-500 text-white p-4 rounded"
+          onclick="appendNumber(2)"
+        >
+          2
+        </button>
+        <button
+          class="col-span-1 bg-blue-500 text-white p-4 rounded"
+          onclick="appendNumber(3)"
+        >
+          3
+        </button>
+        <button
+          class="col-span-3 bg-green-500 text-white p-4 rounded"
+          onclick="calculate()"
+        >
+          =
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let display = document.getElementById("display");
+      let expression = "";
+
+      function appendNumber(number) {
+        expression += number;
+        display.textContent = expression;
+      }
+
+      function calculate() {
+        try {
+          let result = eval(expression);
+          display.textContent = result;
+          expression = result;
+        } catch (e) {
+          display.textContent = "Error";
+          expression = "";
+        }
+      }
+    </script>
+  </body>
+</html>
