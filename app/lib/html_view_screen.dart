@@ -42,7 +42,7 @@ class HtmlViewScreen extends StatelessWidget {
         title: Text(appName),
         actions: [
           IconButton(
-            icon: Icon(Icons.download),
+            icon: Icon(Icons.download, color: Colors.black),
             onPressed: downloadContent, // Trigger the download
             tooltip: 'Download Code',
           ),
