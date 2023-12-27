@@ -189,6 +189,15 @@ class _PaintWindowState extends State<PaintWindow> {
     setState(() {
       isLoading = false;
     });
+
+    clear();
+  }
+
+  void clear() {
+    nameController.clear();
+    setState(() {
+      points.clear();
+    });
   }
 
   @override
@@ -198,7 +207,7 @@ class _PaintWindowState extends State<PaintWindow> {
     }
 
     return AlertDialog(
-      title: const Text('Paint Window'),
+      title: const Text('Magic Window'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -251,11 +260,7 @@ class _PaintWindowState extends State<PaintWindow> {
         else
           TextButton(
             child: const Text('Clear'),
-            onPressed: () {
-              setState(() {
-                points.clear();
-              });
-            },
+            onPressed: clear,
           ),
         TextButton(
           child: const Text('Build'),

@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:html' as html;
 import 'dart:ui_web' as ui;
 import 'package:flutter/material.dart';
 
@@ -26,9 +27,26 @@ class HtmlViewScreen extends StatelessWidget {
       },
     );
 
+    // Function to download the content
+    void downloadContent() {
+      final blob = html.Blob([htmlContent]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute("download", "${appName}.html")
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(appName),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.download),
+            onPressed: downloadContent, // Trigger the download
+            tooltip: 'Download Code',
+          ),
+        ],
       ),
       body: HtmlElementView(
         key: ValueKey(contentKey), // Use the unique key for the HtmlElementView
