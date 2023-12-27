@@ -445,6 +445,10 @@ class OpenAI_API {
 
   Future<String> getHtmlFromOpenAI(
       String imageBase64, String userPrompt) async {
+    if (_apiKey == '') {
+      return 'Enter API key in settings';
+    }
+
     final systemPrompt = """
 You are a skilled web developer with expertise in Tailwind CSS. A user will provide a low-fidelity wireframe along with descriptive notes. Your task is to create a high-fidelity, responsive HTML webpage using Tailwind CSS and JavaScript, embedded within a single HTML file.
 
