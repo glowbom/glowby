@@ -445,6 +445,7 @@ class OpenAI_API {
 
   Future<String> getHtmlFromOpenAI(
       String imageBase64, String userPrompt) async {
+    print(imageBase64);
     final systemPrompt = """
 You are a skilled web developer with expertise in Tailwind CSS. A user will provide a low-fidelity wireframe along with descriptive notes. Your task is to create a high-fidelity, responsive HTML webpage using Tailwind CSS and JavaScript, embedded within a single HTML file.
 
@@ -478,10 +479,10 @@ The final output should be a single HTML file, starting with "<html>". Avoid mar
           {
             "role": "user",
             "content": [
-              {"image": "data:image/png;base64,$imageBase64"},
+              {"type": "text", "text": userPrompt},
               {
-                "text":
-                    "Turn this into a single html file using tailwind. The user describes this image as: $userPrompt"
+                "type": "image_url",
+                "image_url": {"url": "data:image/png;base64,$imageBase64"}
               }
             ]
           }

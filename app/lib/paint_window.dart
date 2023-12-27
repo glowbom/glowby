@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
+import 'package:glowby/openai_api.dart';
+
 class PaintWindow extends StatefulWidget {
   @override
   _PaintWindowState createState() => _PaintWindowState();
@@ -64,8 +66,10 @@ class _PaintWindowState extends State<PaintWindow> {
     // For example, you might convert points to an image and then to base64
     String imageBase64 =
         await convertToBase64(points); // Implement this function
-    print(imageBase64);
-    // String htmlResponse = await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
+
+    String htmlResponse =
+        await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
+    print(htmlResponse);
 
     // Do something with htmlResponse
 
