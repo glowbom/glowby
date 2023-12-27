@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:glowby/html_view_screen.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:glowby/openai_api.dart';
-import 'package:image/image.dart' as img;
 import 'dart:html' as html;
 
 class PaintWindow extends StatefulWidget {
@@ -153,12 +153,27 @@ class _PaintWindowState extends State<PaintWindow> {
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
     String imageBase64 = await convertToBase64JpegWeb(points);
-    //print(imageBase64);
+
+    // this is for testing
     //this.imgBytes = base64Decode(imageBase64); // Implement this function
 
     String htmlResponse =
         await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
+
     print(htmlResponse);
+
+    // Find the indices of the custom delimiters
+    String htmlContent = htmlResponse.split("```html")[1].split('```')[0];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HtmlViewScreen(
+          htmlContent: htmlContent,
+          appName: creationName,
+        ),
+      ),
+    );
 
     //imgBytes = imageBase64;
 
