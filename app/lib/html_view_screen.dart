@@ -1,6 +1,5 @@
 import 'dart:html';
 import 'dart:ui_web' as ui;
-
 import 'package:flutter/material.dart';
 
 class HtmlViewScreen extends StatelessWidget {
@@ -9,21 +8,20 @@ class HtmlViewScreen extends StatelessWidget {
 
   HtmlViewScreen({required this.htmlContent, required this.appName});
 
-  // Unique key for the IFrame
-  final String iframeKey = 'iframe-key';
-
   @override
   Widget build(BuildContext context) {
-    // Avoids UI rebuild from losing state
+    // Generate a unique key based on the html content.
+    String contentKey = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Registers the web view with a unique key
     ui.platformViewRegistry.registerViewFactory(
-      iframeKey,
+      contentKey,
       (int viewId) {
-        final IFrameElement iframeElement = IFrameElement()
-          ..style.border = 'none' // Removes the iframe border
+        IFrameElement iframeElement = IFrameElement()
+          ..style.border = 'none'
           ..style.height = '100%'
           ..style.width = '100%'
-          ..srcdoc = htmlContent; // Sets the HTML content directly
-
+          ..srcdoc = htmlContent;
         return iframeElement;
       },
     );
@@ -33,7 +31,8 @@ class HtmlViewScreen extends StatelessWidget {
         title: Text(appName),
       ),
       body: HtmlElementView(
-        viewType: iframeKey,
+        key: ValueKey(contentKey), // Use the unique key for the HtmlElementView
+        viewType: contentKey,
       ),
     );
   }

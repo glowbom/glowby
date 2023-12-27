@@ -16,7 +16,7 @@ class PaintWindow extends StatefulWidget {
 
 class _PaintWindowState extends State<PaintWindow> {
   final int width = 600;
-  final int height = 300;
+  final int height = 450;
 
   List<Offset?> points = [];
   final TextEditingController nameController = TextEditingController();
