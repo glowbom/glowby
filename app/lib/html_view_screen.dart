@@ -31,6 +31,7 @@ class HtmlViewScreen extends StatelessWidget {
     void downloadContent() {
       final blob = html.Blob([htmlContent]);
       final url = html.Url.createObjectUrlFromBlob(blob);
+      // ignore: unused_local_variable
       final anchor = html.AnchorElement(href: url)
         ..setAttribute("download", "${appName}.html")
         ..click();
