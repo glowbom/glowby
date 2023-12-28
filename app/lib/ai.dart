@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:glowby/hugging_face_api.dart';
+import 'package:glowby/pulze_ai_api.dart';
 
 import 'openai_api.dart';
 import 'timestamp.dart';
@@ -49,7 +50,7 @@ class Ai {
                   : OpenAI_API.model == 'huggingface'
                       ? HuggingFace_API.model()
                       : OpenAI_API.model == 'pulzeai'
-                          ? 'Powered by Pulze'
+                          ? '${PulzeAI_API.lastUsedModel()}'
                           : '';
       return [
         Message(

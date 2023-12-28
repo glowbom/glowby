@@ -31,6 +31,7 @@ class PulzeAI_API {
 ]
 ''';
   static String _model = 'pulze-v0';
+  static String _lastUsedModel = 'pulze-v0';
   static String _systemMessage = '';
   static bool _sendMessages = false;
   static const String _apiKeyKey = 'pulze_ai_api_key';
@@ -82,6 +83,10 @@ class PulzeAI_API {
 
   static String model() {
     return _model;
+  }
+
+  static String lastUsedModel() {
+    return _lastUsedModel;
   }
 
   static void setModel(model) {
@@ -141,6 +146,10 @@ class PulzeAI_API {
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
+        // Extracting the model information
+        String modelInfo = responseBody['metadata']['model']['model'];
+        _lastUsedModel = modelInfo;
+
         String receivedResponse =
             responseBody['choices'][0]['text'].toString().trim();
 
@@ -149,6 +158,7 @@ class PulzeAI_API {
 
         if (kDebugMode) {
           print('Generated Text: $generatedText');
+          print('Model Info: $modelInfo');
         }
 
         return generatedText;
