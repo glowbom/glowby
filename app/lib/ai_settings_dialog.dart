@@ -17,12 +17,14 @@ class AiSettingsDialog extends StatefulWidget {
 
 class _AiSettingsDialogState extends State<AiSettingsDialog> {
   bool _isHuggingFaceSelected = false;
+  bool _isPulzeSelected = false;
   bool _sendMessageHistory = false;
 
   final TextEditingController _systemPromptController = TextEditingController();
   final TextEditingController _systemPromptHuggingFaceController =
       TextEditingController();
   final TextEditingController _modelIdController = TextEditingController();
+  final TextEditingController _pulzeModelIdController = TextEditingController();
   final TextEditingController _templateController = TextEditingController();
 
   Widget _buildAutonomousModeCheckbox() {
@@ -87,7 +89,9 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
     //_isGPT4Selected =
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
+    _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
     _modelIdController.text = HuggingFace_API.model();
+    _pulzeModelIdController.text = PulzeAI_API.model();
     _templateController.text = HuggingFace_API.template();
     GlobalSettings().systemHuggingFacePrompt = HuggingFace_API.systemMessage();
     _sendMessageHistory = HuggingFace_API.sendMessages();
@@ -102,6 +106,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   }
 
   void _saveHuggingFaceSettings() {
+    PulzeAI_API.setModel(_pulzeModelIdController.text);
     HuggingFace_API.setModel(_modelIdController.text);
     HuggingFace_API.setTemplate(_templateController.text);
     HuggingFace_API.setSendMessages(_sendMessageHistory);
@@ -127,6 +132,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
       OpenAI_API.setModel(GlobalSettings().selectedModel);
       setState(() {
         _isHuggingFaceSelected = false;
+        _isPulzeSelected = false;
         //_isGPT4Selected = false;
         GlobalSettings().selectedModel = 'gpt-3.5-turbo';
       });
@@ -138,7 +144,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         child: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Choose AI Model:'),
+              Text('Choose AI Model or Provider:'),
               DropdownButton<String>(
                 value: GlobalSettings().selectedModel,
                 items: [
@@ -176,10 +182,38 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                     //_isGPT4Selected =
                     //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
                     _isHuggingFaceSelected = value == 'huggingface';
+                    _isPulzeSelected = value == 'pulzeai';
                   });
                 },
               ),
               SizedBox(height: 10),
+              if (_isPulzeSelected)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(height: 10),
+                    Text('Model ID:'),
+                    SizedBox(height: 6),
+                    InkWell(
+                      child: Text(
+                        '→ Browse available models',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                      onTap: () =>
+                          Utils.launchURL('https://platform.pulze.ai/models'),
+                    ),
+                    TextField(
+                      controller:
+                          _pulzeModelIdController, // Use TextEditingController to retrieve user input
+                      decoration: InputDecoration(
+                        labelText: 'Model ID',
+                      ),
+                      onChanged: (value) {
+                        // Update your modelId variable here
+                      },
+                    ),
+                  ],
+                ),
               if (_isHuggingFaceSelected)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
