@@ -5,7 +5,6 @@ import 'package:glowby/pulze_ai_api.dart';
 import 'package:glowby/utils.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
-import 'dart:html' as html;
 
 import 'hugging_face_api.dart';
 
