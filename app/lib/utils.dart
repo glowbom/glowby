@@ -1,12 +1,32 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:html' as html;
 
 import 'package:url_launcher/url_launcher_string.dart';
 
-class Utils {
+import 'utils_stub.dart'
+    if (dart.library.html) 'utils_web.dart'
+    if (dart.library.io) 'utils_desktop.dart';
+
+abstract class Utils {
+  static Future<void> downloadImage(String url, String description) async =>
+      UtilsPlatform.downloadImage(url, description);
+
+  static Future<dynamic> startFilePicker() async =>
+      UtilsPlatform.startFilePicker();
+
+  static Future<void> initializeState(dynamic f) async =>
+      UtilsPlatform.initializeState(f);
+
+  static Future<void> recordVoice(String lang) async =>
+      UtilsPlatform.recordVoice(lang);
+
+  static Future<String> convertToBase64JpegWeb(
+          List<Offset?> points, int width, int height) async =>
+      UtilsPlatform.convertToBase64JpegWeb(points, width, height);
+
   static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
@@ -39,12 +59,6 @@ class Utils {
       }
     }
     return null;
-  }
-
-  static void downloadImage(String url, String description) {
-    final windowFeatures =
-        'menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=yes,width=600,height=400';
-    html.window.open(url, 'glowby-image-${description}', windowFeatures);
   }
 
   static Future<String> getImageDataFromUrl(String url) async {

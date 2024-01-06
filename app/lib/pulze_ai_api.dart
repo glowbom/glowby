@@ -136,12 +136,28 @@ class PulzeAI_API {
         print('Request URL: $queryUrl');
       }
 
-      final response =
+      var response =
           await http.post(Uri.parse(queryUrl), headers: headers, body: body);
 
       if (kDebugMode) {
         print('Response Status Code: ${response.statusCode}');
         print('Response Body: ${response.body}');
+      }
+
+      // If there's a redirect, follow it
+      if (response.statusCode == 307) {
+        var newUri = response.headers['location'];
+        if (kDebugMode) {
+          print('New Uri: ${newUri}');
+        }
+        if (newUri != null) {
+          response = await http.get(Uri.parse(newUri));
+        }
+
+        if (kDebugMode) {
+          print('Response Status Code: ${response.statusCode}');
+          print('Response Body: ${response.body}');
+        }
       }
 
       if (response.statusCode == 200) {
