@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
@@ -69,11 +70,11 @@ class UtilsPlatform {
   }
 
   static Future<dynamic> startFilePicker() async {
+    Completer completer = Completer<dynamic>();
     try {
       html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
       uploadInput.multiple = false;
       uploadInput.accept = '.glowbom';
-      dynamic content;
 
       uploadInput.onChange.listen((e) {
         final files = uploadInput.files;
@@ -82,21 +83,27 @@ class UtilsPlatform {
           final reader = html.FileReader();
 
           reader.onLoadEnd.listen((e) {
-            String content = reader.result as String;
-            content = json.decode(content);
-          }).onDone(() {
-            return content;
+            dynamic result = reader.result;
+            if (result is String) {
+              completer.complete(json.decode(result));
+            } else {
+              completer.complete(
+                  result); // Assuming result is already in the correct format
+            }
           });
 
           reader.readAsText(file);
+        } else {
+          completer.complete(null);
         }
       });
 
       uploadInput.click();
     } catch (e) {
       print('Error: $e'); // Log the exception
+      completer.completeError(e);
     }
 
-    return null;
+    return completer.future;
   }
 }
