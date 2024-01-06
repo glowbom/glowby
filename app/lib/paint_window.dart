@@ -7,7 +7,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:glowby/openai_api.dart';
-import 'dart:html' as html;
+import 'package:glowby/utils.dart';
 
 class PaintWindow extends StatefulWidget {
   @override
@@ -28,38 +28,6 @@ class _PaintWindowState extends State<PaintWindow> {
   void dispose() {
     nameController.dispose();
     super.dispose();
-  }
-
-  Future<String> convertToBase64JpegWeb(List<Offset?> points) async {
-    // Create a canvas element
-    final html.CanvasElement canvas =
-        html.CanvasElement(width: width, height: height);
-    final html.CanvasRenderingContext2D ctx = canvas.context2D;
-
-    // Set the drawing properties
-    ctx.fillStyle = 'white'; // Assuming a white background
-    ctx.fillRect(0, 0, width, height); // Fill the canvas with white color
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
-
-    // Draw the lines based on the points
-    ctx.beginPath();
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
-        ctx.moveTo(points[i]!.dx, points[i]!.dy);
-        ctx.lineTo(points[i + 1]!.dx, points[i + 1]!.dy);
-      }
-    }
-    ctx.stroke();
-
-    // Convert the canvas content to JPEG format
-    final String dataUrl =
-        canvas.toDataUrl('image/jpeg', 0.9); // 0.9 is the quality
-
-    // Extract the base64 part of the data URL
-    final String base64String = dataUrl.split(',')[1];
-
-    return base64String;
   }
 
   // This function converts the drawing (list of points) to a base64 string
@@ -160,7 +128,8 @@ class _PaintWindowState extends State<PaintWindow> {
     // Convert points to a suitable format and call OpenAI method
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
-    String imageBase64 = await convertToBase64JpegWeb(points);
+    String imageBase64 =
+        await Utils.convertToBase64JpegWeb(points, width, height);
 
     // this is for testing
     //this.imgBytes = base64Decode(imageBase64); // Implement this function

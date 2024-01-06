@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -30,8 +31,12 @@ class UtilsPlatform {
         'startFilePicker is not supported on this platform.');
   }
 
-  static Future<void> recordVoice(String lang) {
+  static Future<void> recordVoice(String lang) async => throw UnsupportedError(
+      'initializeState is not supported on this platform.');
+
+  static Future<String> convertToBase64JpegWeb(
+      List<Offset?> points, int width, int height) async {
     throw UnsupportedError(
-        'initializeState is not supported on this platform.');
+        'convertToBase64JpegWeb is not supported on this platform.');
   }
 }

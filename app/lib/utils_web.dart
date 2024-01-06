@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:flutter/material.dart';
 
 // Uncomment the next line to compile the web version
 import 'package:js/js.dart';
@@ -18,6 +19,39 @@ external set _vr(void Function(dynamic) f);
 external void vr(text);
 
 class UtilsPlatform {
+  static Future<String> convertToBase64JpegWeb(
+      List<Offset?> points, int width, int height) async {
+    // Create a canvas element
+    final html.CanvasElement canvas =
+        html.CanvasElement(width: width, height: height);
+    final html.CanvasRenderingContext2D ctx = canvas.context2D;
+
+    // Set the drawing properties
+    ctx.fillStyle = 'white'; // Assuming a white background
+    ctx.fillRect(0, 0, width, height); // Fill the canvas with white color
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+
+    // Draw the lines based on the points
+    ctx.beginPath();
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        ctx.moveTo(points[i]!.dx, points[i]!.dy);
+        ctx.lineTo(points[i + 1]!.dx, points[i + 1]!.dy);
+      }
+    }
+    ctx.stroke();
+
+    // Convert the canvas content to JPEG format
+    final String dataUrl =
+        canvas.toDataUrl('image/jpeg', 0.9); // 0.9 is the quality
+
+    // Extract the base64 part of the data URL
+    final String base64String = dataUrl.split(',')[1];
+
+    return base64String;
+  }
+
   static Future<void> downloadImage(String url, String description) async {
     final windowFeatures =
         'menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=yes,width=600,height=400';

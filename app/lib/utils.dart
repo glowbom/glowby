@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:url_launcher/url_launcher_string.dart';
@@ -10,16 +11,21 @@ import 'utils_stub.dart'
     if (dart.library.io) 'utils_desktop.dart';
 
 abstract class Utils {
-  static Future<void> downloadImage(String url, String description) =>
+  static Future<void> downloadImage(String url, String description) async =>
       UtilsPlatform.downloadImage(url, description);
 
-  static Future<dynamic> startFilePicker() => UtilsPlatform.startFilePicker();
+  static Future<dynamic> startFilePicker() async =>
+      UtilsPlatform.startFilePicker();
 
-  static Future<void> initializeState(dynamic f) =>
+  static Future<void> initializeState(dynamic f) async =>
       UtilsPlatform.initializeState(f);
 
-  static Future<void> recordVoice(String lang) =>
+  static Future<void> recordVoice(String lang) async =>
       UtilsPlatform.recordVoice(lang);
+
+  static Future<String> convertToBase64JpegWeb(
+          List<Offset?> points, int width, int height) async =>
+      UtilsPlatform.convertToBase64JpegWeb(points, width, height);
 
   static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {
