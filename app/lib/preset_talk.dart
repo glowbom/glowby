@@ -139,7 +139,7 @@ class TalkState extends State<Talk> {
     }
   }
 
-  static void _startFilePicker() async {
+  void _startFilePicker() async {
     Utils.startFilePicker().then((value) {
       if (value != null) {
         _content = value;
