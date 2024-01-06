@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:glowby/openai_api.dart';
 import 'package:glowby/pulze_ai_api.dart';
+import 'package:glowby/utils.dart';
 import 'color_utils.dart';
 import 'chat_screen.dart';
 import 'dart:html' as html;
@@ -95,34 +96,6 @@ class TalkState extends State<Talk> {
     }
   }
 
-  void _startFilePicker() async {
-    try {
-      html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
-      uploadInput.multiple = false;
-      uploadInput.accept = '.glowbom';
-
-      uploadInput.onChange.listen((e) {
-        final files = uploadInput.files;
-        if (files != null && files.isNotEmpty) {
-          final file = files.first;
-          final reader = html.FileReader();
-
-          reader.onLoadEnd.listen((e) {
-            String content = reader.result as String;
-            _content = json.decode(content);
-            keyIndex.value += 1;
-          });
-
-          reader.readAsText(file);
-        }
-      });
-
-      uploadInput.click();
-    } catch (e) {
-      print('Error: $e'); // Log the exception
-    }
-  }
-
   List<Map<String, Object>> buildQuestions(List<dynamic> questionsData) {
     List<Map<String, Object>> questions =
         List<Map<String, Object>>.empty(growable: true);
@@ -165,6 +138,15 @@ class TalkState extends State<Talk> {
         });
       });
     }
+  }
+
+  static void _startFilePicker() async {
+    Utils.startFilePicker().then((value) {
+      if (value != null) {
+        _content = value;
+        keyIndex.value += 1;
+      }
+    });
   }
 
   @override

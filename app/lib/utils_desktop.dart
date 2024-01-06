@@ -19,4 +19,9 @@ class UtilsPlatform {
           'Failed to download image: Server responded with status code ${response.statusCode}');
     }
   }
+
+  static Future<dynamic> startFilePicker() async {
+    throw UnsupportedError(
+        'startFilePicker is not supported on this platform.');
+  }
 }

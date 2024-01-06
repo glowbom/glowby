@@ -13,6 +13,8 @@ abstract class Utils {
   static Future<void> downloadImage(String url, String description) =>
       UtilsPlatform.downloadImage(url, description);
 
+  static Future<dynamic> startFilePicker() => UtilsPlatform.startFilePicker();
+
   static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
