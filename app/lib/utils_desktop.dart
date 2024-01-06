@@ -24,4 +24,14 @@ class UtilsPlatform {
     throw UnsupportedError(
         'startFilePicker is not supported on this platform.');
   }
+
+  static Future<void> initializeState(dynamic f) async {
+    throw UnsupportedError(
+        'startFilePicker is not supported on this platform.');
+  }
+
+  static Future<void> recordVoice(String lang) {
+    throw UnsupportedError(
+        'initializeState is not supported on this platform.');
+  }
 }

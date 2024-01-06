@@ -11,23 +11,7 @@ import 'openai_api.dart';
 import 'timestamp.dart';
 import 'package:flutter/material.dart';
 
-// Uncomment the next line to compile the web version
-import 'package:js/js.dart';
-
 import 'ai.dart';
-
-// Uncomment the next block to compile the web version
-
-@JS()
-external int rv(String lang);
-
-/// Allows assigning a function to be callable from `window.functionName()`
-@JS('vr')
-external set _vr(void Function(dynamic) f);
-
-/// Allows calling the assigned function from Dart as well.
-@JS()
-external void vr(text);
 
 /// A class representing the NewMessage widget, which allows users to send messages and receive AI responses.
 class NewMessage extends StatefulWidget {
@@ -79,7 +63,7 @@ class _NewMessageState extends State<NewMessage> {
   void initState() {
     if (kIsWeb) {
       // Uncomment the next line to compile the web version
-      _vr = allowInterop(_onVoiceReady);
+      Utils.initializeState(_onVoiceReady);
     }
     ai = Ai(
       widget._name,
@@ -103,7 +87,7 @@ class _NewMessageState extends State<NewMessage> {
       return;
     }
 
-    rv(GlobalSettings().selectedLanguage);
+    Utils.recordVoice(GlobalSettings().selectedLanguage);
 
     setState(() {
       _isRecording = true;

@@ -15,6 +15,12 @@ abstract class Utils {
 
   static Future<dynamic> startFilePicker() => UtilsPlatform.startFilePicker();
 
+  static Future<void> initializeState(dynamic f) =>
+      UtilsPlatform.initializeState(f);
+
+  static Future<void> recordVoice(String lang) =>
+      UtilsPlatform.recordVoice(lang);
+
   static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);
