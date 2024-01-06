@@ -1,7 +1,3 @@
-//@JS()
-//library tv;
-// Uncomment 2 lines above to compile the web version
-
 import 'dart:async';
 import 'dart:math';
 
