@@ -352,7 +352,7 @@ class _NewMessageState extends State<NewMessage> {
               ),
               onPressed: _voiceMessage,
             ),
-          if (kIsWeb && !_isProcessing)
+          if (!_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,
               icon: Icon(
