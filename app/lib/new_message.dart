@@ -315,7 +315,7 @@ class _NewMessageState extends State<NewMessage> {
               padding: const EdgeInsets.only(bottom: 20),
               child: TextField(
                 cursorColor: Theme.of(context).primaryColor,
-                textInputAction: TextInputAction.none,
+                textInputAction: TextInputAction.send,
                 focusNode: _focusNode,
                 autofocus: true,
                 controller: _controller,
