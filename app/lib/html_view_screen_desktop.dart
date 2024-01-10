@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
 import 'package:glowby/html_view_screen_interface.dart';
+import 'package:glowby/html_view_screen_mobile.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -15,22 +16,35 @@ class HtmlViewScreen extends StatelessWidget
 
   HtmlViewScreen({required this.htmlContent, required this.appName});
 
-  void _openCodeInBrowser() async {
-    final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/temp.html');
-    await tempFile.writeAsString(htmlContent, flush: true);
-
-    final url = tempFile.uri.toString();
-    if (await canLaunchUrlString(url)) {
-      await launchUrlString(url);
+  void _openCodeInBrowser(context) async {
+    if (Platform.isIOS) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HtmlViewScreenMobile(
+            htmlContent: htmlContent,
+            appName: appName,
+          ),
+        ),
+      );
     } else {
-      print("Can't launch $url");
+      // Use default implementation
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp.html');
+      await tempFile.writeAsString(htmlContent, flush: true);
+
+      final url = tempFile.uri.toString();
+      if (await canLaunchUrlString(url)) {
+        await launchUrlString(url);
+      } else {
+        print("Can't launch $url");
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _openCodeInBrowser();
+    //_openCodeInBrowser(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -45,8 +59,8 @@ class HtmlViewScreen extends StatelessWidget
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
-                onPressed: _openCodeInBrowser,
-                child: Text('Open in Webview'),
+                onPressed: () => _openCodeInBrowser(context),
+                child: Text('Run code'),
               ),
               SizedBox(height: 20), // Spacing between button and code viewer
               // Code viewer for HTML content

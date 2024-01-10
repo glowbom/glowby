@@ -32,6 +32,7 @@ dependencies:
   flutter_image_compress: ^2.1.0
   path_provider: ^2.1.2
   flutter_highlight: ^0.7.0
+  webview_flutter: ^4.4.4
 
   flutter:
     sdk: flutter
