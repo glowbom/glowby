@@ -17,7 +17,7 @@ class HtmlViewScreen extends StatelessWidget
         title: Text('Placeholder for $appName'),
       ),
       body: Center(
-        child: Text('HTML content is not viewable in the desktop application.'),
+        child: SelectableText(htmlContent),
       ),
     );
   }
