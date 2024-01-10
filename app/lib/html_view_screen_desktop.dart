@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
 import 'package:glowby/html_view_screen_interface.dart';
@@ -60,9 +61,15 @@ class HtmlViewScreen extends StatelessWidget
             children: [
               TextButton(
                 onPressed: () => _openCodeInBrowser(context),
-                child: Text('Run code'),
+                child: Text('Run'),
               ),
-              SizedBox(height: 20), // Spacing between button and code viewer
+              TextButton(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: htmlContent));
+                },
+                child: Text('Download code'),
+              ),
+              SizedBox(height: 20),
               // Code viewer for HTML content
               HighlightView(
                 htmlContent,
