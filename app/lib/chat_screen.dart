@@ -533,14 +533,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     // Add the Social Links button
-                    if (widget._dnsgs! == false)
+                    /*if (widget._dnsgs! == false)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: IconButton(
                           icon: Icon(Icons.share),
                           onPressed: _showSocialLinksDialog,
                         ),
-                      ),
+                      ),*/
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
                         child: Text(
