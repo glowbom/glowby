@@ -1,4 +1,5 @@
 // html_view_screen_stub.dart
+// import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -45,7 +46,9 @@ class HtmlViewScreen extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    //_openCodeInBrowser(context);
+    /*WidgetsBinding.instance.addPostFrameCallback((_) {
+      Timer(Duration(seconds: 2), () => _openCodeInBrowser(context));
+    });*/
 
     return Scaffold(
       appBar: AppBar(
