@@ -31,6 +31,7 @@ dependencies:
   file_picker: ^6.1.1
   flutter_image_compress: ^2.1.0
   path_provider: ^2.1.2
+  flutter_highlight: ^0.7.0
 
   flutter:
     sdk: flutter
