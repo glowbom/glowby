@@ -33,6 +33,7 @@ dependencies:
   path_provider: ^2.1.2
   flutter_highlight: ^0.7.0
   webview_flutter: ^4.4.4
+  flutter_lints: ^3.0.1
 
   flutter:
     sdk: flutter
