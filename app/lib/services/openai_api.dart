@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
-import 'package:glowby/hugging_face_api.dart';
-import 'package:glowby/pulze_ai_api.dart';
+import 'package:glowby/services/hugging_face_api.dart';
+import 'package:glowby/services/pulze_ai_api.dart';
 
 class OpenAI_API {
   static final OpenAI_API _instance = OpenAI_API._privateConstructor();

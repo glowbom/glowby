@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:glowby/openai_api.dart';
-import 'package:glowby/pulze_ai_api.dart';
+import 'package:glowby/services/openai_api.dart';
+import 'package:glowby/services/pulze_ai_api.dart';
 import 'package:glowby/utils.dart';
-import 'color_utils.dart';
-import 'chat_screen.dart';
+import '../../utils/color_utils.dart';
+import '../../chat_screen.dart';
 
-import 'hugging_face_api.dart';
+import '../../services/hugging_face_api.dart';
 
 var _content;
 
