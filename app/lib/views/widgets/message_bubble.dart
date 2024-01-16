@@ -4,11 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
-  final Key? key;
   final String? username;
   final String? link;
 
-  MessageBubble(this.message, this.username, this.isMe, this.link, {this.key});
+  const MessageBubble(this.message, this.username, this.isMe, this.link,
+      {super.key});
 
   // Launches the link if it is valid
   void _launchLink() async {
@@ -27,18 +27,18 @@ class MessageBubble extends StatelessWidget {
         // Different colors for sender and receiver
         color: isMe ? Colors.grey[300] : Theme.of(context).primaryColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
+          topLeft: const Radius.circular(12),
+          topRight: const Radius.circular(12),
           bottomLeft: Radius.circular(isMe ? 12 : 0),
           bottomRight: Radius.circular(isMe ? 0 : 12),
         ),
       ),
       width: 280,
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         vertical: 10,
         horizontal: 16,
       ),
-      margin: EdgeInsets.symmetric(
+      margin: const EdgeInsets.symmetric(
         vertical: 4,
         horizontal: 8,
       ),
@@ -113,12 +113,12 @@ class MessageBubble extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue, // Background color
       ),
+      onPressed: _launchLink,
       child: Text(
         message,
         textAlign: isMe ? TextAlign.end : TextAlign.start,
         style: TextStyle(color: isMe ? Colors.black : Colors.white70),
       ),
-      onPressed: _launchLink,
     );
   }
 

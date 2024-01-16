@@ -29,7 +29,7 @@ class ChatScreen extends StatefulWidget {
   final bool? _showAiSettings;
   final bool? _dnsgs;
 
-  ChatScreen(
+  const ChatScreen(
       this._name,
       this._questions,
       this._voice,
@@ -40,7 +40,7 @@ class ChatScreen extends StatefulWidget {
       this._autonomousMode,
       this._enableAi,
       this._showAiSettings,
-      this._dnsgs);
+      this._dnsgs, {super.key});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -58,7 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final TextToSpeech textToSpeech = TextToSpeech(); // Initialize TextToSpeech
 
-  List<Message> _messages = [];
+  final List<Message> _messages = [];
 
   @override
   void initState() {
@@ -115,7 +115,7 @@ class _ChatScreenState extends State<ChatScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return ApiKeyDialog(); // Use the ApiKeyDialog widget
+        return const ApiKeyDialog(); // Use the ApiKeyDialog widget
       },
     ).then(
       (value) => setState(() {}),
@@ -172,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
     List<String> tasks = [];
 
     try {
-      _currentOperation = await OpenAI_API.getResponseFromOpenAI(
+      _currentOperation = OpenAI_API.getResponseFromOpenAI(
           _lastInputMessage,
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
@@ -182,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (response ==
           'Sorry, there was an error processing your request. Please try again later.') {
         _stopAutonomousMode();
-        Future.delayed(Duration(microseconds: 200), () {
+        Future.delayed(const Duration(microseconds: 200), () {
           setState(() {
             _autonomousMode = false;
           });
@@ -225,7 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (tasks.length < 2) {
       _stopAutonomousMode();
-      Future.delayed(Duration(microseconds: 200), () {
+      Future.delayed(const Duration(microseconds: 200), () {
         setState(() {
           _autonomousMode = false;
         });
@@ -240,7 +240,7 @@ class _ChatScreenState extends State<ChatScreen> {
       textToSpeech.speakText('You plan is ready',
           language: GlobalSettings().selectedLanguage);
     } else {
-      textToSpeech.speakText('You plan to ${_planName} is ready',
+      textToSpeech.speakText('You plan to $_planName is ready',
           language: GlobalSettings().selectedLanguage);
     }
 
@@ -307,7 +307,7 @@ class _ChatScreenState extends State<ChatScreen> {
         .reversed
         .toList();
 
-    _currentOperation = await OpenAI_API.getResponseFromOpenAI(
+    _currentOperation = OpenAI_API.getResponseFromOpenAI(
       message,
       previousMessages: formattedPreviousMessages,
       customSystemPrompt: customSystemPrompt,
@@ -387,7 +387,7 @@ class _ChatScreenState extends State<ChatScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Share Glowby'),
+          title: const Text('Share Glowby'),
           content: SingleChildScrollView(
             child: ListBody(
               children: _buildLinkItems(context),
@@ -395,7 +395,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Close'),
+              child: const Text('Close'),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],
@@ -438,7 +438,7 @@ class _ChatScreenState extends State<ChatScreen> {
           child: GestureDetector(
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 color:
                     Colors.black, // Change this color to match your app's theme
                 decoration: TextDecoration.underline,
@@ -455,12 +455,12 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         IconButton(
-          icon: Icon(Icons.copy),
+          icon: const Icon(Icons.copy),
           onPressed: () {
             Clipboard.setData(ClipboardData(text: url)).then((value) {
               // Show a snackbar or toast indicating the link was copied
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Link copied to clipboard!'),
                 ),
               );
@@ -476,11 +476,11 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        constraints: BoxConstraints(minWidth: 100, maxWidth: 640),
+        constraints: const BoxConstraints(minWidth: 100, maxWidth: 640),
         child: Column(
           children: <Widget>[
             _loading
-                ? MagicalLoadingView()
+                ? const MagicalLoadingView()
                 : Expanded(
                     child: Container(
                       child: _autonomousMode
@@ -528,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             if (!_autonomousMode && !_loading && !_planImplementationInProgress)
               Container(
-                margin: EdgeInsets.all(8),
+                margin: const EdgeInsets.all(8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -537,17 +537,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: IconButton(
-                          icon: Icon(Icons.share),
+                          icon: const Icon(Icons.share),
                           onPressed: _showSocialLinksDialog,
                         ),
                       ),
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
-                        child: Text(
+                        onPressed: _showApiKeyDialog,
+                        child: const Text(
                           'Enter API Key',
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: _showApiKeyDialog,
                       ),
                     // Add the AI Settings button conditionally
                     if (OpenAI_API.oat().isNotEmpty)
@@ -556,18 +556,18 @@ class _ChatScreenState extends State<ChatScreen> {
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: ElevatedButton(
-                            child: Text(
+                            onPressed: _showAiSettingsDialog,
+                            child: const Text(
                               'AI Settings',
                               style: TextStyle(color: Colors.white),
                             ),
-                            onPressed: _showAiSettingsDialog,
                           ),
                         ),
                   ],
                 ),
               ),
             if (_planImplementationInProgress)
-              Container(
+              const SizedBox(
                 height: 50,
                 child: Center(
                   child: Text(
@@ -579,21 +579,21 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               ),
-            if (_planImplementationInProgress) CircularProgressIndicator(),
-            SizedBox(height: 20),
+            if (_planImplementationInProgress) const CircularProgressIndicator(),
+            const SizedBox(height: 20),
             // Add the Stop button when plan implementation is in progress
             if (_loading || _planImplementationInProgress)
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: IconButton(
-                  icon: Icon(Icons.stop),
+                  icon: const Icon(Icons.stop),
                   onPressed: _stopAutonomousMode,
                   tooltip: 'Stop',
                   color: Colors.black, // Set the color of the stop icon to red
                 ),
               ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),

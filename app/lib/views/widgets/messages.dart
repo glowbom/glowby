@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class Messages extends StatefulWidget {
   final List<Message> _messages;
 
-  Messages(this._messages);
+  const Messages(this._messages, {super.key});
 
   @override
   _MessagesState createState() => _MessagesState();

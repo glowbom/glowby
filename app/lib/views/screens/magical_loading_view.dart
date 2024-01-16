@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class MagicalLoadingView extends StatefulWidget {
+  const MagicalLoadingView({super.key});
+
   @override
   _MagicalLoadingViewState createState() => _MagicalLoadingViewState();
 }
@@ -43,7 +45,7 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
               builder: (context, child) {
                 return CustomPaint(
                   painter: _MagicalLoadingPainter(_controller.value),
-                  child: Container(
+                  child: const SizedBox(
                     width: 280,
                     height: 280,
                   ),
@@ -52,7 +54,7 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
             ),
             Positioned(
               bottom: 0,
-              child: Container(
+              child: SizedBox(
                 width: 280, // Adjust this value according to your preference
                 child: Text(
                   getRandomMessage(),
@@ -60,7 +62,7 @@ class _MagicalLoadingViewState extends State<MagicalLoadingView>
                   maxLines:
                       2, // You can increase this value to accommodate more lines
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontStyle: FontStyle.italic,
                     color: Colors.black,

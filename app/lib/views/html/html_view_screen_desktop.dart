@@ -16,7 +16,7 @@ class HtmlViewScreen extends StatelessWidget
   final String htmlContent;
   final String appName;
 
-  HtmlViewScreen({required this.htmlContent, required this.appName});
+  const HtmlViewScreen({super.key, required this.htmlContent, required this.appName});
 
   void _openCodeInBrowser(context) async {
     if (Platform.isIOS) {
@@ -58,29 +58,29 @@ class HtmlViewScreen extends StatelessWidget
         alignment: Alignment.center,
         child: SingleChildScrollView(
           // Makes the content scrollable
-          padding: EdgeInsets.all(16), // Adds padding around the edges
+          padding: const EdgeInsets.all(16), // Adds padding around the edges
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextButton(
                 onPressed: () => _openCodeInBrowser(context),
-                child: Text('Run'),
+                child: const Text('Run'),
               ),
               TextButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: htmlContent));
                 },
-                child: Text('Download code'),
+                child: const Text('Download code'),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // Code viewer for HTML content
               HighlightView(
                 htmlContent,
                 language: 'html',
                 theme: githubTheme, // Choose the theme you like
                 padding:
-                    EdgeInsets.all(12), // Adds padding inside the code viewer
-                textStyle: TextStyle(fontFamily: 'monospace', fontSize: 10.0),
+                    const EdgeInsets.all(12), // Adds padding inside the code viewer
+                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 10.0),
               ),
             ],
           ),

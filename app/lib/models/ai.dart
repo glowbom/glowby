@@ -38,7 +38,7 @@ class Ai {
 
     // Call the OpenAI API if no matching questions are found locally
     if (aiEnabled && OpenAI_API.oat().isNotEmpty) {
-      networkOperation = await OpenAI_API.getResponseFromOpenAI(message,
+      networkOperation = OpenAI_API.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
       String response = await networkOperation!.value;
       String poweredTitle = OpenAI_API.model == 'gpt-4'
@@ -50,7 +50,7 @@ class Ai {
                   : OpenAI_API.model == 'huggingface'
                       ? HuggingFace_API.model()
                       : OpenAI_API.model == 'pulzeai'
-                          ? '${PulzeAI_API.lastUsedModel()}'
+                          ? PulzeAI_API.lastUsedModel()
                           : '';
       return [
         Message(
@@ -118,7 +118,9 @@ class Ai {
       // Skip non-matching characters.
       if (!matches1[i]) continue;
       // Find the next match in s2.
-      while (!matches2[k]) k++;
+      while (!matches2[k]) {
+        k++;
+      }
       // Count transposition if the characters don't match.
       if (s1[i] != s2[k]) transpositions++;
       k++;

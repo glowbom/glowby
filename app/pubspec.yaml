@@ -34,6 +34,7 @@ dependencies:
   flutter_highlight: ^0.7.0
   webview_flutter: ^4.4.4
   flutter_lints: ^3.0.1
+  async: any
 
   flutter:
     sdk: flutter

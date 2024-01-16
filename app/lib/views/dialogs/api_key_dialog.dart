@@ -6,6 +6,8 @@ import '../../services/hugging_face_api.dart';
 import '../../services/pulze_ai_api.dart';
 
 class ApiKeyDialog extends StatefulWidget {
+  const ApiKeyDialog({super.key});
+
   @override
   _ApiKeyDialogState createState() => _ApiKeyDialogState();
 }
@@ -49,12 +51,12 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
   void _saveApiKey(BuildContext context) {
     String? errorMessage;
 
-    if (!_apiKey.isEmpty && !isValidOpenAIKey(_apiKey)) {
+    if (_apiKey.isNotEmpty && !isValidOpenAIKey(_apiKey)) {
       errorMessage = 'OpenAI API Key is invalid!';
-    } else if (!_huggingFaceToken.isEmpty &&
+    } else if (_huggingFaceToken.isNotEmpty &&
         !isValidHuggingFaceKey(_huggingFaceToken)) {
       errorMessage = 'Hugging Face Token is invalid!';
-    } else if (!_pulzeAiToken.isEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
+    } else if (_pulzeAiToken.isNotEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
       errorMessage = 'Pulze API Key is invalid!';
     }
 
@@ -71,7 +73,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       PulzeAI_API.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('API Keys saved successfully!')),
+        const SnackBar(content: Text('API Keys saved successfully!')),
       );
     }
   }
@@ -83,23 +85,23 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Enter OpenAI API Key'),
-      content: Container(
+      title: const Text('Enter OpenAI API Key'),
+      content: SizedBox(
         width: 340, // Set the max width of the AlertDialog
         child: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Get your API key:'),
+              const Text('Get your API key:'),
               InkWell(
-                child: Text(
+                child: const Text(
                   '→ OpenAI Dashboard',
                   style: TextStyle(color: Colors.blue),
                 ),
                 onTap: () => Utils.launchURL(
                     'https://platform.openai.com/account/api-keys'),
               ),
-              SizedBox(height: 10),
-              Text('API Key is stored locally and not shared.'),
+              const SizedBox(height: 10),
+              const Text('API Key is stored locally and not shared.'),
               TextField(
                 controller: _apiKeyController,
                 obscureText: _obscureApiKey,
@@ -124,30 +126,30 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                   });
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               InkWell(
-                child: Text(
+                child: const Text(
                   'API Key not working? Click Here.',
                   style: TextStyle(color: Colors.blue),
                 ),
                 onTap: () => Utils.launchURL(
                     'https://platform.openai.com/account/billing/overview'),
               ),
-              Text('Ensure billing info is added in OpenAI Billing.'),
-              SizedBox(height: 10),
+              const Text('Ensure billing info is added in OpenAI Billing.'),
+              const SizedBox(height: 10),
               InkWell(
-                child: Text(
+                child: const Text(
                   'The Price is about 100,000 words per \$1',
                   style: TextStyle(color: Colors.blue),
                 ),
                 onTap: () => Utils.launchURL(
                     'https://openai.com/pricing#language-models'),
               ),
-              Text('ChatGPT Plus subscription not required.'),
-              SizedBox(height: 10),
-              Divider(),
+              const Text('ChatGPT Plus subscription not required.'),
+              const SizedBox(height: 10),
+              const Divider(),
               ExpansionTile(
-                title: Text(
+                title: const Text(
                   'Pulze',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -157,18 +159,18 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 10),
-                        Text('Get your Access Token:'),
+                        const SizedBox(height: 10),
+                        const Text('Get your Access Token:'),
                         InkWell(
-                          child: Text(
+                          child: const Text(
                             '→ Pulze Dashboard',
                             style: TextStyle(color: Colors.blue),
                           ),
                           onTap: () =>
                               Utils.launchURL('https://platform.pulze.ai/'),
                         ),
-                        SizedBox(height: 10),
-                        Text('Enter your Pulze Token:'),
+                        const SizedBox(height: 10),
+                        const Text('Enter your Pulze Token:'),
                         TextField(
                           controller: _pulzeAiController,
                           obscureText: _obscureApiKeyPulze,
@@ -195,17 +197,17 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                             });
                           },
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              Divider(),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
+              const Divider(),
+              const SizedBox(height: 10),
               ExpansionTile(
-                title: Text(
+                title: const Text(
                   '🤗 Hosted Inference API',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -215,18 +217,18 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 10),
-                        Text('Get your Access Token:'),
+                        const SizedBox(height: 10),
+                        const Text('Get your Access Token:'),
                         InkWell(
-                          child: Text(
+                          child: const Text(
                             '→ Hugging Face Dashboard',
                             style: TextStyle(color: Colors.blue),
                           ),
                           onTap: () => Utils.launchURL(
                               'https://huggingface.co/settings/tokens'),
                         ),
-                        SizedBox(height: 10),
-                        Text('Enter your Hugging Face Token:'),
+                        const SizedBox(height: 10),
+                        const Text('Enter your Hugging Face Token:'),
                         TextField(
                           controller: _huggingFaceTokenController,
                           obscureText: _obscureApiKeyHuggingFace,
@@ -254,7 +256,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
                             });
                           },
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -266,7 +268,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       ),
       actions: [
         TextButton(
-          child: Text('Clear'),
+          child: const Text('Clear'),
           onPressed: () {
             setState(() {
               _apiKeyController.clear();
@@ -279,13 +281,13 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
           },
         ),
         TextButton(
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         ElevatedButton(
-          child: Text(
+          child: const Text(
             'Save API Key',
             style: TextStyle(color: Colors.white),
           ),

@@ -155,7 +155,7 @@ class TalkState extends State<Talk> {
       title: 'Chat',
       theme: ThemeData(
         primaryColor: _mainColor == 'Green'
-            ? Color.fromRGBO(85, 185, 158, 1)
+            ? const Color.fromRGBO(85, 185, 158, 1)
             : _mainColor == 'Blue'
                 ? Colors.blue
                 : _mainColor == 'Red'
@@ -174,7 +174,7 @@ class TalkState extends State<Talk> {
                 }
                 // Default color
                 return _mainColor == 'Green'
-                    ? Color.fromRGBO(85, 185, 158, 1)
+                    ? const Color.fromRGBO(85, 185, 158, 1)
                     : _mainColor == 'Blue'
                         ? Colors.blue
                         : _mainColor == 'Red'
@@ -192,7 +192,7 @@ class TalkState extends State<Talk> {
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
                 color: _mainColor == 'Green'
-                    ? Color.fromRGBO(85, 185, 158, 1)
+                    ? const Color.fromRGBO(85, 185, 158, 1)
                     : _mainColor == 'Blue'
                         ? Colors.blue
                         : _mainColor == 'Red'
@@ -205,7 +205,7 @@ class TalkState extends State<Talk> {
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
                 color: _mainColor == 'Green'
-                    ? Color.fromRGBO(85, 185, 158, 1)
+                    ? const Color.fromRGBO(85, 185, 158, 1)
                     : _mainColor == 'Blue'
                         ? Colors.blue
                         : _mainColor == 'Red'
@@ -217,7 +217,7 @@ class TalkState extends State<Talk> {
           // Defines the color of the label text when the TextField is focused or hovered
           labelStyle: TextStyle(
               color: _mainColor == 'Green'
-                  ? Color.fromRGBO(85, 185, 158, 1)
+                  ? const Color.fromRGBO(85, 185, 158, 1)
                   : _mainColor == 'Blue'
                       ? Colors.blue
                       : _mainColor == 'Red'
@@ -228,11 +228,11 @@ class TalkState extends State<Talk> {
           // You can also define the hover color if needed
           // hoverColor: Colors.black,
         ),
-        textSelectionTheme: TextSelectionThemeData(
+        textSelectionTheme: const TextSelectionThemeData(
           selectionColor: Colors.grey, // Change this to your desired color
         ),
         primarySwatch: generateMaterialColor(_mainColor == 'Green'
-            ? Color.fromRGBO(85, 185, 158, 1)
+            ? const Color.fromRGBO(85, 185, 158, 1)
             : _mainColor == 'Blue'
                 ? Colors.blue
                 : _mainColor == 'Red'
@@ -247,7 +247,7 @@ class TalkState extends State<Talk> {
             _title != null ? _title! : 'Chat App',
             style: TextStyle(
               color: _mainColor == 'Green'
-                  ? Color.fromRGBO(85, 185, 158, 1)
+                  ? const Color.fromRGBO(85, 185, 158, 1)
                   : _mainColor == 'Blue'
                       ? Colors.blue
                       : _mainColor == 'Red'
@@ -264,7 +264,7 @@ class TalkState extends State<Talk> {
                 icon: Icon(
                   Icons.file_upload,
                   color: _mainColor == 'Green'
-                      ? Color.fromRGBO(85, 185, 158, 1)
+                      ? const Color.fromRGBO(85, 185, 158, 1)
                       : _mainColor == 'Blue'
                           ? Colors.blue
                           : _mainColor == 'Red'
@@ -278,12 +278,12 @@ class TalkState extends State<Talk> {
           ],
         ),
         body: _appScreen == 'Loading'
-            ? Center(
+            ? const Center(
                 child: Text('Loading...'),
               )
             : _appScreen == 'Glowbom'
-                ? Center(
-                    child: const Image(image: AssetImage('assets/glowbom.png')),
+                ? const Center(
+                    child: Image(image: AssetImage('assets/glowbom.png')),
                   )
                 : ChatScreen(
                     _content != null && _content.containsKey('start_over')
@@ -309,9 +309,7 @@ ValueNotifier<int> keyIndex = ValueNotifier<int>(0);
 
 // A StatefulWidget that represents the main Talk widget.
 class Talk extends StatefulWidget {
-  final Key key;
-
-  Talk({required this.key});
+  const Talk({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -320,6 +318,8 @@ class Talk extends StatefulWidget {
 }
 
 class TalkApp extends StatefulWidget {
+  const TalkApp({super.key});
+
   @override
   _TalkAppState createState() => _TalkAppState();
 }

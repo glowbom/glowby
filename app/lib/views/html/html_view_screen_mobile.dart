@@ -5,13 +5,14 @@ class HtmlViewScreenMobile extends StatefulWidget {
   final String htmlContent;
   final String appName;
 
-  HtmlViewScreenMobile({required this.htmlContent, required this.appName});
+  const HtmlViewScreenMobile(
+      {super.key, required this.htmlContent, required this.appName});
 
   @override
-  _HtmlViewScreenState createState() => _HtmlViewScreenState();
+  HtmlViewScreenState createState() => HtmlViewScreenState();
 }
 
-class _HtmlViewScreenState extends State<HtmlViewScreenMobile> {
+class HtmlViewScreenState extends State<HtmlViewScreenMobile> {
   late final WebViewController _controller;
 
   @override

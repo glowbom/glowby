@@ -10,6 +10,8 @@ import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/utils.dart';
 
 class PaintWindow extends StatefulWidget {
+  const PaintWindow({super.key});
+
   @override
   _PaintWindowState createState() => _PaintWindowState();
 }
@@ -62,18 +64,13 @@ class _PaintWindowState extends State<PaintWindow> {
     }
 
     // Compress the image and get JPEG format Uint8List
-    final Uint8List? imgBytes = await FlutterImageCompress.compressWithList(
+    final Uint8List imgBytes = await FlutterImageCompress.compressWithList(
       byteData.buffer.asUint8List(),
       minWidth: width,
       minHeight: height,
       quality: 100, // Adjust the quality as needed
       format: CompressFormat.jpeg,
     );
-
-    if (imgBytes == null) {
-      print("Failed to compress image");
-      return '';
-    }
 
     // Base64 encode the JPEG bytes
     final String base64String = base64Encode(imgBytes);
@@ -209,13 +206,13 @@ class _PaintWindowState extends State<PaintWindow> {
               ),
             ),
             Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
                   width:
                       width.toDouble(), // Set your desired maximum width here
                   child: TextField(
                     controller: nameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Name your creation',
                     ),
                     onChanged: (value) {
@@ -228,16 +225,16 @@ class _PaintWindowState extends State<PaintWindow> {
       ),
       actions: <Widget>[
         if (isLoading)
-          CircularProgressIndicator()
+          const CircularProgressIndicator()
         else
           TextButton(
-            child: const Text('Clear'),
             onPressed: clear,
+            child: const Text('Clear'),
           ),
         TextButton(
-          child: const Text('Build'),
           onPressed:
-              callOpenAI, // Here we call the method to process the drawing
+              callOpenAI,
+          child: const Text('Build'), // Here we call the method to process the drawing
         ),
         TextButton(
           child: const Text('Close'),

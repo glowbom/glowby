@@ -36,6 +36,6 @@ class Message {
     if (username != null) parts.add('username: $username');
     if (link != null) parts.add('link: $link');
 
-    return parts.join(', ') + ')';
+    return '${parts.join(', ')})';
   }
 }

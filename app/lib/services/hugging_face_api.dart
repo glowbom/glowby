@@ -25,7 +25,7 @@ class HuggingFace_API {
   static const String _modelKey = 'huggingface_model';
   static const String _systemMessageKey = 'huggingface_system_message';
   static const String _sendMessagesKey = 'huggingface_send_messages';
-  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static String oat() => HuggingFace_API()._oat();
   static void setOat(String value) => HuggingFace_API()._setOat(value);

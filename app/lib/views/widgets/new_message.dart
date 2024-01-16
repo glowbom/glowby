@@ -22,9 +22,9 @@ class NewMessage extends StatefulWidget {
   final bool? _enableAi;
   final Function(String) onAutonomousModeMessage;
 
-  NewMessage(this._refresh, this._messages, this._questions, this._name,
+  const NewMessage(this._refresh, this._messages, this._questions, this._name,
       this._enableAi,
-      {required this.onAutonomousModeMessage});
+      {super.key, required this.onAutonomousModeMessage});
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -33,7 +33,7 @@ class NewMessage extends StatefulWidget {
 class _NewMessageState extends State<NewMessage> {
   late Ai ai;
 
-  final _controller = new TextEditingController();
+  final _controller = TextEditingController();
   var _enteredMessage = '';
 
   FocusNode? _focusNode;
@@ -98,7 +98,7 @@ class _NewMessageState extends State<NewMessage> {
       _voiceCancelTimer = null;
     }
 
-    _voiceCancelTimer = Timer(Duration(seconds: 8), () {
+    _voiceCancelTimer = Timer(const Duration(seconds: 8), () {
       if (_isRecording) {
         setState(() {
           _isRecording = false;
@@ -194,7 +194,7 @@ class _NewMessageState extends State<NewMessage> {
     // Remove the typing message instance when the response is received
     widget._messages.remove(typingMessage);
 
-    if (response.length > 0) {
+    if (response.isNotEmpty) {
       for (Message m in response) {
         widget._messages.insert(
           0,
@@ -298,7 +298,7 @@ class _NewMessageState extends State<NewMessage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return PaintWindow();
+        return const PaintWindow();
       },
     );
   }
@@ -306,8 +306,8 @@ class _NewMessageState extends State<NewMessage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(8),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -323,7 +323,7 @@ class _NewMessageState extends State<NewMessage> {
                 autocorrect: true,
                 enableSuggestions: true,
                 style: TextStyle(color: Theme.of(context).primaryColor),
-                decoration: InputDecoration(labelText: 'Send message...'),
+                decoration: const InputDecoration(labelText: 'Send message...'),
                 onChanged: (value) {
                   setState(() {
                     _enteredMessage = value;
@@ -333,7 +333,7 @@ class _NewMessageState extends State<NewMessage> {
                   if (_enteredMessage.trim().isNotEmpty) {
                     _sendMessage();
                     // Clear the content of the TextEditingController after sending the message
-                    Future.delayed(Duration(microseconds: 500), () {
+                    Future.delayed(const Duration(microseconds: 500), () {
                       _controller.clear();
                     });
                   }
@@ -355,7 +355,7 @@ class _NewMessageState extends State<NewMessage> {
           if (!_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,
-              icon: Icon(
+              icon: const Icon(
                 Icons.brush,
               ),
               onPressed: _openPaintWindow,
@@ -363,12 +363,12 @@ class _NewMessageState extends State<NewMessage> {
           if (_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,
-              icon: Icon(Icons.stop),
+              icon: const Icon(Icons.stop),
               onPressed: _stopProcessing,
             ),
           IconButton(
             color: Theme.of(context).primaryColor,
-            icon: Icon(
+            icon: const Icon(
               Icons.send,
             ),
             onPressed: _enteredMessage.trim().isEmpty ? null : _sendMessage,

@@ -9,7 +9,7 @@ import 'package:glowby/utils/utils.dart';
 class AiSettingsDialog extends StatefulWidget {
   final Function(bool) onVoiceEnabledChanged;
 
-  AiSettingsDialog({required this.onVoiceEnabledChanged});
+  const AiSettingsDialog({super.key, required this.onVoiceEnabledChanged});
 
   @override
   _AiSettingsDialogState createState() => _AiSettingsDialogState();
@@ -30,7 +30,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   Widget _buildAutonomousModeCheckbox() {
     if (GlobalSettings().selectedPrompt == 'Complex Task Prompt') {
       return CheckboxListTile(
-        title: Text('Autonomous Mode (Experimental)'),
+        title: const Text('Autonomous Mode (Experimental)'),
         value: GlobalSettings().autonomousMode,
         onChanged: (bool? value) {
           setState(() {
@@ -39,7 +39,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
         },
       );
     }
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   List<DropdownMenuItem<String>> buildLanguageDropdownItems() {
@@ -121,7 +121,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
     Navigator.pop(context); // Hide the dialog
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('AI Settings saved successfully!')),
+      const SnackBar(content: Text('AI Settings saved successfully!')),
     );
   }
 
@@ -138,35 +138,35 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
       });
     }
     return AlertDialog(
-      title: Text('AI Settings'),
-      content: Container(
+      title: const Text('AI Settings'),
+      content: SizedBox(
         width: 340, // Set the max width of the AlertDialog
         child: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Choose AI Model or Provider:'),
+              const Text('Choose AI Model or Provider:'),
               DropdownButton<String>(
                 value: GlobalSettings().selectedModel,
                 items: [
-                  DropdownMenuItem<String>(
+                  const DropdownMenuItem<String>(
                     value: 'gpt-3.5-turbo',
                     child: Text('GPT-3.5 (Recommended)'),
                   ),
-                  DropdownMenuItem<String>(
+                  const DropdownMenuItem<String>(
                     value: 'gpt-4',
                     child: Text('GPT-4 (Advanced)'),
                   ),
-                  DropdownMenuItem<String>(
+                  const DropdownMenuItem<String>(
                     value: 'gpt-4-1106-preview',
                     child: Text('GPT-4 Turbo (Preview)'),
                   ),
                   if (HuggingFace_API.oat() != '')
-                    DropdownMenuItem<String>(
+                    const DropdownMenuItem<String>(
                       value: 'huggingface',
                       child: Text('Hugging Face (Experimental)'),
                     ),
                   if (PulzeAI_API.oat() != '')
-                    DropdownMenuItem<String>(
+                    const DropdownMenuItem<String>(
                       value: 'pulzeai',
                       child: Text('Pulze'),
                     ),
@@ -186,16 +186,16 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                   });
                 },
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               if (_isPulzeSelected)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    SizedBox(height: 10),
-                    Text('Model ID:'),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 10),
+                    const Text('Model ID:'),
+                    const SizedBox(height: 6),
                     InkWell(
-                      child: Text(
+                      child: const Text(
                         '→ Browse available models',
                         style: TextStyle(color: Colors.blue),
                       ),
@@ -205,7 +205,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                     TextField(
                       controller:
                           _pulzeModelIdController, // Use TextEditingController to retrieve user input
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Model ID',
                       ),
                       onChanged: (value) {
@@ -218,11 +218,11 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    SizedBox(height: 10),
-                    Text('Hugging Face Model ID:'),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 10),
+                    const Text('Hugging Face Model ID:'),
+                    const SizedBox(height: 6),
                     InkWell(
-                      child: Text(
+                      child: const Text(
                         '→ Browse available models',
                         style: TextStyle(color: Colors.blue),
                       ),
@@ -232,20 +232,20 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                     TextField(
                       controller:
                           _modelIdController, // Use TextEditingController to retrieve user input
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Model ID',
                       ),
                       onChanged: (value) {
                         // Update your modelId variable here
                       },
                     ),
-                    SizedBox(height: 10),
-                    Text('Response Format'),
+                    const SizedBox(height: 10),
+                    const Text('Response Format'),
                     TextField(
                       controller:
                           _templateController, // Use TextEditingController to retrieve user input
                       maxLines: 5,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Template (*** is the response)',
                       ),
                       onChanged: (value) {
@@ -254,8 +254,8 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                     ),
                   ],
                 ),
-              SizedBox(height: 10),
-              if (!_isHuggingFaceSelected) Text('System Prompt:'),
+              const SizedBox(height: 10),
+              if (!_isHuggingFaceSelected) const Text('System Prompt:'),
               if (!_isHuggingFaceSelected)
                 if (!_isHuggingFaceSelected)
                   DropdownButton<String>(
@@ -272,7 +272,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                 TextField(
                   controller: _systemPromptController,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Enter system prompt',
                   ),
                   onChanged: (value) {
@@ -305,7 +305,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
               if (_isHuggingFaceSelected) Text('Voice Settings:'),
               if (_isHuggingFaceSelected) SizedBox(height: 10),*/
               CheckboxListTile(
-                title: Text('Enable voice'),
+                title: const Text('Enable voice'),
                 value: GlobalSettings().voiceEnabled,
                 onChanged: (bool? value) {
                   setState(() {
@@ -316,7 +316,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 12, right: 20),
-                child: Container(
+                child: SizedBox(
                   width: 220, // Width adjusted to match expanding triangle
                   child: DropdownButton<String>(
                     isExpanded: true,
@@ -336,13 +336,13 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
       ),
       actions: [
         TextButton(
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         ElevatedButton(
-          child: Text(
+          child: const Text(
             'Save Settings',
             style: TextStyle(color: Colors.white),
           ),

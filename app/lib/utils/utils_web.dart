@@ -54,9 +54,9 @@ class UtilsPlatform {
   }
 
   static Future<void> downloadImage(String url, String description) async {
-    final windowFeatures =
+    const windowFeatures =
         'menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=yes,width=600,height=400';
-    html.window.open(url, 'glowby-image-${description}', windowFeatures);
+    html.window.open(url, 'glowby-image-$description', windowFeatures);
   }
 
   static Future<void> initializeState(dynamic f) {

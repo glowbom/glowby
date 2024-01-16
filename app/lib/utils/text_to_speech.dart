@@ -7,7 +7,7 @@ class TextToSpeech {
   static const double DEFAULT_SPEECH_RATE = 1.0;
   static const double REDUCED_SPEECH_RATE = 0.85;
 
-  FlutterTts _flutterTts = FlutterTts();
+  final FlutterTts _flutterTts = FlutterTts();
 
   static final Map<String, String> _languageCodes = {
     'American English': 'en-US',
@@ -62,7 +62,7 @@ class TextToSpeech {
   }
 
   static Map<String, String> get languageCodes => _languageCodes;
-  static String? lastLanguage = null;
+  static String? lastLanguage;
 
   Future<void> speakText(String text, {String language = 'en-US'}) async {
     if (text == TYPING_INDICATOR) {
@@ -70,7 +70,7 @@ class TextToSpeech {
     }
 
     bool containsLanguageCode =
-        _languageCodes.keys.any((key) => text.contains(key + ':'));
+        _languageCodes.keys.any((key) => text.contains('$key:'));
 
     Completer<void> completer = Completer<void>();
     _flutterTts.setCompletionHandler(() {
@@ -100,19 +100,19 @@ class TextToSpeech {
       for (String line in lines) {
         String currentLanguage = language;
         for (final entry in _languageCodes.entries) {
-          if (line.contains(entry.key + ':')) {
+          if (line.contains('${entry.key}:')) {
             // Speak the part before the colon with the default language.
-            String beforeColon = line.split(entry.key + ':')[0];
+            String beforeColon = line.split('${entry.key}:')[0];
             if (beforeColon != '') {
               await _flutterTts.setLanguage(currentLanguage);
               await setSpeechRate(currentLanguage);
-              await _flutterTts.speak(beforeColon + ' ' + entry.key);
+              await _flutterTts.speak('$beforeColon ${entry.key}');
               await completer.future;
               completer = Completer<void>();
             }
 
             // Speak the part after the colon with the appropriate language.
-            String afterColon = line.split(entry.key + ':')[1];
+            String afterColon = line.split('${entry.key}:')[1];
             currentLanguage = entry.value;
             await _flutterTts.setLanguage(currentLanguage);
             await setSpeechRate(currentLanguage);

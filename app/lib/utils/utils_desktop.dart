@@ -44,13 +44,13 @@ class UtilsPlatform {
     final ui.Canvas canvas = ui.Canvas(recorder);
 
     // Fill the canvas with a white background
-    final ui.Paint paintBackground = ui.Paint()..color = ui.Color(0xFFFFFFFF);
+    final ui.Paint paintBackground = ui.Paint()..color = const ui.Color(0xFFFFFFFF);
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
         paintBackground);
 
     // Draw the lines with a black paint
     final ui.Paint paintLines = ui.Paint()
-      ..color = ui.Color(0xFF000000)
+      ..color = const ui.Color(0xFF000000)
       ..strokeWidth = 2.0;
 
     for (int i = 0; i < points.length - 1; i++) {

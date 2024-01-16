@@ -39,7 +39,7 @@ class PulzeAI_API {
   static const String _modelKey = 'pulze_ai_model';
   static const String _systemMessageKey = 'pulze_ai_system_message';
   static const String _sendMessagesKey = 'pulze_ai_send_messages';
-  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<void> loadOat() async {
     try {
@@ -115,7 +115,7 @@ class PulzeAI_API {
 
     final apiKey = PulzeAI_API.oat();
 
-    final queryUrl = 'https://api.pulze.ai/v1/completions/';
+    const queryUrl = 'https://api.pulze.ai/v1/completions/';
     final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $apiKey',
@@ -126,7 +126,7 @@ class PulzeAI_API {
       'model': modelId, // Specify the model
       'prompt': _systemMessage == ''
           ? text
-          : text + ' [System message]: ' + _systemMessage,
+          : '$text [System message]: $_systemMessage',
       'max_tokens': 300, // Added max_tokens
       'temperature': 0, // Added temperature
     });
@@ -148,7 +148,7 @@ class PulzeAI_API {
       if (response.statusCode == 307) {
         var newUri = response.headers['location'];
         if (kDebugMode) {
-          print('New Uri: ${newUri}');
+          print('New Uri: $newUri');
         }
         if (newUri != null) {
           response = await http.get(Uri.parse(newUri));

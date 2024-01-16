@@ -7,8 +7,8 @@ class TasksView extends StatefulWidget {
   final Function onRequestNewPlanButtonPressed;
   final Function onBackButtonPressed;
 
-  TasksView(
-      {required this.tasks,
+  const TasksView(
+      {super.key, required this.tasks,
       required this.name,
       required this.onImplementPlanButtonPressed,
       required this.onRequestNewPlanButtonPressed,
@@ -32,7 +32,7 @@ class _TasksViewState extends State<TasksView>
     super.initState();
     _delayController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 100),
     );
     _tasks = widget.tasks;
   }
@@ -75,17 +75,17 @@ class _TasksViewState extends State<TasksView>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete this task?'),
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this task?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop(); // Dismiss the dialog
               },
             ),
             TextButton(
-              child: Text('Delete'),
+              child: const Text('Delete'),
               onPressed: () {
                 setState(() {
                   _tasks.removeAt(index);
@@ -103,7 +103,7 @@ class _TasksViewState extends State<TasksView>
     return ListView.separated(
       controller: _scrollController,
       itemCount: _tasks.length,
-      separatorBuilder: (context, index) => Divider(),
+      separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
         return ListTile(
           title: Row(
@@ -112,7 +112,7 @@ class _TasksViewState extends State<TasksView>
               Text('${index + 1}. '),
               Expanded(child: _buildTaskItem(index)),
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () => _confirmDeletion(context, index),
               ),
             ],
@@ -126,7 +126,7 @@ class _TasksViewState extends State<TasksView>
     return TextFormField(
         controller: _newTaskController,
         focusNode: _inputFocusNode,
-        decoration: InputDecoration(labelText: 'Add a new task'),
+        decoration: const InputDecoration(labelText: 'Add a new task'),
         onFieldSubmitted: (value) {
           setState(() {
             _tasks.add(value);
@@ -136,7 +136,7 @@ class _TasksViewState extends State<TasksView>
           _delayController.forward(from: 0).then((_) {
             _scrollController.animateTo(
               _scrollController.position.maxScrollExtent,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               curve: Curves.easeOut,
             );
           });
@@ -154,7 +154,7 @@ class _TasksViewState extends State<TasksView>
             widget.name == 'Unnamed Plan'
                 ? widget.name
                 : 'Plan to ${widget.name}',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
         Expanded(child: _buildTaskList()),
@@ -163,27 +163,27 @@ class _TasksViewState extends State<TasksView>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton(
-              child: Text('Return to Chat'),
+              child: const Text('Return to Chat'),
               onPressed: () {
                 widget.onBackButtonPressed();
               },
             ),
             TextButton(
-              child: Text('Request New Plan'),
+              child: const Text('Request New Plan'),
               onPressed: () {
                 widget.onRequestNewPlanButtonPressed();
               },
             ),
             ElevatedButton(
               child:
-                  Text('Implement Plan', style: TextStyle(color: Colors.white)),
+                  const Text('Implement Plan', style: TextStyle(color: Colors.white)),
               onPressed: () {
                 widget.onImplementPlanButtonPressed();
               },
             ),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
       ],
     );
   }

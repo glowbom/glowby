@@ -5,7 +5,7 @@ class HtmlViewScreen extends StatelessWidget {
   final String htmlContent;
   final String appName;
 
-  HtmlViewScreen({required this.htmlContent, required this.appName});
+  const HtmlViewScreen({super.key, required this.htmlContent, required this.appName});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class HtmlViewScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Placeholder for $appName'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('HTML content is not viewable in the desktop application.'),
       ),
     );

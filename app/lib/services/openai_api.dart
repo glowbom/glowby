@@ -40,7 +40,7 @@ class OpenAI_API {
   static const String _modelKey = 'openai_model';
   static const String _selectedLanguageKey = 'selected_language';
   static const String _systemPromptKey = 'openai_system_prompt';
-  static final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<void> loadOat() async {
     try {
@@ -86,7 +86,7 @@ class OpenAI_API {
 
     final apiKey = OpenAI_API.oat();
 
-    final queryUrl = 'https://api.openai.com/v1/images/generations';
+    const queryUrl = 'https://api.openai.com/v1/images/generations';
     final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $apiKey',
@@ -127,7 +127,7 @@ class OpenAI_API {
     }
 
     // Replace this URL with your AWS Lambda function URL
-    final lambdaUrl = 'YOUR_LAMBDA_FUNCTION_URL';
+    const lambdaUrl = 'YOUR_LAMBDA_FUNCTION_URL';
 
     final headers = {
       'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ class OpenAI_API {
       if (kDebugMode) {
         print('isInputSafe exception: $e');
       }
-      throw e;
+      rethrow;
     }
   }
 
@@ -205,7 +205,7 @@ class OpenAI_API {
     String message, {
     List<Map<String, String?>> previousMessages = const [],
     int maxTries = 1,
-    String? customSystemPrompt = null,
+    String? customSystemPrompt,
   }) {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
@@ -253,9 +253,9 @@ class OpenAI_API {
     if (HuggingFace_API.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.length > 0 && HuggingFace_API.sendMessages()) {
+      if (previousMessages.isNotEmpty && HuggingFace_API.sendMessages()) {
         finalResponse = await HuggingFace_API.generate(
-            message + ' previousMessages: ' + formattedPrevMessages);
+            '$message previousMessages: $formattedPrevMessages');
       } else {
         finalResponse = await HuggingFace_API.generate(message);
       }
@@ -277,7 +277,7 @@ class OpenAI_API {
 
     // Explicitly return null to avoid
 
-    return null;
+    return;
   }
 
   static Future<void> _getResponseFromPulzeAI(
@@ -290,9 +290,9 @@ class OpenAI_API {
     if (PulzeAI_API.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.length > 0 && PulzeAI_API.sendMessages()) {
+      if (previousMessages.isNotEmpty && PulzeAI_API.sendMessages()) {
         finalResponse = await PulzeAI_API.generate(
-            message + ' previousMessages: ' + formattedPrevMessages);
+            '$message previousMessages: $formattedPrevMessages');
       } else {
         finalResponse = await PulzeAI_API.generate(message);
       }
@@ -314,14 +314,14 @@ class OpenAI_API {
 
     // Explicitly return null to avoid
 
-    return null;
+    return;
   }
 
   static Future<void> _getResponseFromOpenAI(
       String message, CancelableCompleter<String> completer,
       {List<Map<String, String?>> previousMessages = const [],
       int maxTries = 1,
-      String? customSystemPrompt = null}) async {
+      String? customSystemPrompt}) async {
     String finalResponse = '';
     String inputMessage = message;
     int tries = 0;
@@ -341,7 +341,7 @@ class OpenAI_API {
       if (kDebugMode) {
         print('inputMessage = $inputMessage');
       }
-      final apiUrl = 'https://api.openai.com/v1/chat/completions';
+      const apiUrl = 'https://api.openai.com/v1/chat/completions';
 
       final headers = {
         'Content-Type': 'application/json',
@@ -356,7 +356,7 @@ class OpenAI_API {
           {
             'role': 'system',
             'content':
-                customSystemPrompt == null ? systemPrompt : customSystemPrompt
+                customSystemPrompt ?? systemPrompt
           },
           ...previousMessages,
           {'role': 'user', 'content': inputMessage}
@@ -422,7 +422,7 @@ class OpenAI_API {
         if (tries + 1 < maxTries) {
           tries++;
           // You can add a delay before retrying the request.
-          await Future.delayed(Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
         } else {
           finalResponse =
               'Sorry, there was an error processing your request. Please try again later.';
@@ -438,7 +438,7 @@ class OpenAI_API {
 
     // Explicitly return null to avoid
 
-    return null;
+    return;
   }
 
   // Draw to Code Functionality
@@ -449,7 +449,7 @@ class OpenAI_API {
       return 'Enter API key in settings';
     }
 
-    final systemPrompt = """
+    const systemPrompt = """
 You are a skilled web developer with expertise in Tailwind CSS. A user will provide a low-fidelity wireframe along with descriptive notes. Your task is to create a high-fidelity, responsive HTML webpage using Tailwind CSS and JavaScript, embedded within a single HTML file.
 
 - Embed additional CSS and JavaScript directly in the HTML file.
@@ -485,7 +485,7 @@ The final output should be a single HTML file, starting with "<html>". Avoid mar
               {"type": "text", "text": userPrompt},
               {
                 "type": "image_url",
-                "image_url": {"url": "data:image/jpeg;base64,${imageBase64}"}
+                "image_url": {"url": "data:image/jpeg;base64,$imageBase64"}
               }
             ]
           }

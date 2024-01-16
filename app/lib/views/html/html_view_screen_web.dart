@@ -9,7 +9,7 @@ class HtmlViewScreen extends StatelessWidget
   final String htmlContent;
   final String appName;
 
-  HtmlViewScreen({required this.htmlContent, required this.appName});
+  const HtmlViewScreen({super.key, required this.htmlContent, required this.appName});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class HtmlViewScreen extends StatelessWidget
       final url = html.Url.createObjectUrlFromBlob(blob);
       // ignore: unused_local_variable
       final anchor = html.AnchorElement(href: url)
-        ..setAttribute("download", "${appName}.html")
+        ..setAttribute("download", "$appName.html")
         ..click();
       html.Url.revokeObjectUrl(url);
     }
@@ -45,7 +45,7 @@ class HtmlViewScreen extends StatelessWidget
         title: Text(appName),
         actions: [
           IconButton(
-            icon: Icon(Icons.download, color: Colors.black),
+            icon: const Icon(Icons.download, color: Colors.black),
             onPressed: downloadContent, // Trigger the download
             tooltip: 'Download Code',
           ),
