@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:glowby/html_view_screen.dart';
+import 'package:glowby/views/html/html_view_screen.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
-import 'package:glowby/openai_api.dart';
-import 'package:glowby/utils.dart';
+import 'package:glowby/services/openai_api.dart';
+import 'package:glowby/utils/utils.dart';
 
 class PaintWindow extends StatefulWidget {
   @override

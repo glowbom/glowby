@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/github.dart';
-import 'package:glowby/html_view_screen_interface.dart';
-import 'package:glowby/html_view_screen_mobile.dart';
+import 'package:glowby/views/html/html_view_screen_interface.dart';
+import 'package:glowby/views/html/html_view_screen_mobile.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 

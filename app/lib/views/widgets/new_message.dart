@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:glowby/global_settings.dart';
-import 'package:glowby/paint_window.dart';
-import 'package:glowby/utils.dart';
+import 'package:glowby/views/screens/global_settings.dart';
+import 'package:glowby/views/widgets/paint_window.dart';
+import 'package:glowby/utils/utils.dart';
 
 import 'message.dart';
-import 'openai_api.dart';
-import 'timestamp.dart';
+import '../../services/openai_api.dart';
+import '../../utils/timestamp.dart';
 import 'package:flutter/material.dart';
 
-import 'ai.dart';
+import '../../models/ai.dart';
 
 /// A class representing the NewMessage widget, which allows users to send messages and receive AI responses.
 class NewMessage extends StatefulWidget {

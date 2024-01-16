@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:glowby/hugging_face_api.dart';
-import 'package:glowby/pulze_ai_api.dart';
+import 'package:glowby/services/hugging_face_api.dart';
+import 'package:glowby/services/pulze_ai_api.dart';
 
-import 'openai_api.dart';
-import 'timestamp.dart';
-import 'message.dart';
+import '../services/openai_api.dart';
+import '../utils/timestamp.dart';
+import '../views/widgets/message.dart';
 import 'package:async/async.dart';
 
 /// A class representing the AI chatbot that processes and responds to user messages.

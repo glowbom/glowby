@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:glowby/openai_api.dart';
-import 'package:glowby/utils.dart';
+import 'package:glowby/services/openai_api.dart';
+import 'package:glowby/utils/utils.dart';
 
-import 'hugging_face_api.dart';
-import 'pulze_ai_api.dart';
+import '../../services/hugging_face_api.dart';
+import '../../services/pulze_ai_api.dart';
 
 class ApiKeyDialog extends StatefulWidget {
   @override

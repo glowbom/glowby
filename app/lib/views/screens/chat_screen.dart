@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:glowby/global_settings.dart';
+import 'package:glowby/views/screens/global_settings.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:glowby/tasks_view.dart';
+import 'package:glowby/views/widgets/tasks_view.dart';
 
-import 'ai.dart';
-import 'ai_settings_dialog.dart';
+import '../../models/ai.dart';
+import '../dialogs/ai_settings_dialog.dart';
 import 'magical_loading_view.dart';
-import 'message.dart';
-import 'new_message.dart';
-import 'messages.dart';
-import 'openai_api.dart';
-import 'text_to_speech.dart'; // Import the new TextToSpeech class
-import 'api_key_dialog.dart';
-import 'timestamp.dart'; // Import the ApiKeyDialog widget
+import '../widgets/message.dart';
+import '../widgets/new_message.dart';
+import '../widgets/messages.dart';
+import '../../services/openai_api.dart';
+import '../../utils/text_to_speech.dart'; // Import the new TextToSpeech class
+import '../dialogs/api_key_dialog.dart';
+import '../../utils/timestamp.dart'; // Import the ApiKeyDialog widget
 import 'package:async/async.dart';
 
 class ChatScreen extends StatefulWidget {

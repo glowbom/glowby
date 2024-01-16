@@ -1,5 +1,5 @@
-import 'package:glowby/hugging_face_api.dart';
-import 'package:glowby/openai_api.dart';
+import 'package:glowby/services/hugging_face_api.dart';
+import 'package:glowby/services/openai_api.dart';
 
 class GlobalSettings {
   static final GlobalSettings _instance = GlobalSettings._internal();

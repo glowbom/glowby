@@ -1,4 +1,4 @@
-import 'timestamp.dart';
+import '../../utils/timestamp.dart';
 
 /// A class representing a chat message with a text, timestamp, user ID, and optional username and link.
 class Message {

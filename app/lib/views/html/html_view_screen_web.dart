@@ -2,7 +2,7 @@ import 'dart:html';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui;
 import 'package:flutter/material.dart';
-import 'package:glowby/html_view_screen_interface.dart';
+import 'package:glowby/views/html/html_view_screen_interface.dart';
 
 class HtmlViewScreen extends StatelessWidget
     implements HtmlViewScreenInterface {
