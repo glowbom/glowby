@@ -132,7 +132,7 @@ class _PaintWindowState extends State<PaintWindow> {
     //this.imgBytes = base64Decode(imageBase64); // Implement this function
 
     String htmlResponse =
-        await OpenAI_API().getHtmlFromOpenAI(imageBase64, creationName);
+        await OpenAiApi().getHtmlFromOpenAI(imageBase64, creationName);
 
     String htmlContent = creationName;
 
@@ -232,9 +232,9 @@ class _PaintWindowState extends State<PaintWindow> {
             child: const Text('Clear'),
           ),
         TextButton(
-          onPressed:
-              callOpenAI,
-          child: const Text('Build'), // Here we call the method to process the drawing
+          onPressed: callOpenAI,
+          child: const Text(
+              'Build'), // Here we call the method to process the drawing
         ),
         TextButton(
           child: const Text('Close'),

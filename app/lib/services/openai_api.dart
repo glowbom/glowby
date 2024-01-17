@@ -6,17 +6,17 @@ import 'package:async/async.dart';
 import 'package:glowby/services/hugging_face_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 
-class OpenAI_API {
-  static final OpenAI_API _instance = OpenAI_API._privateConstructor();
-  factory OpenAI_API() => _instance;
-  OpenAI_API._privateConstructor();
+class OpenAiApi {
+  static final OpenAiApi _instance = OpenAiApi._privateConstructor();
+  factory OpenAiApi() => _instance;
+  OpenAiApi._privateConstructor();
 
   String _apiKey = '';
   static int _totalTokensUsed = 0;
 
-  static String oat() => OpenAI_API()._oat();
-  static void setOat(String value) => OpenAI_API()._setOat(value);
-  static void resetOat() => OpenAI_API()._resetOat();
+  static String oat() => OpenAiApi()._oat();
+  static void setOat(String value) => OpenAiApi()._setOat(value);
+  static void resetOat() => OpenAiApi()._resetOat();
 
   void _resetOat() {
     _apiKey = '';
@@ -84,7 +84,7 @@ class OpenAI_API {
           'The input provided is not considered safe. Please provide a different input.');
     }*/
 
-    final apiKey = OpenAI_API.oat();
+    final apiKey = OpenAiApi.oat();
 
     const queryUrl = 'https://api.openai.com/v1/images/generations';
     final headers = {
@@ -210,13 +210,13 @@ class OpenAI_API {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
 
-    if (OpenAI_API.model == 'pulzeai') {
+    if (OpenAiApi.model == 'pulzeai') {
       _getResponseFromPulzeAI(
         message,
         completer,
         previousMessages: previousMessages,
       );
-    } else if (OpenAI_API.model == 'huggingface') {
+    } else if (OpenAiApi.model == 'huggingface') {
       _getResponseFromHuggingFace(
         message,
         completer,
@@ -335,7 +335,7 @@ class OpenAI_API {
       return;
     }*/
 
-    final apiKey = OpenAI_API.oat();
+    final apiKey = OpenAiApi.oat();
 
     while (tries < maxTries) {
       if (kDebugMode) {
@@ -353,11 +353,7 @@ class OpenAI_API {
       final data = {
         'model': model,
         'messages': [
-          {
-            'role': 'system',
-            'content':
-                customSystemPrompt ?? systemPrompt
-          },
+          {'role': 'system', 'content': customSystemPrompt ?? systemPrompt},
           ...previousMessages,
           {'role': 'user', 'content': inputMessage}
         ],

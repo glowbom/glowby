@@ -28,9 +28,9 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
   void initState() {
     super.initState();
 
-    OpenAI_API.loadOat().then((_) {
+    OpenAiApi.loadOat().then((_) {
       setState(() {
-        _apiKey = OpenAI_API.oat();
+        _apiKey = OpenAiApi.oat();
         _apiKeyController.text = _apiKey;
         _huggingFaceToken = HuggingFace_API.oat();
         _huggingFaceTokenController.text = _huggingFaceToken;
@@ -68,7 +68,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       );
     } else {
       // If all keys are valid, set them and show a success message.
-      OpenAI_API.setOat(_apiKey);
+      OpenAiApi.setOat(_apiKey);
       HuggingFace_API.setOat(_huggingFaceToken);
       PulzeAI_API.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog

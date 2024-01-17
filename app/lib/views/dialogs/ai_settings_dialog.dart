@@ -84,7 +84,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   @override
   void initState() {
     super.initState();
-    GlobalSettings().selectedModel = OpenAI_API.model;
+    GlobalSettings().selectedModel = OpenAiApi.model;
     _systemPromptController.text = GlobalSettings().systemPrompt;
     //_isGPT4Selected =
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
@@ -100,9 +100,9 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   }
 
   void _saveOpenAISettings() {
-    OpenAI_API.setModel(GlobalSettings().selectedModel);
-    OpenAI_API.setSystemPrompt(GlobalSettings().systemPrompt);
-    OpenAI_API.setSelectedLanguage(GlobalSettings().selectedLanguage);
+    OpenAiApi.setModel(GlobalSettings().selectedModel);
+    OpenAiApi.setSystemPrompt(GlobalSettings().systemPrompt);
+    OpenAiApi.setSelectedLanguage(GlobalSettings().selectedLanguage);
   }
 
   void _saveHuggingFaceSettings() {
@@ -129,7 +129,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   Widget build(BuildContext context) {
     if (HuggingFace_API.oat() == '' &&
         GlobalSettings().selectedModel == 'huggingface') {
-      OpenAI_API.setModel(GlobalSettings().selectedModel);
+      OpenAiApi.setModel(GlobalSettings().selectedModel);
       setState(() {
         _isHuggingFaceSelected = false;
         _isPulzeSelected = false;

@@ -40,7 +40,8 @@ class ChatScreen extends StatefulWidget {
       this._autonomousMode,
       this._enableAi,
       this._showAiSettings,
-      this._dnsgs, {super.key});
+      this._dnsgs,
+      {super.key});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -82,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void loadAPIKey() {
-    OpenAI_API.loadOat().then((_) => setState(() {}));
+    OpenAiApi.loadOat().then((_) => setState(() {}));
   }
 
   // Refresh the UI state of the chat screen
@@ -172,8 +173,7 @@ class _ChatScreenState extends State<ChatScreen> {
     List<String> tasks = [];
 
     try {
-      _currentOperation = OpenAI_API.getResponseFromOpenAI(
-          _lastInputMessage,
+      _currentOperation = OpenAiApi.getResponseFromOpenAI(_lastInputMessage,
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
 
@@ -307,7 +307,7 @@ class _ChatScreenState extends State<ChatScreen> {
         .reversed
         .toList();
 
-    _currentOperation = OpenAI_API.getResponseFromOpenAI(
+    _currentOperation = OpenAiApi.getResponseFromOpenAI(
       message,
       previousMessages: formattedPreviousMessages,
       customSystemPrompt: customSystemPrompt,
@@ -550,7 +550,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     // Add the AI Settings button conditionally
-                    if (OpenAI_API.oat().isNotEmpty)
+                    if (OpenAiApi.oat().isNotEmpty)
                       if (widget._showAiSettings != null &&
                           widget._showAiSettings!)
                         Padding(
@@ -579,7 +579,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               ),
-            if (_planImplementationInProgress) const CircularProgressIndicator(),
+            if (_planImplementationInProgress)
+              const CircularProgressIndicator(),
             const SizedBox(height: 20),
             // Add the Stop button when plan implementation is in progress
             if (_loading || _planImplementationInProgress)

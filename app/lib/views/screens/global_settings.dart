@@ -8,10 +8,10 @@ class GlobalSettings {
   String userName = 'Me';
 
   bool voiceEnabled = true;
-  String selectedLanguage = OpenAI_API.selectedLanguage;
+  String selectedLanguage = OpenAiApi.selectedLanguage;
   bool autonomousMode = false;
-  String selectedModel = OpenAI_API.model;
-  String systemPrompt = OpenAI_API.systemPrompt;
+  String selectedModel = OpenAiApi.model;
+  String systemPrompt = OpenAiApi.systemPrompt;
   String selectedPrompt = 'Simple Assistant Prompt';
   String systemHuggingFacePrompt = HuggingFace_API.systemMessage();
 
@@ -150,9 +150,9 @@ Human: You choose anything you like. Direction comes from the next message. One 
   void loadDialogValues(selectedModelInput, selectedLanguageInput,
       systemPromptInput, autonomousModeInput) {
     selectedPrompt = 'Simple Assistant Prompt';
-    selectedModel = OpenAI_API.model;
-    systemPrompt = OpenAI_API.systemPrompt;
-    selectedLanguage = OpenAI_API.selectedLanguage;
+    selectedModel = OpenAiApi.model;
+    systemPrompt = OpenAiApi.systemPrompt;
+    selectedLanguage = OpenAiApi.selectedLanguage;
     autonomousMode = false;
 
     if (selectedModelInput != null && selectedModelInput != '') {

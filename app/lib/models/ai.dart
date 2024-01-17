@@ -37,19 +37,19 @@ class Ai {
     }
 
     // Call the OpenAI API if no matching questions are found locally
-    if (aiEnabled && OpenAI_API.oat().isNotEmpty) {
-      networkOperation = OpenAI_API.getResponseFromOpenAI(message,
+    if (aiEnabled && OpenAiApi.oat().isNotEmpty) {
+      networkOperation = OpenAiApi.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
       String response = await networkOperation!.value;
-      String poweredTitle = OpenAI_API.model == 'gpt-4'
+      String poweredTitle = OpenAiApi.model == 'gpt-4'
           ? 'Powered by GPT-4'
-          : OpenAI_API.model == 'gpt-3.5-turbo'
+          : OpenAiApi.model == 'gpt-3.5-turbo'
               ? 'Powered by GPT-3.5'
-              : OpenAI_API.model == 'gpt-4-1106-preview'
+              : OpenAiApi.model == 'gpt-4-1106-preview'
                   ? 'Powered by GPT-4 Turbo'
-                  : OpenAI_API.model == 'huggingface'
+                  : OpenAiApi.model == 'huggingface'
                       ? HuggingFace_API.model()
-                      : OpenAI_API.model == 'pulzeai'
+                      : OpenAiApi.model == 'pulzeai'
                           ? PulzeAI_API.lastUsedModel()
                           : '';
       return [

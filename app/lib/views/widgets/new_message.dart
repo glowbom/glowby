@@ -230,7 +230,7 @@ class _NewMessageState extends State<NewMessage> {
 
       // Generate the image
       try {
-        final imageUrl = (await OpenAI_API.generateImageUrl(description))!;
+        final imageUrl = (await OpenAiApi.generateImageUrl(description))!;
         Message message = Message(
           text: 'Here is your image!',
           createdAt: Timestamp.now(),
