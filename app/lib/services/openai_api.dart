@@ -56,7 +56,7 @@ class OpenAiApi {
       }
     }
 
-    await HuggingFace_API.loadOat();
+    await HuggingFaceApi.loadOat();
     await PulzeAI_API.loadOat();
   }
 
@@ -250,14 +250,14 @@ class OpenAiApi {
   }) async {
     String? finalResponse = '';
 
-    if (HuggingFace_API.oat() != '') {
+    if (HuggingFaceApi.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.isNotEmpty && HuggingFace_API.sendMessages()) {
-        finalResponse = await HuggingFace_API.generate(
+      if (previousMessages.isNotEmpty && HuggingFaceApi.sendMessages()) {
+        finalResponse = await HuggingFaceApi.generate(
             '$message previousMessages: $formattedPrevMessages');
       } else {
-        finalResponse = await HuggingFace_API.generate(message);
+        finalResponse = await HuggingFaceApi.generate(message);
       }
 
       //print('finalResponse: $finalResponse');

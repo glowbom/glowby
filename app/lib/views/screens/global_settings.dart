@@ -13,7 +13,7 @@ class GlobalSettings {
   String selectedModel = OpenAiApi.model;
   String systemPrompt = OpenAiApi.systemPrompt;
   String selectedPrompt = 'Simple Assistant Prompt';
-  String systemHuggingFacePrompt = HuggingFace_API.systemMessage();
+  String systemHuggingFacePrompt = HuggingFaceApi.systemMessage();
 
   factory GlobalSettings() {
     return _instance;

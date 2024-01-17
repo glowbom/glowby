@@ -3,11 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class HuggingFace_API {
-  static final HuggingFace_API _instance =
-      HuggingFace_API._privateConstructor();
-  factory HuggingFace_API() => _instance;
-  HuggingFace_API._privateConstructor();
+class HuggingFaceApi {
+  static final HuggingFaceApi _instance = HuggingFaceApi._privateConstructor();
+  factory HuggingFaceApi() => _instance;
+  HuggingFaceApi._privateConstructor();
 
   String _apiKey = '';
 
@@ -27,9 +26,9 @@ class HuggingFace_API {
   static const String _sendMessagesKey = 'huggingface_send_messages';
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-  static String oat() => HuggingFace_API()._oat();
-  static void setOat(String value) => HuggingFace_API()._setOat(value);
-  static void resetOat() => HuggingFace_API()._resetOat();
+  static String oat() => HuggingFaceApi()._oat();
+  static void setOat(String value) => HuggingFaceApi()._setOat(value);
+  static void resetOat() => HuggingFaceApi()._resetOat();
 
   void _resetOat() {
     _apiKey = '';

@@ -90,11 +90,11 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
-    _modelIdController.text = HuggingFace_API.model();
+    _modelIdController.text = HuggingFaceApi.model();
     _pulzeModelIdController.text = PulzeAI_API.model();
-    _templateController.text = HuggingFace_API.template();
-    GlobalSettings().systemHuggingFacePrompt = HuggingFace_API.systemMessage();
-    _sendMessageHistory = HuggingFace_API.sendMessages();
+    _templateController.text = HuggingFaceApi.template();
+    GlobalSettings().systemHuggingFacePrompt = HuggingFaceApi.systemMessage();
+    _sendMessageHistory = HuggingFaceApi.sendMessages();
     _systemPromptHuggingFaceController.text =
         GlobalSettings().systemHuggingFacePrompt;
   }
@@ -107,10 +107,10 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
 
   void _saveHuggingFaceSettings() {
     PulzeAI_API.setModel(_pulzeModelIdController.text);
-    HuggingFace_API.setModel(_modelIdController.text);
-    HuggingFace_API.setTemplate(_templateController.text);
-    HuggingFace_API.setSendMessages(_sendMessageHistory);
-    HuggingFace_API.setSystemMessage(GlobalSettings().systemHuggingFacePrompt);
+    HuggingFaceApi.setModel(_modelIdController.text);
+    HuggingFaceApi.setTemplate(_templateController.text);
+    HuggingFaceApi.setSendMessages(_sendMessageHistory);
+    HuggingFaceApi.setSystemMessage(GlobalSettings().systemHuggingFacePrompt);
   }
 
   void _saveSettings(BuildContext context) {
@@ -127,7 +127,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if (HuggingFace_API.oat() == '' &&
+    if (HuggingFaceApi.oat() == '' &&
         GlobalSettings().selectedModel == 'huggingface') {
       OpenAiApi.setModel(GlobalSettings().selectedModel);
       setState(() {
@@ -160,7 +160,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                     value: 'gpt-4-1106-preview',
                     child: Text('GPT-4 Turbo (Preview)'),
                   ),
-                  if (HuggingFace_API.oat() != '')
+                  if (HuggingFaceApi.oat() != '')
                     const DropdownMenuItem<String>(
                       value: 'huggingface',
                       child: Text('Hugging Face (Experimental)'),
