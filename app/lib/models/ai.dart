@@ -50,7 +50,7 @@ class Ai {
                   : OpenAiApi.model == 'huggingface'
                       ? HuggingFaceApi.model()
                       : OpenAiApi.model == 'pulzeai'
-                          ? PulzeAI_API.lastUsedModel()
+                          ? PulzeAiApi.lastUsedModel()
                           : '';
       return [
         Message(

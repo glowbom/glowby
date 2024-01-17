@@ -34,7 +34,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
         _apiKeyController.text = _apiKey;
         _huggingFaceToken = HuggingFaceApi.oat();
         _huggingFaceTokenController.text = _huggingFaceToken;
-        _pulzeAiToken = PulzeAI_API.oat();
+        _pulzeAiToken = PulzeAiApi.oat();
         _pulzeAiController.text = _pulzeAiToken;
       });
     });
@@ -70,7 +70,7 @@ class _ApiKeyDialogState extends State<ApiKeyDialog> {
       // If all keys are valid, set them and show a success message.
       OpenAiApi.setOat(_apiKey);
       HuggingFaceApi.setOat(_huggingFaceToken);
-      PulzeAI_API.setOat(_pulzeAiToken);
+      PulzeAiApi.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('API Keys saved successfully!')),

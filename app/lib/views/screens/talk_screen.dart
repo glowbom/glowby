@@ -38,7 +38,7 @@ class TalkState extends State<Talk> {
   Future<void> loadAPIKeys() async {
     await OpenAiApi.loadOat();
     await HuggingFaceApi.loadOat();
-    await PulzeAI_API.loadOat();
+    await PulzeAiApi.loadOat();
   }
 
   @override
@@ -51,7 +51,7 @@ class TalkState extends State<Talk> {
   void resetApiKeys() {
     OpenAiApi.resetOat();
     HuggingFaceApi.resetOat();
-    PulzeAI_API.resetOat();
+    PulzeAiApi.resetOat();
   }
 
   void loadApiKeysAndInitializeState() {

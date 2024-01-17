@@ -3,16 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class PulzeAI_API {
-  static final PulzeAI_API _instance = PulzeAI_API._privateConstructor();
-  factory PulzeAI_API() => _instance;
-  PulzeAI_API._privateConstructor();
+class PulzeAiApi {
+  static final PulzeAiApi _instance = PulzeAiApi._privateConstructor();
+  factory PulzeAiApi() => _instance;
+  PulzeAiApi._privateConstructor();
 
   String _apiKey = '';
 
-  static String oat() => PulzeAI_API()._oat();
-  static void setOat(String value) => PulzeAI_API()._setOat(value);
-  static void resetOat() => PulzeAI_API()._resetOat();
+  static String oat() => PulzeAiApi()._oat();
+  static void setOat(String value) => PulzeAiApi()._setOat(value);
+  static void resetOat() => PulzeAiApi()._resetOat();
 
   void _resetOat() {
     _apiKey = '';
@@ -109,11 +109,11 @@ class PulzeAI_API {
 
   static Future<String?> _generate(
       String modelId, String text, String template) async {
-    if (PulzeAI_API.oat() == '') {
+    if (PulzeAiApi.oat() == '') {
       return 'Please enter your Pulze AI Access Token in the settings.';
     }
 
-    final apiKey = PulzeAI_API.oat();
+    final apiKey = PulzeAiApi.oat();
 
     const queryUrl = 'https://api.pulze.ai/v1/completions/';
     final headers = {

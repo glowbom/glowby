@@ -91,7 +91,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
     _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
     _modelIdController.text = HuggingFaceApi.model();
-    _pulzeModelIdController.text = PulzeAI_API.model();
+    _pulzeModelIdController.text = PulzeAiApi.model();
     _templateController.text = HuggingFaceApi.template();
     GlobalSettings().systemHuggingFacePrompt = HuggingFaceApi.systemMessage();
     _sendMessageHistory = HuggingFaceApi.sendMessages();
@@ -106,7 +106,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
   }
 
   void _saveHuggingFaceSettings() {
-    PulzeAI_API.setModel(_pulzeModelIdController.text);
+    PulzeAiApi.setModel(_pulzeModelIdController.text);
     HuggingFaceApi.setModel(_modelIdController.text);
     HuggingFaceApi.setTemplate(_templateController.text);
     HuggingFaceApi.setSendMessages(_sendMessageHistory);
@@ -165,7 +165,7 @@ class _AiSettingsDialogState extends State<AiSettingsDialog> {
                       value: 'huggingface',
                       child: Text('Hugging Face (Experimental)'),
                     ),
-                  if (PulzeAI_API.oat() != '')
+                  if (PulzeAiApi.oat() != '')
                     const DropdownMenuItem<String>(
                       value: 'pulzeai',
                       child: Text('Pulze'),

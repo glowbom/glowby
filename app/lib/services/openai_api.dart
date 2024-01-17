@@ -57,7 +57,7 @@ class OpenAiApi {
     }
 
     await HuggingFaceApi.loadOat();
-    await PulzeAI_API.loadOat();
+    await PulzeAiApi.loadOat();
   }
 
   static Future<void> setModel(String value) async {
@@ -287,14 +287,14 @@ class OpenAiApi {
   }) async {
     String? finalResponse = '';
 
-    if (PulzeAI_API.oat() != '') {
+    if (PulzeAiApi.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.isNotEmpty && PulzeAI_API.sendMessages()) {
-        finalResponse = await PulzeAI_API.generate(
+      if (previousMessages.isNotEmpty && PulzeAiApi.sendMessages()) {
+        finalResponse = await PulzeAiApi.generate(
             '$message previousMessages: $formattedPrevMessages');
       } else {
-        finalResponse = await PulzeAI_API.generate(message);
+        finalResponse = await PulzeAiApi.generate(message);
       }
 
       //print('finalResponse: $finalResponse');
