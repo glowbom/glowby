@@ -8,7 +8,7 @@ import 'chat_screen.dart';
 
 import '../../services/hugging_face_api.dart';
 
-var _content;
+dynamic _content;
 
 class TalkState extends State<Talk> {
   var _appScreen = 'Loading';
