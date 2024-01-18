@@ -28,14 +28,14 @@ class OpenAiApi {
     await _secureStorage.write(key: _apiKeyKey, value: _apiKey);
   }
 
-  static String DEFAULT_SYSTEM_PROMPT =
+  static String defaultSystemPrompt =
       'You are Glowby, super helpful, nice, and humorous AI assistant ready to help with anything. I like to joke around.';
 
-  static String DEFAULT_SYSTEM_PROMPT_COMPLEX_TASK =
+  static String defaultSystemPromptComplexTask =
       'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
   static String model = 'gpt-3.5-turbo'; //'gpt-4';
   static String selectedLanguage = 'en-US';
-  static String systemPrompt = DEFAULT_SYSTEM_PROMPT;
+  static String systemPrompt = defaultSystemPrompt;
   static const String _apiKeyKey = 'openai_api_key';
   static const String _modelKey = 'openai_model';
   static const String _selectedLanguageKey = 'selected_language';
@@ -49,7 +49,7 @@ class OpenAiApi {
       selectedLanguage =
           (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
       systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
-          DEFAULT_SYSTEM_PROMPT;
+          defaultSystemPrompt;
     } catch (e) {
       if (kDebugMode) {
         print('Error loading OAT: $e');
