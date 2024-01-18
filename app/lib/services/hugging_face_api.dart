@@ -176,11 +176,15 @@ class HuggingFaceApi {
       return await http.post(Uri.parse(queryUrl), headers: headers, body: body);
     } on http.ClientException catch (e) {
       // Handle the exception related to the HTTP client
-      print('ClientException occurred: $e');
+      if (kDebugMode) {
+        print('ClientException occurred: $e');
+      }
       // Consider re-throwing the exception or returning an error response
     } catch (e) {
       // Handle other types of exceptions
-      print('An error occurred: $e');
+      if (kDebugMode) {
+        print('An error occurred: $e');
+      }
       // Consider re-throwing the exception or returning an error response
     }
 
