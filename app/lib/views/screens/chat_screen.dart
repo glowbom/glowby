@@ -455,7 +455,9 @@ class ChatScreenState extends State<ChatScreen> {
               } else {
                 throw 'Could not launch $url';
               }
-              Navigator.of(context).pop();
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
             },
           ),
         ),
