@@ -7,6 +7,7 @@ import '../services/openai_api.dart';
 import '../utils/timestamp.dart';
 import '../views/widgets/message.dart';
 import 'package:async/async.dart';
+import 'package:flutter/foundation.dart';
 
 /// A class representing the AI chatbot that processes and responds to user messages.
 class Ai {
@@ -226,7 +227,9 @@ class Ai {
         ),
       ];
     } catch (e) {
-      print('Error generating response message: $e');
+      if (kDebugMode) {
+        print('Error generating response message: $e');
+      }
     }
     return [];
   }
