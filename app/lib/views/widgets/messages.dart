@@ -11,10 +11,10 @@ class Messages extends StatefulWidget {
   const Messages(this._messages, {super.key});
 
   @override
-  _MessagesState createState() => _MessagesState();
+  MessagesState createState() => MessagesState();
 }
 
-class _MessagesState extends State<Messages> {
+class MessagesState extends State<Messages> {
   late ScrollController _controller;
 
   @override

@@ -13,10 +13,10 @@ class PaintWindow extends StatefulWidget {
   const PaintWindow({super.key});
 
   @override
-  _PaintWindowState createState() => _PaintWindowState();
+  PaintWindowState createState() => PaintWindowState();
 }
 
-class _PaintWindowState extends State<PaintWindow> {
+class PaintWindowState extends State<PaintWindow> {
   final int width = 600;
   final int height = 450;
 

@@ -27,10 +27,10 @@ class NewMessage extends StatefulWidget {
       {super.key, required this.onAutonomousModeMessage});
 
   @override
-  _NewMessageState createState() => _NewMessageState();
+  NewMessageState createState() => NewMessageState();
 }
 
-class _NewMessageState extends State<NewMessage> {
+class NewMessageState extends State<NewMessage> {
   late Ai ai;
 
   final _controller = TextEditingController();

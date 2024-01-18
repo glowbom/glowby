@@ -8,17 +8,18 @@ class TasksView extends StatefulWidget {
   final Function onBackButtonPressed;
 
   const TasksView(
-      {super.key, required this.tasks,
+      {super.key,
+      required this.tasks,
       required this.name,
       required this.onImplementPlanButtonPressed,
       required this.onRequestNewPlanButtonPressed,
       required this.onBackButtonPressed});
 
   @override
-  _TasksViewState createState() => _TasksViewState();
+  TasksViewState createState() => TasksViewState();
 }
 
-class _TasksViewState extends State<TasksView>
+class TasksViewState extends State<TasksView>
     with SingleTickerProviderStateMixin {
   List<String> _tasks = [];
   final TextEditingController _newTaskController = TextEditingController();
@@ -175,8 +176,8 @@ class _TasksViewState extends State<TasksView>
               },
             ),
             ElevatedButton(
-              child:
-                  const Text('Implement Plan', style: TextStyle(color: Colors.white)),
+              child: const Text('Implement Plan',
+                  style: TextStyle(color: Colors.white)),
               onPressed: () {
                 widget.onImplementPlanButtonPressed();
               },

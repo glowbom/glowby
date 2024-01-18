@@ -15,6 +15,7 @@ import '../../utils/text_to_speech.dart'; // Import the new TextToSpeech class
 import '../dialogs/api_key_dialog.dart';
 import '../../utils/timestamp.dart'; // Import the ApiKeyDialog widget
 import 'package:async/async.dart';
+import 'package:flutter/foundation.dart';
 
 class ChatScreen extends StatefulWidget {
   final List<Map<String, Object>> _questions;
@@ -44,10 +45,10 @@ class ChatScreen extends StatefulWidget {
       {super.key});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ChatScreenState createState() => ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class ChatScreenState extends State<ChatScreen> {
   var _autonomousMode = false;
   bool _loading = false;
   bool _voiceEnabled = true;
@@ -102,7 +103,9 @@ class _ChatScreenState extends State<ChatScreen> {
               language: GlobalSettings().selectedLanguage);
         }
       } catch (e) {
-        print('Error in text-to-speech: $e');
+        if (kDebugMode) {
+          print('Error in text-to-speech: $e');
+        }
       }
     }
   }
@@ -216,7 +219,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
       tasks.add(response.substring(startIndex).trim());
     } catch (e) {
-      print('Error getting tasks: $e');
+      if (kDebugMode) {
+        print('Error getting tasks: $e');
+      }
     }
 
     setState(() {

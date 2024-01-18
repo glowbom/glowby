@@ -5,10 +5,10 @@ class MagicalLoadingView extends StatefulWidget {
   const MagicalLoadingView({super.key});
 
   @override
-  _MagicalLoadingViewState createState() => _MagicalLoadingViewState();
+  MagicalLoadingViewState createState() => MagicalLoadingViewState();
 }
 
-class _MagicalLoadingViewState extends State<MagicalLoadingView>
+class MagicalLoadingViewState extends State<MagicalLoadingView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final Random _random = Random();
