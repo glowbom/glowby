@@ -9,10 +9,10 @@ class ApiKeyDialog extends StatefulWidget {
   const ApiKeyDialog({super.key});
 
   @override
-  _ApiKeyDialogState createState() => _ApiKeyDialogState();
+  ApiKeyDialogState createState() => ApiKeyDialogState();
 }
 
-class _ApiKeyDialogState extends State<ApiKeyDialog> {
+class ApiKeyDialogState extends State<ApiKeyDialog> {
   static const openAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
   static const huggingFaceKeyPattern = r'^[A-Za-z0-9-_]+$';
   static const pulzeAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
