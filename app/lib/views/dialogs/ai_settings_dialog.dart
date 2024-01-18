@@ -12,10 +12,10 @@ class AiSettingsDialog extends StatefulWidget {
   const AiSettingsDialog({super.key, required this.onVoiceEnabledChanged});
 
   @override
-  _AiSettingsDialogState createState() => _AiSettingsDialogState();
+  AiSettingsDialogState createState() => AiSettingsDialogState();
 }
 
-class _AiSettingsDialogState extends State<AiSettingsDialog> {
+class AiSettingsDialogState extends State<AiSettingsDialog> {
   bool _isHuggingFaceSelected = false;
   bool _isPulzeSelected = false;
   bool _sendMessageHistory = false;
