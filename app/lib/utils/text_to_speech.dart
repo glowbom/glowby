@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
-  static const String TYPING_INDICATOR = 'typing...';
-  static const double DEFAULT_SPEECH_RATE = 1.0;
-  static const double REDUCED_SPEECH_RATE = 0.85;
+  static const String typingIndicator = 'typing...';
+  static const double defaultSpeechRate = 1.0;
+  static const double reducedSpeechRate = 0.85;
 
   final FlutterTts _flutterTts = FlutterTts();
 
@@ -55,9 +55,9 @@ class TextToSpeech {
         currentLanguage.contains('ru') ||
         currentLanguage.contains('pt') ||
         currentLanguage.contains('pl')) {
-      await _flutterTts.setSpeechRate(DEFAULT_SPEECH_RATE);
+      await _flutterTts.setSpeechRate(defaultSpeechRate);
     } else {
-      await _flutterTts.setSpeechRate(REDUCED_SPEECH_RATE);
+      await _flutterTts.setSpeechRate(reducedSpeechRate);
     }
   }
 
@@ -65,7 +65,7 @@ class TextToSpeech {
   static String? lastLanguage;
 
   Future<void> speakText(String text, {String language = 'en-US'}) async {
-    if (text == TYPING_INDICATOR) {
+    if (text == typingIndicator) {
       return;
     }
 
