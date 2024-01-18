@@ -10,13 +10,15 @@ import 'package:glowby/views/html/html_view_screen_interface.dart';
 import 'package:glowby/views/html/html_view_screen_mobile.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:flutter/foundation.dart';
 
 class HtmlViewScreen extends StatelessWidget
     implements HtmlViewScreenInterface {
   final String htmlContent;
   final String appName;
 
-  const HtmlViewScreen({super.key, required this.htmlContent, required this.appName});
+  const HtmlViewScreen(
+      {super.key, required this.htmlContent, required this.appName});
 
   void _openCodeInBrowser(context) async {
     if (Platform.isIOS) {
@@ -39,7 +41,9 @@ class HtmlViewScreen extends StatelessWidget
       if (await canLaunchUrlString(url)) {
         await launchUrlString(url);
       } else {
-        print("Can't launch $url");
+        if (kDebugMode) {
+          print("Can't launch $url");
+        }
       }
     }
   }
@@ -78,9 +82,10 @@ class HtmlViewScreen extends StatelessWidget
                 htmlContent,
                 language: 'html',
                 theme: githubTheme, // Choose the theme you like
-                padding:
-                    const EdgeInsets.all(12), // Adds padding inside the code viewer
-                textStyle: const TextStyle(fontFamily: 'monospace', fontSize: 10.0),
+                padding: const EdgeInsets.all(
+                    12), // Adds padding inside the code viewer
+                textStyle:
+                    const TextStyle(fontFamily: 'monospace', fontSize: 10.0),
               ),
             ],
           ),
