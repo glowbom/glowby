@@ -142,15 +142,18 @@ class PaintWindowState extends State<PaintWindow> {
       htmlContent = htmlResponse;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HtmlViewScreen(
-          htmlContent: htmlContent,
-          appName: creationName,
+    // Use the captured context after the async gap
+    if (mounted) {
+      Navigator.push(
+        context, // use the safeContext that was captured before the async gap
+        MaterialPageRoute(
+          builder: (context) => HtmlViewScreen(
+            htmlContent: htmlContent,
+            appName: creationName,
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     setState(() {
       isLoading = false;
