@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:glowby/views/html/html_view_screen.dart';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 
 import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/utils.dart';
+import 'package:flutter/foundation.dart';
 
 class PaintWindow extends StatefulWidget {
   const PaintWindow({super.key});
@@ -59,7 +59,9 @@ class PaintWindowState extends State<PaintWindow> {
         await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
     if (byteData == null) {
-      print("Failed to obtain byte data from image");
+      if (kDebugMode) {
+        print("Failed to obtain byte data from image");
+      }
       return '';
     }
 
