@@ -138,7 +138,9 @@ class OpenAiApi {
     };
 
     try {
-      print('calling lambda function with input: $input and url: $lambdaUrl');
+      if (kDebugMode) {
+        print('calling lambda function with input: $input and url: $lambdaUrl');
+      }
       final response = await http.post(
         Uri.parse(lambdaUrl),
         headers: headers,
@@ -500,11 +502,15 @@ The final output should be a single HTML file, starting with "<html>". Avoid mar
         return html;
       } else {
         // Handle the error, maybe throw an exception
-        print('Failed to get HTML from OpenAI: ${response.body}');
+        if (kDebugMode) {
+          print('Failed to get HTML from OpenAI: ${response.body}');
+        }
         return '';
       }
     } catch (e) {
-      print('Caught error: $e');
+      if (kDebugMode) {
+        print('Caught error: $e');
+      }
       return '';
     }
   }
