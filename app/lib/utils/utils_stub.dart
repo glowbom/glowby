@@ -5,6 +5,10 @@ class UtilsPlatform {
     throw UnsupportedError('downloadImage is not supported on this platform.');
   }
 
+  static Future<dynamic> pickImage() async {
+    throw UnsupportedError('pickImage is not supported on this platform.');
+  }
+
   static Future<dynamic> startFilePicker() async {
     throw UnsupportedError(
         'startFilePicker is not supported on this platform.');

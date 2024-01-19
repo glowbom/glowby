@@ -24,6 +24,10 @@ class UtilsPlatform {
     }
   }
 
+  static Future<dynamic> pickImage() async {
+    throw UnsupportedError('pickImage is not supported on this platform.');
+  }
+
   static Future<dynamic> startFilePicker() async {
     throw UnsupportedError(
         'startFilePicker is not supported on this platform.');
@@ -44,7 +48,8 @@ class UtilsPlatform {
     final ui.Canvas canvas = ui.Canvas(recorder);
 
     // Fill the canvas with a white background
-    final ui.Paint paintBackground = ui.Paint()..color = const ui.Color(0xFFFFFFFF);
+    final ui.Paint paintBackground = ui.Paint()
+      ..color = const ui.Color(0xFFFFFFFF);
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
         paintBackground);
 

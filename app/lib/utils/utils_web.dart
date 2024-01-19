@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Uncomment the next line to compile the web version
@@ -69,6 +70,12 @@ class UtilsPlatform {
     return Future.value();
   }
 
+  static Future<dynamic> pickImage() async {
+    Completer completer = Completer<dynamic>();
+    // todo: implement pickImage
+    return completer.future;
+  }
+
   static Future<dynamic> startFilePicker() async {
     Completer completer = Completer<dynamic>();
     try {
@@ -100,7 +107,9 @@ class UtilsPlatform {
 
       uploadInput.click();
     } catch (e) {
-      print('Error: $e'); // Log the exception
+      if (kDebugMode) {
+        print('Error: $e'); // Log the exception
+      } // Log the exception
       completer.completeError(e);
     }
 
