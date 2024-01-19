@@ -24,7 +24,7 @@ class AiErrorDialogState extends State<AiErrorDialog> {
           child: ListBody(
             children: <Widget>[
               const Text(
-                  'Make sure you have access to the latest models. For API accounts created after August 18, 2023, you can get instant access to the latest after purchasing \$0.50 worth or more of pre-paid credits.'),
+                  'Make sure you have access to the latest models. For API accounts created after August 18, 2023, you can get instant access to the latest models after purchasing \$0.50 worth or more of pre-paid credits.'),
               InkWell(
                 child: const Text(
                   '→ More details',
