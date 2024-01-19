@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:glowby/views/dialogs/ai_error_dialog.dart';
 import 'package:glowby/views/html/html_view_screen.dart';
 import 'dart:ui' as ui;
 
@@ -138,6 +139,15 @@ class PaintWindowState extends State<PaintWindow> {
 
     String htmlContent = creationName;
 
+    if (htmlResponse == '') {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      _showAiErrorDialog();
+      return;
+    }
+
     try {
       htmlContent = htmlResponse.split("```html")[1].split('```')[0];
     } catch (e) {
@@ -162,6 +172,17 @@ class PaintWindowState extends State<PaintWindow> {
     });
 
     clear();
+  }
+
+  void _showAiErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const AiErrorDialog();
+      },
+    ).then(
+      (value) => setState(() {}),
+    );
   }
 
   void clear() {
