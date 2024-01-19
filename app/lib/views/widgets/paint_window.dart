@@ -192,6 +192,20 @@ class PaintWindowState extends State<PaintWindow> {
     });
   }
 
+  Future<void> uploadImage() async {
+    /*final picker = ImagePicker();
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // If the pickedFile is not null, then we have a path to the image file.
+      // You can now upload this image to a server or use it in your application.
+      final File imageFile = File(pickedFile.path);
+      // Implement your image upload functionality here
+    } else {
+      print('No image selected.');
+    }*/
+  }
+
   @override
   Widget build(BuildContext context) {
     if (imgBytes != null) {
@@ -232,20 +246,29 @@ class PaintWindowState extends State<PaintWindow> {
               ),
             ),
             Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  width:
-                      width.toDouble(), // Set your desired maximum width here
-                  child: TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name your creation',
-                    ),
-                    onChanged: (value) {
-                      creationName = value;
-                    },
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: width.toDouble(), // Set your desired maximum width here
+                child: TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name your creation',
                   ),
-                )),
+                  onChanged: (value) {
+                    creationName = value;
+                  },
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.image),
+                  onPressed: uploadImage,
+                ),
+              ],
+            ),
           ],
         ),
       ),
