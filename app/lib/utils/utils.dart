@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -26,8 +27,8 @@ abstract class Utils {
       UtilsPlatform.recordVoice(lang);
 
   static Future<String> convertToBase64JpegWeb(
-          List<Offset?> points, int width, int height) async =>
-      UtilsPlatform.convertToBase64JpegWeb(points, width, height);
+          List<Offset?> points, ui.Image? image, int width, int height) async =>
+      UtilsPlatform.convertToBase64JpegWeb(points, image, width, height);
 
   static Future<void> launchURL(String url) async {
     if (await canLaunchUrlString(url)) {

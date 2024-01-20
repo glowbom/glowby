@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 
 class UtilsPlatform {
   static Future<void> downloadImage(String url, String description) async {
@@ -25,7 +26,7 @@ class UtilsPlatform {
   }
 
   static Future<String> convertToBase64JpegWeb(
-      List<Offset?> points, int width, int height) async {
+      List<Offset?> points, ui.Image? image, int width, int height) async {
     throw UnsupportedError(
         'convertToBase64JpegWeb is not supported on this platform.');
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ external void vr(text);
 
 class UtilsPlatform {
   static Future<String> convertToBase64JpegWeb(
-      List<Offset?> points, int width, int height) async {
+      List<Offset?> points, ui.Image? image, int width, int height) async {
     // Create a canvas element
     final html.CanvasElement canvas =
         html.CanvasElement(width: width, height: height);

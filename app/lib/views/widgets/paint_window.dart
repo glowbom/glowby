@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -26,6 +28,7 @@ class PaintWindowState extends State<PaintWindow> {
   String creationName = '';
   bool isLoading = false;
   Uint8List? imgBytes;
+  ui.Image? drawingImage;
 
   @override
   void dispose() {
@@ -129,10 +132,10 @@ class PaintWindowState extends State<PaintWindow> {
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
     String imageBase64 =
-        await Utils.convertToBase64JpegWeb(points, width, height);
+        await Utils.convertToBase64JpegWeb(points, drawingImage, width, height);
 
     // this is for testing
-    //this.imgBytes = base64Decode(imageBase64); // Implement this function
+    // imgBytes = base64Decode(imageBase64); // Implement this function
 
     String htmlResponse =
         await OpenAiApi().getHtmlFromOpenAI(imageBase64, creationName);
@@ -186,20 +189,36 @@ class PaintWindowState extends State<PaintWindow> {
   }
 
   void clear() {
+    drawingImage = null;
     nameController.clear();
     setState(() {
       points.clear();
     });
   }
 
-  Future<void> uploadImage() async {
-    Utils.pickImage().then((value) {
-      if (value != null) {
-        setState(() {
-          imgBytes = value;
-        });
+  Future<void> loadImage(Uint8List imageBytes) async {
+    final Completer<ui.Image> completer = Completer<ui.Image>();
+    ui.decodeImageFromList(imageBytes, (ui.Image img) {
+      if (!completer.isCompleted) {
+        completer.complete(img);
       }
     });
+    drawingImage = await completer.future;
+    setState(() {}); // Trigger a repaint
+  }
+
+  Future<void> uploadImage() async {
+    try {
+      final Uint8List? value = await Utils.pickImage();
+      if (value != null) {
+        await loadImage(value); // Load the image and update the state
+      }
+    } catch (e) {
+      // Handle the error or display an error message
+      if (kDebugMode) {
+        print('Error picking image: $e');
+      }
+    }
 
     /*final picker = ImagePicker();
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
@@ -248,7 +267,7 @@ class PaintWindowState extends State<PaintWindow> {
                   });
                 },
                 child: CustomPaint(
-                  painter: DrawingPainter(points: points),
+                  painter: DrawingPainter(points: points, image: drawingImage),
                   size: Size.infinite,
                 ),
               ),
@@ -306,11 +325,39 @@ class PaintWindowState extends State<PaintWindow> {
 
 class DrawingPainter extends CustomPainter {
   final List<Offset?> points;
+  final ui.Image? image;
 
-  DrawingPainter({required this.points});
+  DrawingPainter({required this.points, this.image});
+
+  void paintImage(
+      {required Canvas canvas, required ui.Image image, required Size size}) {
+    // Calculate the scale factor to fit the image within the canvas if needed
+    final double scaleFactor =
+        min(size.width / image.width, size.height / image.height);
+
+    // Calculate the destination rectangle for the scaled image
+    final Rect destRect = Rect.fromLTWH(
+      (size.width - image.width * scaleFactor) / 2,
+      (size.height - image.height * scaleFactor) / 2,
+      image.width * scaleFactor,
+      image.height * scaleFactor,
+    );
+
+    // Draw the scaled image at the center position
+    canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        destRect,
+        Paint());
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
+    // If there's an image, draw it
+    if (image != null) {
+      paintImage(canvas: canvas, image: image!, size: size);
+    }
+
     var paint = Paint()
       ..color = Colors.black
       ..strokeCap = StrokeCap.round

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -55,8 +55,30 @@ class UtilsPlatform {
   static Future<void> recordVoice(String lang) async => throw UnsupportedError(
       'initializeState is not supported on this platform.');
 
+  static void paintImage(
+      {required Canvas canvas, required ui.Image image, required Size size}) {
+    // Calculate the scale factor to fit the image within the canvas if needed
+    final double scaleFactor =
+        min(size.width / image.width, size.height / image.height);
+
+    // Calculate the destination rectangle for the scaled image
+    final Rect destRect = Rect.fromLTWH(
+      (size.width - image.width * scaleFactor) / 2,
+      (size.height - image.height * scaleFactor) / 2,
+      image.width * scaleFactor,
+      image.height * scaleFactor,
+    );
+
+    // Draw the scaled image at the center position
+    canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        destRect,
+        Paint());
+  }
+
   static Future<String> convertToBase64JpegWeb(
-      List<Offset?> points, int width, int height) async {
+      List<Offset?> points, ui.Image? img, int width, int height) async {
     // Create a PictureRecorder to record the canvas operations
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final ui.Canvas canvas = ui.Canvas(recorder);
@@ -66,6 +88,12 @@ class UtilsPlatform {
       ..color = const ui.Color(0xFFFFFFFF);
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
         paintBackground);
+
+    // If there's an image, draw it
+    if (img != null) {
+      final size = Size(width.toDouble(), height.toDouble());
+      paintImage(canvas: canvas, image: img, size: size);
+    }
 
     // Draw the lines with a black paint
     final ui.Paint paintLines = ui.Paint()
