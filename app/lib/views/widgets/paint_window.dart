@@ -193,6 +193,14 @@ class PaintWindowState extends State<PaintWindow> {
   }
 
   Future<void> uploadImage() async {
+    Utils.pickImage().then((value) {
+      if (value != null) {
+        setState(() {
+          imgBytes = value;
+        });
+      }
+    });
+
     /*final picker = ImagePicker();
     final pickedFile = await picker.getImage(source: ImageSource.gallery);
 

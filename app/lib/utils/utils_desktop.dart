@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
@@ -25,7 +27,19 @@ class UtilsPlatform {
   }
 
   static Future<dynamic> pickImage() async {
-    throw UnsupportedError('pickImage is not supported on this platform.');
+    if (Platform.isIOS) {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final File imageFile = File(pickedFile.path);
+        return imageFile.readAsBytes();
+      } else {
+        if (kDebugMode) {
+          print('No image selected.');
+        }
+        return null;
+      }
+    }
   }
 
   static Future<dynamic> startFilePicker() async {
