@@ -131,11 +131,13 @@ class PaintWindowState extends State<PaintWindow> {
     // Convert points to a suitable format and call OpenAI method
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
+    print('Calling convertToBase64JpegWeb');
     String imageBase64 =
         await Utils.convertToBase64JpegWeb(points, drawingImage, width, height);
+        print('After Calling convertToBase64JpegWeb');
 
     // this is for testing
-    // imgBytes = base64Decode(imageBase64); // Implement this function
+    imgBytes = base64Decode(imageBase64); // Implement this function
 
     String htmlResponse =
         await OpenAiApi().getHtmlFromOpenAI(imageBase64, creationName);
