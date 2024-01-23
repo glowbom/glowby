@@ -22,6 +22,43 @@ external set _vr(void Function(dynamic) f);
 external void vr(text);
 
 class UtilsPlatform {
+  static Future<void> drawImageOnCanvas(html.CanvasRenderingContext2D ctx,
+      ui.Image image, double width, double height) async {
+    Completer<void> completer = Completer<void>();
+
+    // Convert the ui.Image to a base64 string
+    final c = Completer<ByteData>();
+    image.toByteData().then((byteData) {
+      c.complete(byteData);
+    });
+    final byteData = await c.future;
+
+    Uint8List uint8list = byteData.buffer.asUint8List();
+    String base64Str = base64Encode(uint8list);
+
+    // Create the ImageElement with the base64 string as the source
+    html.ImageElement imgElement = html.ImageElement();
+    imgElement.src = 'data:image/png;base64,$base64Str';
+
+    imgElement.onLoad.listen((event) {
+      // Draw the image on the canvas when it's loaded
+      ctx.drawImageScaledFromSource(
+          imgElement,
+          0, // source x
+          0, // source y
+          image.width.toDouble(), // source width
+          image.height.toDouble(), // source height
+          0, // destination x
+          0, // destination y
+          width, // destination width
+          height // destination height
+          );
+      completer.complete();
+    });
+
+    return completer.future;
+  }
+
   static Future<String> convertToBase64JpegWeb(
       List<Offset?> points, ui.Image? image, int width, int height) async {
     // Create a canvas element
@@ -34,6 +71,10 @@ class UtilsPlatform {
     ctx.fillRect(0, 0, width, height); // Fill the canvas with white color
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
+
+    if (image != null) {
+      await drawImageOnCanvas(ctx, image, width.toDouble(), height.toDouble());
+    }
 
     // Draw the lines based on the points
     ctx.beginPath();
