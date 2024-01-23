@@ -113,9 +113,28 @@ class UtilsPlatform {
   }
 
   static Future<dynamic> pickImage() async {
-    Completer completer = Completer<dynamic>();
-    // todo: implement pickImage
-    return completer.future;
+    // Create an input element for file upload
+    final uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*'; // Accept only image files
+
+    // Trigger the file picker dialog
+    uploadInput.click();
+
+    // Wait for the user to select a file
+    await uploadInput.onChange.first;
+
+    // Get the selected file
+    final file = uploadInput.files!.first;
+
+    // Read the file as data URL
+    final reader = html.FileReader();
+    reader.readAsDataUrl(file);
+
+    // Wait for the file to be read
+    await reader.onLoadEnd.first;
+
+    // Return the result
+    return reader.result;
   }
 
   static Future<dynamic> startFilePicker() async {
