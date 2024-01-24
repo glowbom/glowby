@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
@@ -22,22 +23,40 @@ external set _vr(void Function(dynamic) f);
 external void vr(text);
 
 class UtilsPlatform {
+  static Future<html.ImageElement> convertUiImageToHtmlImage(
+      ui.Image image) async {
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+    if (byteData == null) {
+      throw Exception('Failed to convert ui.Image to ByteData');
+    }
+
+    final Uint8List uint8list = byteData.buffer.asUint8List();
+    final base64Str = base64Encode(uint8list);
+    final imgElement = html.ImageElement();
+    imgElement.src = 'data:image/png;base64,$base64Str';
+    return imgElement;
+  }
+
+  static Future<Uint8List> convertHtmlImageToUint8List(
+      html.ImageElement imageElement) async {
+    final response = await html.HttpRequest.request(
+      imageElement.src!,
+      method: "GET",
+      responseType: "arraybuffer",
+    );
+
+    return Uint8List.view(response.response as ByteBuffer);
+  }
+
   static Future<void> drawImageOnCanvas(html.CanvasRenderingContext2D ctx,
       ui.Image image, double width, double height) async {
     Completer<void> completer = Completer<void>();
 
-    // Convert the ui.Image to a base64 string
-    final c = Completer<ByteData>();
-    image.toByteData().then((byteData) {
-      c.complete(byteData);
-    });
-    final byteData = await c.future;
+    final imgElement = await convertUiImageToHtmlImage(image);
 
-    Uint8List uint8list = byteData.buffer.asUint8List();
+    Uint8List uint8list = await convertHtmlImageToUint8List(imgElement);
     String base64Str = base64Encode(uint8list);
-
-    // Create the ImageElement with the base64 string as the source
-    html.ImageElement imgElement = html.ImageElement();
     imgElement.src = 'data:image/png;base64,$base64Str';
 
     imgElement.onLoad.listen((event) {
@@ -126,8 +145,7 @@ class UtilsPlatform {
     await reader.onLoadEnd.first;
 
     return Uint8List.fromList(reader.result as List<int>);
-}
-
+  }
 
   static Future<dynamic> startFilePicker() async {
     Completer completer = Completer<dynamic>();
