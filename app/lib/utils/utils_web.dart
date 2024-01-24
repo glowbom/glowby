@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -50,27 +51,32 @@ class UtilsPlatform {
   }
 
   static Future<void> drawImageOnCanvas(html.CanvasRenderingContext2D ctx,
-      ui.Image image, double width, double height) async {
+      ui.Image image, double canvasWidth, double canvasHeight) async {
     Completer<void> completer = Completer<void>();
 
     final imgElement = await convertUiImageToHtmlImage(image);
 
-    Uint8List uint8list = await convertHtmlImageToUint8List(imgElement);
-    String base64Str = base64Encode(uint8list);
-    imgElement.src = 'data:image/png;base64,$base64Str';
-
     imgElement.onLoad.listen((event) {
-      // Draw the image on the canvas when it's loaded
+      // Calculate the scaling factor to maintain aspect ratio
+      double scaleX = canvasWidth / image.width;
+      double scaleY = canvasHeight / image.height;
+      double scale = math.min(scaleX, scaleY);
+
+      // Calculate the centered position
+      double centeredX = (canvasWidth - (image.width * scale)) / 2;
+      double centeredY = (canvasHeight - (image.height * scale)) / 2;
+
+      // Draw the image on the canvas with the correct scaling and centered
       ctx.drawImageScaledFromSource(
           imgElement,
           0, // source x
           0, // source y
           image.width.toDouble(), // source width
           image.height.toDouble(), // source height
-          0, // destination x
-          0, // destination y
-          width, // destination width
-          height // destination height
+          centeredX, // destination x
+          centeredY, // destination y
+          image.width.toDouble() * scale, // destination width
+          image.height.toDouble() * scale // destination height
           );
       completer.complete();
     });

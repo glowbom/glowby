@@ -135,7 +135,7 @@ class PaintWindowState extends State<PaintWindow> {
         await Utils.convertToBase64JpegWeb(points, drawingImage, width, height);
 
     // this is for testing
-    imgBytes = base64Decode(imageBase64); // Implement this function
+    // imgBytes = base64Decode(imageBase64); // Implement this function
 
     String htmlResponse =
         await OpenAiApi().getHtmlFromOpenAI(imageBase64, creationName);
