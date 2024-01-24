@@ -131,6 +131,11 @@ class PaintWindowState extends State<PaintWindow> {
     // Convert points to a suitable format and call OpenAI method
     // For example, you might convert points to an image and then to base64
     //String imageBase64 = await convertToBase64Jpeg(points);
+
+    if (drawingImage != null) {
+      // Introduce a delay before executing the code
+      await Future.delayed(const Duration(milliseconds: 800));
+    }
     String imageBase64 =
         await Utils.convertToBase64JpegWeb(points, drawingImage, width, height);
 
@@ -300,7 +305,9 @@ class PaintWindowState extends State<PaintWindow> {
         ),
       ),
       actions: <Widget>[
-        if (isLoading)
+        if (isLoading && drawingImage != null)
+          const Text('Loading...')
+        else if (isLoading)
           const CircularProgressIndicator()
         else
           TextButton(
