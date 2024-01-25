@@ -352,14 +352,7 @@ class NewMessageState extends State<NewMessage> {
               ),
               onPressed: _voiceMessage,
             ),
-          if (!_isProcessing)
-            IconButton(
-              color: Theme.of(context).primaryColor,
-              icon: const Icon(
-                Icons.brush,
-              ),
-              onPressed: _openPaintWindow,
-            ),
+          
           if (_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,

@@ -85,76 +85,13 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Enter OpenAI API Key'),
+      title: const Text('Enter Pulze API Key'),
       content: SizedBox(
         width: 340, // Set the max width of the AlertDialog
         child: SingleChildScrollView(
           child: ListBody(
-            children: <Widget>[
-              const Text('Get your API key:'),
-              InkWell(
-                child: const Text(
-                  '→ OpenAI Dashboard',
-                  style: TextStyle(color: Colors.blue),
-                ),
-                onTap: () => Utils.launchURL(
-                    'https://platform.openai.com/account/api-keys'),
-              ),
-              const SizedBox(height: 10),
-              const Text('API Key is stored locally and not shared.'),
-              TextField(
-                controller: _apiKeyController,
-                obscureText: _obscureApiKey,
-                decoration: InputDecoration(
-                  labelText: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      // Change the icon based on whether the text is obscured
-                      _obscureApiKey ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      // Update the state to toggle the obscure text value
-                      setState(() {
-                        _obscureApiKey = !_obscureApiKey;
-                      });
-                    },
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _apiKey = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              InkWell(
-                child: const Text(
-                  'API Key not working? Click Here.',
-                  style: TextStyle(color: Colors.blue),
-                ),
-                onTap: () => Utils.launchURL(
-                    'https://platform.openai.com/account/billing/overview'),
-              ),
-              const Text('Ensure billing info is added in OpenAI Billing.'),
-              const SizedBox(height: 10),
-              InkWell(
-                child: const Text(
-                  'The Price is about 100,000 words per \$1',
-                  style: TextStyle(color: Colors.blue),
-                ),
-                onTap: () => Utils.launchURL(
-                    'https://openai.com/pricing#language-models'),
-              ),
-              const Text('ChatGPT Plus subscription not required.'),
-              const SizedBox(height: 10),
-              const Divider(),
-              ExpansionTile(
-                title: const Text(
-                  'Pulze',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                children: <Widget>[
-                  Align(
+            children: <Widget>[ 
+              Align(
                     alignment: Alignment.centerLeft,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,67 +138,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              const Divider(),
-              const SizedBox(height: 10),
-              ExpansionTile(
-                title: const Text(
-                  '🤗 Hosted Inference API',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                children: <Widget>[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        const Text('Get your Access Token:'),
-                        InkWell(
-                          child: const Text(
-                            '→ Hugging Face Dashboard',
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                          onTap: () => Utils.launchURL(
-                              'https://huggingface.co/settings/tokens'),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text('Enter your Hugging Face Token:'),
-                        TextField(
-                          controller: _huggingFaceTokenController,
-                          obscureText: _obscureApiKeyHuggingFace,
-                          decoration: InputDecoration(
-                            labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                // Change the icon based on whether the text is obscured
-                                _obscureApiKeyHuggingFace
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed: () {
-                                // Update the state to toggle the obscure text value
-                                setState(() {
-                                  _obscureApiKeyHuggingFace =
-                                      !_obscureApiKeyHuggingFace;
-                                });
-                              },
-                            ),
-                          ),
-                          onChanged: (value) {
-                            setState(() {
-                              _huggingFaceToken = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              
             ],
           ),
         ),
