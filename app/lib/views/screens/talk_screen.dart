@@ -6,8 +6,6 @@ import 'package:glowby/utils/utils.dart';
 import '../../utils/color_utils.dart';
 import 'chat_screen.dart';
 
-import '../../services/hugging_face_api.dart';
-
 dynamic _content;
 
 class TalkState extends State<Talk> {
@@ -37,7 +35,6 @@ class TalkState extends State<Talk> {
 
   Future<void> loadAPIKeys() async {
     await OpenAiApi.loadOat();
-    await HuggingFaceApi.loadOat();
     await PulzeAiApi.loadOat();
   }
 
@@ -50,7 +47,6 @@ class TalkState extends State<Talk> {
 
   void resetApiKeys() {
     OpenAiApi.resetOat();
-    HuggingFaceApi.resetOat();
     PulzeAiApi.resetOat();
   }
 

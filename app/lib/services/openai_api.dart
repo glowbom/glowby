@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:async/async.dart';
-import 'package:glowby/services/hugging_face_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 
 class OpenAiApi {
@@ -56,7 +55,6 @@ class OpenAiApi {
       }
     }
 
-    await HuggingFaceApi.loadOat();
     await PulzeAiApi.loadOat();
   }
 
@@ -218,12 +216,6 @@ class OpenAiApi {
         completer,
         previousMessages: previousMessages,
       );
-    } else if (OpenAiApi.model == 'huggingface') {
-      _getResponseFromHuggingFace(
-        message,
-        completer,
-        previousMessages: previousMessages,
-      );
     } else {
       // Wrap the _getResponseFromOpenAI with the cancelable completer
       _getResponseFromOpenAI(
@@ -243,43 +235,6 @@ class OpenAiApi {
     return previousMessages.map((message) {
       return "${message['role']}: ${message['content']}";
     }).join(', ');
-  }
-
-  static Future<void> _getResponseFromHuggingFace(
-    String message,
-    CancelableCompleter<String> completer, {
-    List<Map<String, String?>> previousMessages = const [],
-  }) async {
-    String? finalResponse = '';
-
-    if (HuggingFaceApi.oat() != '') {
-      //print(previousMessages);
-      String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.isNotEmpty && HuggingFaceApi.sendMessages()) {
-        finalResponse = await HuggingFaceApi.generate(
-            '$message previousMessages: $formattedPrevMessages');
-      } else {
-        finalResponse = await HuggingFaceApi.generate(message);
-      }
-
-      //print('finalResponse: $finalResponse');
-      if (finalResponse != null) {
-        finalResponse = finalResponse
-            .replaceAll('assistant: ', '')
-            .replaceAll('previousMessages: ', '')
-            .replaceAll('user: ', '')
-            .replaceAll('[System message]: ', '');
-      }
-    } else {
-      finalResponse =
-          'Please enter your Hugging Face Access Token in the settings.';
-    }
-
-    completer.complete(finalResponse);
-
-    // Explicitly return null to avoid
-
-    return;
   }
 
   static Future<void> _getResponseFromPulzeAI(

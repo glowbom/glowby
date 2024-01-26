@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:glowby/services/hugging_face_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 
 import '../services/openai_api.dart';
@@ -48,11 +47,9 @@ class Ai {
               ? 'Powered by GPT-3.5'
               : OpenAiApi.model == 'gpt-4-1106-preview'
                   ? 'Powered by GPT-4 Turbo'
-                  : OpenAiApi.model == 'huggingface'
-                      ? HuggingFaceApi.model()
-                      : OpenAiApi.model == 'pulzeai'
-                          ? PulzeAiApi.lastUsedModel()
-                          : '';
+                  : OpenAiApi.model == 'pulzeai'
+                      ? PulzeAiApi.lastUsedModel()
+                      : '';
       return [
         Message(
           text: response,

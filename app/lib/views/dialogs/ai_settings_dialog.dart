@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:glowby/views/screens/global_settings.dart';
-import 'package:glowby/services/hugging_face_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/text_to_speech.dart';
@@ -18,11 +17,8 @@ class AiSettingsDialog extends StatefulWidget {
 class AiSettingsDialogState extends State<AiSettingsDialog> {
   bool _isHuggingFaceSelected = false;
   bool _isPulzeSelected = false;
-  bool _sendMessageHistory = false;
 
   final TextEditingController _systemPromptController = TextEditingController();
-  final TextEditingController _systemPromptHuggingFaceController =
-      TextEditingController();
   final TextEditingController _modelIdController = TextEditingController();
   final TextEditingController _pulzeModelIdController = TextEditingController();
   final TextEditingController _templateController = TextEditingController();
@@ -90,13 +86,7 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
-    _modelIdController.text = HuggingFaceApi.model();
     _pulzeModelIdController.text = PulzeAiApi.model();
-    _templateController.text = HuggingFaceApi.template();
-    GlobalSettings().systemHuggingFacePrompt = HuggingFaceApi.systemMessage();
-    _sendMessageHistory = HuggingFaceApi.sendMessages();
-    _systemPromptHuggingFaceController.text =
-        GlobalSettings().systemHuggingFacePrompt;
   }
 
   void _saveOpenAISettings() {
@@ -107,10 +97,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
 
   void _saveHuggingFaceSettings() {
     PulzeAiApi.setModel(_pulzeModelIdController.text);
-    HuggingFaceApi.setModel(_modelIdController.text);
-    HuggingFaceApi.setTemplate(_templateController.text);
-    HuggingFaceApi.setSendMessages(_sendMessageHistory);
-    HuggingFaceApi.setSystemMessage(GlobalSettings().systemHuggingFacePrompt);
   }
 
   void _saveSettings(BuildContext context) {
@@ -127,16 +113,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    if (HuggingFaceApi.oat() == '' &&
-        GlobalSettings().selectedModel == 'huggingface') {
-      OpenAiApi.setModel(GlobalSettings().selectedModel);
-      setState(() {
-        _isHuggingFaceSelected = false;
-        _isPulzeSelected = false;
-        //_isGPT4Selected = false;
-        GlobalSettings().selectedModel = 'gpt-3.5-turbo';
-      });
-    }
     return AlertDialog(
       title: const Text('AI Settings'),
       content: SizedBox(
@@ -160,11 +136,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                     value: 'gpt-4-1106-preview',
                     child: Text('GPT-4 Turbo (Preview)'),
                   ),
-                  if (HuggingFaceApi.oat() != '')
-                    const DropdownMenuItem<String>(
-                      value: 'huggingface',
-                      child: Text('Hugging Face (Experimental)'),
-                    ),
                   if (PulzeAiApi.oat() != '')
                     const DropdownMenuItem<String>(
                       value: 'pulzeai',

@@ -1,4 +1,3 @@
-import 'package:glowby/services/hugging_face_api.dart';
 import 'package:glowby/services/openai_api.dart';
 
 class GlobalSettings {
@@ -13,7 +12,6 @@ class GlobalSettings {
   String selectedModel = OpenAiApi.model;
   String systemPrompt = OpenAiApi.systemPrompt;
   String selectedPrompt = 'Simple Assistant Prompt';
-  String systemHuggingFacePrompt = HuggingFaceApi.systemMessage();
 
   factory GlobalSettings() {
     return _instance;

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/utils.dart';
 
-import '../../services/hugging_face_api.dart';
 import '../../services/pulze_ai_api.dart';
 
 class ApiKeyDialog extends StatefulWidget {
@@ -18,10 +17,8 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   static const pulzeAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
 
   final _apiKeyController = TextEditingController();
-  final _huggingFaceTokenController = TextEditingController();
   final _pulzeAiController = TextEditingController();
   String _apiKey = '';
-  String _huggingFaceToken = '';
   String _pulzeAiToken = '';
 
   @override
@@ -32,8 +29,6 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
       setState(() {
         _apiKey = OpenAiApi.oat();
         _apiKeyController.text = _apiKey;
-        _huggingFaceToken = HuggingFaceApi.oat();
-        _huggingFaceTokenController.text = _huggingFaceToken;
         _pulzeAiToken = PulzeAiApi.oat();
         _pulzeAiController.text = _pulzeAiToken;
       });
@@ -53,9 +48,6 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
 
     if (_apiKey.isNotEmpty && !isValidOpenAIKey(_apiKey)) {
       errorMessage = 'OpenAI API Key is invalid!';
-    } else if (_huggingFaceToken.isNotEmpty &&
-        !isValidHuggingFaceKey(_huggingFaceToken)) {
-      errorMessage = 'Hugging Face Token is invalid!';
     } else if (_pulzeAiToken.isNotEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
       errorMessage = 'Pulze API Key is invalid!';
     }
@@ -69,7 +61,6 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
     } else {
       // If all keys are valid, set them and show a success message.
       OpenAiApi.setOat(_apiKey);
-      HuggingFaceApi.setOat(_huggingFaceToken);
       PulzeAiApi.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,9 +69,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
     }
   }
 
-  bool _obscureApiKey = true;
   bool _obscureApiKeyPulze = true;
-  bool _obscureApiKeyHuggingFace = true;
 
   @override
   Widget build(BuildContext context) {
@@ -90,55 +79,54 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
         width: 340, // Set the max width of the AlertDialog
         child: SingleChildScrollView(
           child: ListBody(
-            children: <Widget>[ 
+            children: <Widget>[
               Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        const Text('Get your Access Token:'),
-                        InkWell(
-                          child: const Text(
-                            '→ Pulze Dashboard',
-                            style: TextStyle(color: Colors.blue),
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text('Get your Access Token:'),
+                    InkWell(
+                      child: const Text(
+                        '→ Pulze Dashboard',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                      onTap: () =>
+                          Utils.launchURL('https://platform.pulze.ai/'),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text('Enter your Pulze Token:'),
+                    TextField(
+                      controller: _pulzeAiController,
+                      obscureText: _obscureApiKeyPulze,
+                      decoration: InputDecoration(
+                        labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            // Change the icon based on whether the text is obscured
+                            _obscureApiKeyPulze
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
-                          onTap: () =>
-                              Utils.launchURL('https://platform.pulze.ai/'),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text('Enter your Pulze Token:'),
-                        TextField(
-                          controller: _pulzeAiController,
-                          obscureText: _obscureApiKeyPulze,
-                          decoration: InputDecoration(
-                            labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                // Change the icon based on whether the text is obscured
-                                _obscureApiKeyPulze
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed: () {
-                                // Update the state to toggle the obscure text value
-                                setState(() {
-                                  _obscureApiKeyPulze = !_obscureApiKeyPulze;
-                                });
-                              },
-                            ),
-                          ),
-                          onChanged: (value) {
+                          onPressed: () {
+                            // Update the state to toggle the obscure text value
                             setState(() {
-                              _pulzeAiToken = value;
+                              _obscureApiKeyPulze = !_obscureApiKeyPulze;
                             });
                           },
                         ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _pulzeAiToken = value;
+                        });
+                      },
                     ),
-                  ),
-              
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -150,8 +138,6 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
             setState(() {
               _apiKeyController.clear();
               _apiKey = '';
-              _huggingFaceTokenController.clear();
-              _huggingFaceToken = '';
               _pulzeAiController.clear();
               _pulzeAiToken = '';
             });
