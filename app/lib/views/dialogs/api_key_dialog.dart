@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/utils.dart';
 
 import '../../services/pulze_ai_api.dart';
@@ -25,11 +24,11 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   void initState() {
     super.initState();
 
-    OpenAiApi.loadOat().then((_) {
+    PulzeAiApi.loadOat().then((_) {
       setState(() {
-        _apiKey = OpenAiApi.oat();
         _apiKeyController.text = _apiKey;
         _pulzeAiToken = PulzeAiApi.oat();
+        _apiKey = _pulzeAiToken;
         _pulzeAiController.text = _pulzeAiToken;
       });
     });
@@ -60,7 +59,6 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
       );
     } else {
       // If all keys are valid, set them and show a success message.
-      OpenAiApi.setOat(_apiKey);
       PulzeAiApi.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog
       ScaffoldMessenger.of(context).showSnackBar(

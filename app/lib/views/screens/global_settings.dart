@@ -1,4 +1,4 @@
-import 'package:glowby/services/openai_api.dart';
+import 'package:glowby/services/network.dart';
 
 class GlobalSettings {
   static final GlobalSettings _instance = GlobalSettings._internal();
@@ -7,10 +7,10 @@ class GlobalSettings {
   String userName = 'Me';
 
   bool voiceEnabled = true;
-  String selectedLanguage = OpenAiApi.selectedLanguage;
+  String selectedLanguage = Network.selectedLanguage;
   bool autonomousMode = false;
-  String selectedModel = OpenAiApi.model;
-  String systemPrompt = OpenAiApi.systemPrompt;
+  String selectedModel = Network.model;
+  String systemPrompt = Network.systemPrompt;
   String selectedPrompt = 'Simple Assistant Prompt';
 
   factory GlobalSettings() {
@@ -148,9 +148,9 @@ Human: You choose anything you like. Direction comes from the next message. One 
   void loadDialogValues(selectedModelInput, selectedLanguageInput,
       systemPromptInput, autonomousModeInput) {
     selectedPrompt = 'Simple Assistant Prompt';
-    selectedModel = OpenAiApi.model;
-    systemPrompt = OpenAiApi.systemPrompt;
-    selectedLanguage = OpenAiApi.selectedLanguage;
+    selectedModel = Network.model;
+    systemPrompt = Network.systemPrompt;
+    selectedLanguage = Network.selectedLanguage;
     autonomousMode = false;
 
     if (selectedModelInput != null && selectedModelInput != '') {

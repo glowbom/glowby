@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:glowby/services/network.dart';
 import 'package:glowby/views/screens/global_settings.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
-import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/text_to_speech.dart';
 import 'package:glowby/utils/utils.dart';
 
@@ -15,13 +15,10 @@ class AiSettingsDialog extends StatefulWidget {
 }
 
 class AiSettingsDialogState extends State<AiSettingsDialog> {
-  bool _isHuggingFaceSelected = false;
   bool _isPulzeSelected = false;
 
   final TextEditingController _systemPromptController = TextEditingController();
-  final TextEditingController _modelIdController = TextEditingController();
   final TextEditingController _pulzeModelIdController = TextEditingController();
-  final TextEditingController _templateController = TextEditingController();
 
   Widget _buildAutonomousModeCheckbox() {
     if (GlobalSettings().selectedPrompt == 'Complex Task Prompt') {
@@ -80,19 +77,18 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
   @override
   void initState() {
     super.initState();
-    GlobalSettings().selectedModel = OpenAiApi.model;
+    GlobalSettings().selectedModel = 'pulzeai';
     _systemPromptController.text = GlobalSettings().systemPrompt;
     //_isGPT4Selected =
     //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
-    _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
     _pulzeModelIdController.text = PulzeAiApi.model();
   }
 
   void _saveOpenAISettings() {
-    OpenAiApi.setModel(GlobalSettings().selectedModel);
-    OpenAiApi.setSystemPrompt(GlobalSettings().systemPrompt);
-    OpenAiApi.setSelectedLanguage(GlobalSettings().selectedLanguage);
+    Network.setModel(GlobalSettings().selectedModel);
+    Network.setSystemPrompt(GlobalSettings().systemPrompt);
+    Network.setSelectedLanguage(GlobalSettings().selectedLanguage);
   }
 
   void _saveHuggingFaceSettings() {
@@ -152,7 +148,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                     GlobalSettings().selectedModel = value!;
                     //_isGPT4Selected =
                     //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
-                    _isHuggingFaceSelected = value == 'huggingface';
                     _isPulzeSelected = value == 'pulzeai';
                   });
                 },
@@ -185,71 +180,28 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                     ),
                   ],
                 ),
-              if (_isHuggingFaceSelected)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    const SizedBox(height: 10),
-                    const Text('Hugging Face Model ID:'),
-                    const SizedBox(height: 6),
-                    InkWell(
-                      child: const Text(
-                        '→ Browse available models',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                      onTap: () => Utils.launchURL(
-                          'https://huggingface.co/models?pipeline_tag=text2text-generation&sort=downloads'),
-                    ),
-                    TextField(
-                      controller:
-                          _modelIdController, // Use TextEditingController to retrieve user input
-                      decoration: const InputDecoration(
-                        labelText: 'Model ID',
-                      ),
-                      onChanged: (value) {
-                        // Update your modelId variable here
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    const Text('Response Format'),
-                    TextField(
-                      controller:
-                          _templateController, // Use TextEditingController to retrieve user input
-                      maxLines: 5,
-                      decoration: const InputDecoration(
-                        labelText: 'Template (*** is the response)',
-                      ),
-                      onChanged: (value) {
-                        // Update your template variable here
-                      },
-                    ),
-                  ],
-                ),
               const SizedBox(height: 10),
-              if (!_isHuggingFaceSelected) const Text('System Prompt:'),
-              if (!_isHuggingFaceSelected)
-                if (!_isHuggingFaceSelected)
-                  DropdownButton<String>(
-                    value: GlobalSettings().selectedPrompt,
-                    items: buildPromptDropdownItems(),
-                    onChanged: (value) {
-                      setState(() {
-                        _promptChanged(value);
-                      });
-                    },
-                  ),
-              if (!_isHuggingFaceSelected) _buildAutonomousModeCheckbox(),
-              if (!_isHuggingFaceSelected)
-                TextField(
-                  controller: _systemPromptController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter system prompt',
-                  ),
-                  onChanged: (value) {
-                    GlobalSettings().systemPrompt = value;
-                  },
+              const Text('System Prompt:'),
+              DropdownButton<String>(
+                value: GlobalSettings().selectedPrompt,
+                items: buildPromptDropdownItems(),
+                onChanged: (value) {
+                  setState(() {
+                    _promptChanged(value);
+                  });
+                },
+              ),
+              _buildAutonomousModeCheckbox(),
+              TextField(
+                controller: _systemPromptController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Enter system prompt',
                 ),
+                onChanged: (value) {
+                  GlobalSettings().systemPrompt = value;
+                },
+              ),
               /*if (_isHuggingFaceSelected) Text('System Message:'),
               if (_isHuggingFaceSelected)
                 TextField(

@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:glowby/services/network.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 
-import '../services/openai_api.dart';
 import '../utils/timestamp.dart';
 import '../views/widgets/message.dart';
 import 'package:async/async.dart';
@@ -37,19 +37,11 @@ class Ai {
     }
 
     // Call the OpenAI API if no matching questions are found locally
-    if (aiEnabled && OpenAiApi.oat().isNotEmpty) {
-      networkOperation = OpenAiApi.getResponseFromOpenAI(message,
+    if (aiEnabled && PulzeAiApi.oat().isNotEmpty) {
+      networkOperation = Network.getResponseFromPulze(message,
           previousMessages: previousMessages);
       String response = await networkOperation!.value;
-      String poweredTitle = OpenAiApi.model == 'gpt-4'
-          ? 'Powered by GPT-4'
-          : OpenAiApi.model == 'gpt-3.5-turbo'
-              ? 'Powered by GPT-3.5'
-              : OpenAiApi.model == 'gpt-4-1106-preview'
-                  ? 'Powered by GPT-4 Turbo'
-                  : OpenAiApi.model == 'pulzeai'
-                      ? PulzeAiApi.lastUsedModel()
-                      : '';
+      String poweredTitle = PulzeAiApi.lastUsedModel();
       return [
         Message(
           text: response,

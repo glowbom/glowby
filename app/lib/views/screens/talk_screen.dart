@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 import 'package:glowby/utils/utils.dart';
 import '../../utils/color_utils.dart';
@@ -34,7 +33,6 @@ class TalkState extends State<Talk> {
   }
 
   Future<void> loadAPIKeys() async {
-    await OpenAiApi.loadOat();
     await PulzeAiApi.loadOat();
   }
 
@@ -46,7 +44,6 @@ class TalkState extends State<Talk> {
   }
 
   void resetApiKeys() {
-    OpenAiApi.resetOat();
     PulzeAiApi.resetOat();
   }
 

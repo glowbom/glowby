@@ -7,7 +7,6 @@ import 'package:glowby/views/widgets/paint_window.dart';
 import 'package:glowby/utils/utils.dart';
 
 import 'message.dart';
-import '../../services/openai_api.dart';
 import '../../utils/timestamp.dart';
 import 'package:flutter/material.dart';
 
@@ -211,63 +210,7 @@ class NewMessageState extends State<NewMessage> {
   }
 
   Future<void> handleImageGenerationCommand(String message) async {
-    final pattern = Utils.getMatchingPattern(message);
-    final description = pattern != null
-        ? message.replaceAll(RegExp(pattern, caseSensitive: false), '').trim()
-        : '';
-    //print('description: $description');
-    //print('enableAi: ${widget._enableAi}');
-    if (description.isNotEmpty &&
-        (widget._enableAi == null || widget._enableAi!)) {
-      Message drawingMessage = Message(
-        text: Utils.getRandomImageGenerationFunnyMessage(),
-        createdAt: Timestamp.now(),
-        userId: Ai.defaultUserId,
-        username: widget._name == '' ? 'AI' : widget._name,
-      );
-      widget._messages.insert(0, drawingMessage);
-      widget._refresh();
-
-      // Generate the image
-      try {
-        final imageUrl = (await OpenAiApi.generateImageUrl(description))!;
-        Message message = Message(
-          text: 'Here is your image!',
-          createdAt: Timestamp.now(),
-          userId: Ai.defaultUserId,
-          username: widget._name == '' ? 'AI' : widget._name,
-          link: imageUrl,
-        );
-
-        widget._messages.remove(drawingMessage);
-        widget._messages.insert(0, message);
-        widget._messages.insert(
-            0,
-            Message(
-              text: Utils.getRandomImageReadyMessage(),
-              createdAt: Timestamp.now(),
-              userId: Ai.defaultUserId,
-              username: widget._name == '' ? 'AI' : widget._name,
-            ));
-
-        widget._refresh();
-
-        Utils.downloadImage(imageUrl, description);
-      } catch (e) {
-        // Handle the exception and emit an error state
-        widget._messages.remove(drawingMessage);
-        Message message = Message(
-          text: 'Something went wrong. Please try again later.',
-          createdAt: Timestamp.now(),
-          userId: Ai.defaultUserId,
-          username: widget._name == '' ? 'AI' : widget._name,
-        );
-
-        widget._messages.remove(drawingMessage);
-        widget._messages.insert(0, message);
-        widget._refresh();
-      }
-    }
+    // not supported yet
   }
 
   void _stopProcessing() {
@@ -352,7 +295,6 @@ class NewMessageState extends State<NewMessage> {
               ),
               onPressed: _voiceMessage,
             ),
-          
           if (_isProcessing)
             IconButton(
               color: Theme.of(context).primaryColor,

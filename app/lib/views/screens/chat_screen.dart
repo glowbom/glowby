@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:glowby/services/network.dart';
+import 'package:glowby/services/pulze_ai_api.dart';
 import 'package:glowby/views/screens/global_settings.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:glowby/views/widgets/tasks_view.dart';
@@ -10,7 +12,6 @@ import 'magical_loading_view.dart';
 import '../widgets/message.dart';
 import '../widgets/new_message.dart';
 import '../widgets/messages.dart';
-import '../../services/openai_api.dart';
 import '../../utils/text_to_speech.dart'; // Import the new TextToSpeech class
 import '../dialogs/api_key_dialog.dart';
 import '../../utils/timestamp.dart'; // Import the ApiKeyDialog widget
@@ -84,7 +85,7 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   void loadAPIKey() {
-    OpenAiApi.loadOat().then((_) => setState(() {}));
+    PulzeAiApi.loadOat().then((_) => setState(() {}));
   }
 
   // Refresh the UI state of the chat screen
@@ -176,7 +177,7 @@ class ChatScreenState extends State<ChatScreen> {
     List<String> tasks = [];
 
     try {
-      _currentOperation = OpenAiApi.getResponseFromOpenAI(_lastInputMessage,
+      _currentOperation = Network.getResponseFromPulze(_lastInputMessage,
           customSystemPrompt:
               'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. The steps should be concise.');
 
@@ -312,7 +313,7 @@ class ChatScreenState extends State<ChatScreen> {
         .reversed
         .toList();
 
-    _currentOperation = OpenAiApi.getResponseFromOpenAI(
+    _currentOperation = Network.getResponseFromPulze(
       message,
       previousMessages: formattedPreviousMessages,
       customSystemPrompt: customSystemPrompt,
@@ -557,7 +558,7 @@ class ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     // Add the AI Settings button conditionally
-                    if (OpenAiApi.oat().isNotEmpty)
+                    if (PulzeAiApi.oat().isNotEmpty)
                       if (widget._showAiSettings != null &&
                           widget._showAiSettings!)
                         Padding(
