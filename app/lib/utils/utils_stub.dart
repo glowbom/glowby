@@ -15,6 +15,11 @@ class UtilsPlatform {
         'startFilePicker is not supported on this platform.');
   }
 
+  static Future<dynamic> downloadSourceCode() async {
+    throw UnsupportedError(
+        'downloadSourceCode is not supported on this platform.');
+  }
+
   static Future<void> initializeState(dynamic f) async {
     throw UnsupportedError(
         'initializeState is not supported on this platform.');

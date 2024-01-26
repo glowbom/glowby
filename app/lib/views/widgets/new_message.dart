@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:glowby/views/screens/global_settings.dart';
-import 'package:glowby/views/widgets/paint_window.dart';
 import 'package:glowby/utils/utils.dart';
 
 import 'message.dart';
@@ -234,16 +233,6 @@ class NewMessageState extends State<NewMessage> {
 
     // Cancel any ongoing network operation if it exists
     ai.getCurrentNetworkOperation()?.cancel();
-  }
-
-  /* method for opening a paint window */
-  void _openPaintWindow() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const PaintWindow();
-      },
-    );
   }
 
   @override
