@@ -116,43 +116,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
         child: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              const Text('Choose AI Model or Provider:'),
-              DropdownButton<String>(
-                value: GlobalSettings().selectedModel,
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: 'gpt-3.5-turbo',
-                    child: Text('GPT-3.5 (Recommended)'),
-                  ),
-                  const DropdownMenuItem<String>(
-                    value: 'gpt-4',
-                    child: Text('GPT-4 (Advanced)'),
-                  ),
-                  const DropdownMenuItem<String>(
-                    value: 'gpt-4-1106-preview',
-                    child: Text('GPT-4 Turbo (Preview)'),
-                  ),
-                  if (PulzeAiApi.oat() != '')
-                    const DropdownMenuItem<String>(
-                      value: 'pulzeai',
-                      child: Text('Pulze'),
-                    ),
-                  /*DropdownMenuItem<String>(
-                    value: 'gpt-4-32k',
-                    child: Text('GPT-4-32k (Advanced, Limited Beta)'),
-                  ),*/
-                  // uncomment the following lines to enable an extended 32,000 token context-length model gpt-4-32k
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    GlobalSettings().selectedModel = value!;
-                    //_isGPT4Selected =
-                    //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
-                    _isPulzeSelected = value == 'pulzeai';
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
               if (_isPulzeSelected)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
