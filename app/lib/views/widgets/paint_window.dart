@@ -212,6 +212,8 @@ class PaintWindowState extends State<PaintWindow> {
     setState(() {}); // Trigger a repaint
   }
 
+  Future<void> downloadImage() async {}
+
   Future<void> uploadImage() async {
     try {
       final Uint8List? value = await Utils.pickImage();
@@ -298,6 +300,10 @@ class PaintWindowState extends State<PaintWindow> {
                 IconButton(
                   icon: const Icon(Icons.image),
                   onPressed: uploadImage,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.download),
+                  onPressed: downloadImage,
                 ),
               ],
             ),
