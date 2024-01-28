@@ -411,16 +411,17 @@ class ChatScreenState extends State<ChatScreen> {
 
   List<Widget> _buildLinkItems(BuildContext context) {
     final links = [
+      {
+        'title': 'TestFlight',
+        'url': 'https://testflight.apple.com/join/kriNj2gR'
+      },
       {'title': 'Glowby GPT', 'url': 'https://glowbom.com/glowby/gpt'},
       {
-        'title': 'GitHub Repository',
-        'url': 'https://github.com/glowbom/glowby'
-      },
-      {
-        'title': 'Feature List',
-        'url': 'https://twitter.com/jacobilin/status/1649443429347397632'
+        'title': 'Draw-to-code Demo',
+        'url': 'https://twitter.com/jacobilin/status/1751365686344155250'
       },
       {'title': 'Website (glowbom.com)', 'url': 'https://glowbom.com/'},
+      {'title': 'Twitter: @jacobilin', 'url': 'https://twitter.com/jacobilin'},
       {
         'title': 'Twitter: @GlowbomCorp',
         'url': 'https://twitter.com/GlowbomCorp'
@@ -428,7 +429,11 @@ class ChatScreenState extends State<ChatScreen> {
       {
         'title': 'YouTube Channel',
         'url': 'https://www.youtube.com/channel/UCrYQEQPhAHmn7N8W58nNwOw'
-      }
+      },
+      {
+        'title': 'GitHub Repository',
+        'url': 'https://github.com/glowbom/glowby'
+      },
     ];
 
     return links
@@ -570,6 +575,41 @@ class ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                         ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          String url =
+                              'https://testflight.apple.com/join/kriNj2gR';
+                          if (await canLaunchUrlString(url)) {
+                            await launchUrlString(url);
+                          } else {
+                            throw 'Could not launch $url';
+                          }
+                        },
+                        child: const Text(
+                          'TestFlight',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          String url = 'https://glowbom.com/glowby/gpt';
+                          if (await canLaunchUrlString(url)) {
+                            await launchUrlString(url);
+                          } else {
+                            throw 'Could not launch $url';
+                          }
+                        },
+                        child: const Text(
+                          'GPT',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
