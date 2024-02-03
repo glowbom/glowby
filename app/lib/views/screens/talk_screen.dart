@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 import 'package:glowby/utils/utils.dart';
@@ -325,9 +326,21 @@ class TalkApp extends StatefulWidget {
 }
 
 class _TalkAppState extends State<TalkApp> {
+  static const platform = MethodChannel('com.glowbom/ar');
+
+  Future<void> _loadARView() async {
+    try {
+      final result = await platform.invokeMethod('loadARView');
+      print('AR View loaded: $result');
+    } on PlatformException catch (e) {
+      print("Failed to load AR View: '${e.message}'.");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadARView();
     keyIndex.addListener(() {
       setState(() {});
     });
