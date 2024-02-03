@@ -322,25 +322,13 @@ class TalkApp extends StatefulWidget {
   const TalkApp({super.key});
 
   @override
-  _TalkAppState createState() => _TalkAppState();
+  TalkAppState createState() => TalkAppState();
 }
 
-class _TalkAppState extends State<TalkApp> {
-  static const platform = MethodChannel('com.glowbom/ar');
-
-  Future<void> _loadARView() async {
-    try {
-      final result = await platform.invokeMethod('loadARView');
-      print('AR View loaded: $result');
-    } on PlatformException catch (e) {
-      print("Failed to load AR View: '${e.message}'.");
-    }
-  }
-
+class TalkAppState extends State<TalkApp> {
   @override
   void initState() {
     super.initState();
-    _loadARView();
     keyIndex.addListener(() {
       setState(() {});
     });
