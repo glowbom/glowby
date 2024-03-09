@@ -30,8 +30,8 @@ class PulzeAiApi {
   }
 ]
 ''';
-  static String _model = 'pulze-v0';
-  static String _lastUsedModel = 'pulze-v0';
+  static String _model = 'pulze';
+  static String _lastUsedModel = 'pulze';
   static String _systemMessage = '';
   static bool _sendMessages = false;
   static const String _apiKeyKey = 'pulze_ai_api_key';
@@ -105,6 +105,38 @@ class PulzeAiApi {
 
   static Future<String?> generate(String text) async {
     return await _generate(_model, text, _template);
+  }
+
+  static Future<List<dynamic>> getActiveModels() async {
+    final apiKey = PulzeAiApi.oat();
+    const queryUrl = 'https://api.pulze.ai/v1/models/active';
+    final headers = {
+      'Authorization': 'Bearer $apiKey',
+    };
+
+    try {
+      if (kDebugMode) {
+        print('Request URL: $queryUrl');
+      }
+
+      var response = await http.get(Uri.parse(queryUrl), headers: headers);
+
+      if (kDebugMode) {
+        print('Response Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+      }
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load active models');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('An exception occurred: $e');
+      }
+      return [];
+    }
   }
 
   static Future<String?> _generate(

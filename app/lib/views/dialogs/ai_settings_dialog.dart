@@ -107,6 +107,48 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
     );
   }
 
+  Future<List<String>> _getActiveModels() async {
+    List<dynamic> models = await PulzeAiApi.getActiveModels();
+    List<String> namespaces =
+        models.map((e) => e['namespace'] as String).toList();
+
+    // Remove 'pulze' if it exists in the list
+    namespaces.remove('pulze');
+    // Insert 'pulze' at the beginning of the list
+    namespaces.insert(0, 'pulze');
+
+    return namespaces;
+  }
+
+  Widget _buildModelIdDropdown() {
+    return FutureBuilder<List<String>>(
+      future: _getActiveModels(),
+      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          return DropdownButton<String>(
+            value: PulzeAiApi.model(),
+            items: snapshot.data!.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _pulzeModelIdController.text = newValue!;
+                PulzeAiApi.setModel(newValue);
+              });
+            },
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -123,7 +165,7 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                     const SizedBox(height: 10),
                     const Text('Model ID:'),
                     const SizedBox(height: 6),
-                    InkWell(
+                    /*InkWell(
                       child: const Text(
                         '→ Browse available models',
                         style: TextStyle(color: Colors.blue),
@@ -140,7 +182,8 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                       onChanged: (value) {
                         // Update your modelId variable here
                       },
-                    ),
+                    ),*/
+                    _buildModelIdDropdown(),
                   ],
                 ),
               const SizedBox(height: 10),
