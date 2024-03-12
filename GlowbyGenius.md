@@ -23,6 +23,8 @@ To run SwiftUI, Kotlin, or Flutter projects you need to setup local IDE (Xcode, 
 
 [**App Store**](https://apps.apple.com/us/app/glowby-genius/id6446417094)
 
+[**Product Hunt**](https://www.producthunt.com/products/glowbom)
+
 ## Additional demos:
 
 
