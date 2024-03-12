@@ -4,6 +4,8 @@ AI software engineer for Vision Pro that works without internet. It's available 
 
 ## Quick demos
 
+[**Builing a Functional SwiftUI App**](https://twitter.com/jacobilin/status/1767407593318953159)
+
 [**Full Workflow on Vision Pro**](https://twitter.com/GlowbomCorp/status/1765458935535042906)
 
 [**Offline Mode Demo**](https://twitter.com/jacobilin/status/1766504961339175371)
