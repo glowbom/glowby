@@ -8,7 +8,7 @@ AI software engineer for Vision Pro that works without internet. It's available 
 
 [**Offline Mode Demo**](https://twitter.com/jacobilin/status/1766504961339175371)
 
-## How it work...
+## How it works...
 
 Glowby Genius is a draw-to-code software creation tool. If you want to quickly and easily develop an app, just attach your designs, simply draw whatever you want to build, and export your code to JavaScript and Tailwind CSS, SwiftUI, Kotlin, or Flutter.
 
