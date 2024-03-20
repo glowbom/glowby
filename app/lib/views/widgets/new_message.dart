@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:glowby/views/screens/global_settings.dart';
 import 'package:glowby/views/widgets/paint_window.dart';
 import 'package:glowby/utils/utils.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'message.dart';
 import '../../services/openai_api.dart';
@@ -294,13 +295,20 @@ class NewMessageState extends State<NewMessage> {
   }
 
   /* method for opening a paint window */
-  void _openPaintWindow() {
-    showDialog(
+  void _openPaintWindow() async {
+    const url = 'https://glowbom.com/draw/';
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+
+    /*showDialog(
       context: context,
       builder: (BuildContext context) {
         return const PaintWindow();
       },
-    );
+    );*/
   }
 
   @override
