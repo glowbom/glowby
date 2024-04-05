@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:glowby/services/network.dart';
 import 'package:glowby/views/screens/global_settings.dart';
@@ -121,33 +122,50 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
   }
 
   Widget _buildModelIdDropdown() {
-    return FutureBuilder<List<String>>(
-      future: _getActiveModels(),
-      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          return DropdownButton<String>(
-            value: PulzeAiApi.model(),
-            items: snapshot.data!.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _pulzeModelIdController.text = newValue!;
-                PulzeAiApi.setModel(newValue);
-              });
-            },
-          );
+  return FutureBuilder<List<String>>(
+    future: _getActiveModels(),
+    builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const CircularProgressIndicator();
+      } else if (snapshot.hasError) {
+        // Log the error or use a debugger to inspect the error
+        if (kDebugMode) {
+          print('Error fetching models: ${snapshot.error}');
         }
-      },
-    );
-  }
+        
+        return Text('Error: ${snapshot.error}');
+      } else if (snapshot.hasData) {
+        // Check if the current model is in the list of active models
+        String? currentModel = PulzeAiApi.model();
+        var models = snapshot.data!;
+        if (!models.contains(currentModel)) {
+          // Handle the case where the current model is not in the list
+          currentModel = models.isNotEmpty ? models.first : null;
+        }
+        return DropdownButton<String>(
+          value: currentModel,
+          items: models.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _pulzeModelIdController.text = newValue ?? '';
+              if (newValue != null) {
+                PulzeAiApi.setModel(newValue);
+              }
+            });
+          },
+        );
+      } else {
+        // Handle the case where there is no data
+        return const Text('No models available');
+      }
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
