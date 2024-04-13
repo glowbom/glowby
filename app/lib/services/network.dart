@@ -71,7 +71,8 @@ class Network {
     if (PulzeAiApi.oat() != '') {
       //print(previousMessages);
       String formattedPrevMessages = formatPrevMessages(previousMessages);
-      if (previousMessages.isNotEmpty && PulzeAiApi.sendMessages()) {
+
+      if (previousMessages.isNotEmpty/* && PulzeAiApi.sendMessages()*/) {
         finalResponse = await PulzeAiApi.generate(
             '$message previousMessages: $formattedPrevMessages');
       } else {
