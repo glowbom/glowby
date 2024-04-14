@@ -545,14 +545,14 @@ class ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     // Add the Social Links button
-                    if (widget._dnsgs! == false)
+                    /*if (widget._dnsgs! == false)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: IconButton(
                           icon: const Icon(Icons.share),
                           onPressed: _showSocialLinksDialog,
                         ),
-                      ),
+                      ),*/
                     if (widget._allowEnterKey != null && widget._allowEnterKey!)
                       ElevatedButton(
                         onPressed: _showApiKeyDialog,
@@ -562,7 +562,7 @@ class ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     // Add the AI Settings button conditionally
-                    if (OpenAiApi.oat().isNotEmpty)
+                    /*if (OpenAiApi.oat().isNotEmpty)
                       if (widget._showAiSettings != null &&
                           widget._showAiSettings!)
                         Padding(
@@ -609,7 +609,7 @@ class ChatScreenState extends State<ChatScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
-                    ),
+                    ),*/
                   ],
                 ),
               ),
