@@ -311,7 +311,6 @@ class ChatScreenState extends State<ChatScreen> {
         .toList()
         .reversed
         .toList();
-
     _currentOperation = OpenAiApi.getResponseFromOpenAI(
       message,
       previousMessages: formattedPreviousMessages,

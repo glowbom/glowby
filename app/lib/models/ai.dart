@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:glowby/services/hugging_face_api.dart';
+import 'package:glowby/services/mution_api.dart';
 import 'package:glowby/services/pulze_ai_api.dart';
 
 import '../services/openai_api.dart';
@@ -37,8 +38,20 @@ class Ai {
       return _generateResponseMessage(foundQuestions);
     }
 
-    // Call the OpenAI API if no matching questions are found locally
-    if (aiEnabled && OpenAiApi.oat().isNotEmpty) {
+    if (aiEnabled && MultiOnApi.oat().isNotEmpty) {
+      networkOperation = MultiOnApi.getResponseFromMultiOn(message,
+          previousMessages: previousMessages);
+      String response = await networkOperation!.value;
+      return [
+        Message(
+          text: response,
+          createdAt: Timestamp.now(),
+          userId: defaultUserId,
+          username: _name == '' ? 'AI' : _name,
+        ),
+      ];
+    } else if (aiEnabled && OpenAiApi.oat().isNotEmpty) {
+      // Call the OpenAI API if no matching questions are found locally
       networkOperation = OpenAiApi.getResponseFromOpenAI(message,
           previousMessages: previousMessages);
       String response = await networkOperation!.value;
