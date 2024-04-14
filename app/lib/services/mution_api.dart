@@ -59,6 +59,8 @@ class MultiOnApi {
     return completer.operation;
   }
 
+  static String _lastSessionId = '';
+
   static Future<void> _getResponse(
       String message, CancelableCompleter<String> completer,
       {List<Map<String, String?>> previousMessages = const [],
@@ -88,9 +90,14 @@ class MultiOnApi {
       'X_MULTION_API_KEY': apiKey,
     };
 
-    final data = {
-      'cmd': inputMessage,
-    };
+    final data = _lastSessionId.isEmpty
+        ? {
+            'cmd': inputMessage,
+          }
+        : {
+            'cmd': inputMessage,
+            'session_id': _lastSessionId,
+          };
 
     try {
       final response = await http.post(
@@ -108,6 +115,8 @@ class MultiOnApi {
         String receivedResponse = responseBody['result'].toString().trim();
         String sessionId = responseBody['session_id'].toString().trim();
         String screenshot = responseBody['screenshot'].toString().trim();
+
+        _lastSessionId = sessionId;
 
         if (kDebugMode) {
           print('sessionId: $sessionId');
