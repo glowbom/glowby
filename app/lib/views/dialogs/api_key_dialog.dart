@@ -34,6 +34,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
     MultiOnApi.loadOat().then((_) {
       setState(() {
         _apiKeyMultiOn = MultiOnApi.oat();
+        _apiKeyMultiOnController.text = _apiKeyMultiOn;
         _apiKey = OpenAiApi.oat();
         _apiKeyController.text = _apiKey;
         _huggingFaceToken = HuggingFaceApi.oat();
