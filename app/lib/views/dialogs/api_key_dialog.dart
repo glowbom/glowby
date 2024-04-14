@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glowby/services/mution_api.dart';
 import 'package:glowby/services/openai_api.dart';
 import 'package:glowby/utils/utils.dart';
 
@@ -18,9 +19,11 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   static const pulzeAIKeyPattern = r'^sk-[A-Za-z0-9-_]+$';
 
   final _apiKeyController = TextEditingController();
+  final _apiKeyMultiOnController = TextEditingController();
   final _huggingFaceTokenController = TextEditingController();
   final _pulzeAiController = TextEditingController();
   String _apiKey = '';
+  String _apiKeyMultiOn = '';
   String _huggingFaceToken = '';
   String _pulzeAiToken = '';
 
@@ -28,8 +31,9 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   void initState() {
     super.initState();
 
-    OpenAiApi.loadOat().then((_) {
+    MultiOnApi.loadOat().then((_) {
       setState(() {
+        _apiKeyMultiOn = MultiOnApi.oat();
         _apiKey = OpenAiApi.oat();
         _apiKeyController.text = _apiKey;
         _huggingFaceToken = HuggingFaceApi.oat();
@@ -58,6 +62,8 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
       errorMessage = 'Hugging Face Token is invalid!';
     } else if (_pulzeAiToken.isNotEmpty && !isValidPuzzleAIKey(_pulzeAiToken)) {
       errorMessage = 'Pulze API Key is invalid!';
+    } else if (_apiKeyMultiOn.isEmpty) {
+      errorMessage = 'Enter MultiOn API Key';
     }
 
     if (errorMessage != null) {
@@ -69,6 +75,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
     } else {
       // If all keys are valid, set them and show a success message.
       OpenAiApi.setOat(_apiKey);
+      MultiOnApi.setOat(_apiKeyMultiOn);
       HuggingFaceApi.setOat(_huggingFaceToken);
       PulzeAiApi.setOat(_pulzeAiToken);
       Navigator.pop(context); // Hide the dialog
@@ -81,17 +88,56 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
   bool _obscureApiKey = true;
   bool _obscureApiKeyPulze = true;
   bool _obscureApiKeyHuggingFace = true;
+  bool _obscureApiKeyMultiOn = true;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Enter OpenAI API Key'),
+      title: const Text('Enter MultiOn API Key'),
+      //title: const Text('Enter OpenAI API Key'),
       content: SizedBox(
         width: 340, // Set the max width of the AlertDialog
         child: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
               const Text('Get your API key:'),
+              InkWell(
+                child: const Text(
+                  '→ MultiOn Dashboard',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                onTap: () => Utils.launchURL('https://app.multion.ai/api-keys'),
+              ),
+              const SizedBox(height: 10),
+              const Text('API Key is stored locally and not shared.'),
+              TextField(
+                controller: _apiKeyMultiOnController,
+                obscureText: _obscureApiKeyMultiOn,
+                decoration: InputDecoration(
+                  labelText: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      // Change the icon based on whether the text is obscured
+                      _obscureApiKeyMultiOn
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      // Update the state to toggle the obscure text value
+                      setState(() {
+                        _obscureApiKeyMultiOn = !_obscureApiKeyMultiOn;
+                      });
+                    },
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _apiKeyMultiOn = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              /*const Text('Get your API key:'),
               InkWell(
                 child: const Text(
                   '→ OpenAI Dashboard',
@@ -262,6 +308,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
                   ),
                 ],
               ),
+              */
             ],
           ),
         ),
@@ -273,6 +320,8 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
             setState(() {
               _apiKeyController.clear();
               _apiKey = '';
+              _apiKeyMultiOnController.clear();
+              _apiKeyMultiOn = '';
               _huggingFaceTokenController.clear();
               _huggingFaceToken = '';
               _pulzeAiController.clear();
