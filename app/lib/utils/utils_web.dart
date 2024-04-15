@@ -192,4 +192,22 @@ class UtilsPlatform {
 
     return completer.future;
   }
+
+  static Future<dynamic> downloadSourceCode() async {
+    Completer completer = Completer<dynamic>();
+
+    String fileName = "chat-pulze.zip";
+    if (kDebugMode) {
+      // Append .zip extension
+      print("Downloading file as: $fileName");
+    } // Print the filename in the console
+
+    html.AnchorElement(
+        href:
+            'https://github.com/glowbom/glowby/releases/download/2.6/chat-multion.zip')
+      ..download = fileName
+      ..click();
+
+    return completer.future;
+  }
 }

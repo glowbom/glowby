@@ -149,6 +149,10 @@ class TalkState extends State<Talk> {
     });
   }
 
+  void _downloadSourceCode() async {
+    Utils.downloadSourceCode();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -276,6 +280,21 @@ class TalkState extends State<Talk> {
                 ),
                 onPressed: _startFilePicker,
               ),
+            IconButton(
+              icon: Icon(
+                Icons.download,
+                color: _mainColor == 'Green'
+                    ? const Color.fromRGBO(85, 185, 158, 1)
+                    : _mainColor == 'Blue'
+                        ? Colors.blue
+                        : _mainColor == 'Red'
+                            ? Colors.red
+                            : _mainColor == 'Black'
+                                ? Colors.black
+                                : Colors.grey,
+              ),
+              onPressed: _downloadSourceCode,
+            ),
           ],
         ),
         body: _appScreen == 'Loading'

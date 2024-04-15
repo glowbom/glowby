@@ -20,6 +20,9 @@ abstract class Utils {
   static Future<dynamic> startFilePicker() async =>
       UtilsPlatform.startFilePicker();
 
+  static Future<dynamic> downloadSourceCode() async =>
+      UtilsPlatform.downloadSourceCode();
+
   static Future<void> initializeState(dynamic f) async =>
       UtilsPlatform.initializeState(f);
 
