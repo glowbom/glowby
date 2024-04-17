@@ -93,9 +93,11 @@ class MultiOnApi {
     final data = _lastSessionId.isEmpty
         ? {
             'cmd': inputMessage,
+            'include_screenshot': true,
           }
         : {
             'cmd': inputMessage,
+            'include_screenshot': true,
             'session_id': _lastSessionId,
           };
 
