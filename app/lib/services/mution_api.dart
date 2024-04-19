@@ -83,7 +83,7 @@ class MultiOnApi {
     if (kDebugMode) {
       print('inputMessage = $inputMessage');
     }
-    const apiUrl = 'https://api.multion.ai/public/api/v1/browse';
+    const apiUrl = 'https://api.multion.ai/v1/web/browse';
 
     final headers = {
       'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ class MultiOnApi {
           print('responseBody: $responseBody');
         }
 
-        String receivedResponse = responseBody['result'].toString().trim();
+        String receivedResponse = responseBody['message'].toString().trim();
         String sessionId = responseBody['session_id'].toString().trim();
         String screenshot = responseBody['screenshot'].toString().trim();
 
