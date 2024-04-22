@@ -280,12 +280,75 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Aligns the message bubble to the right (sender) or left (receiver) side of the screen
-    return Row(
-      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: <Widget>[
-        _buildMessageBubbleContainer(context),
-      ],
+    // Wrap the existing Row with GestureDetector to handle taps
+    return GestureDetector(
+      onTap: () {
+        if (link != null && _isImageLink(link!)) {
+          _showFullScreenImage(context, message, link!);
+        }
+      },
+      child: Row(
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: <Widget>[
+          _buildMessageBubbleContainer(context),
+        ],
+      ),
+    );
+  }
+
+  bool _isImageLink(String link) {
+    return link.endsWith('png') ||
+        link.endsWith('jpg') ||
+        link.endsWith('jpeg') ||
+        link.endsWith('gif');
+  }
+
+  void _showFullScreenImage(
+      BuildContext context, String message, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    child: Image.network(imageUrl,
+                        errorBuilder: (context, error, stackTrace) {
+                      if (kDebugMode) {
+                        print('${link!} failed to load: $error');
+                      }
+
+                      return Image.network(
+                          'https://glowbom.github.io/glowby-basic/images/image-not-found.jpg');
+                    }, fit: BoxFit.contain),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.black.withOpacity(0.5),
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
