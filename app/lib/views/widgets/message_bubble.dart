@@ -1,3 +1,6 @@
+import 'dart:html';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -151,6 +154,30 @@ class MessageBubble extends StatelessWidget {
       } else {
         return _buildMessageText(context);
       }
+    } else if (link != null &&
+        (link!.endsWith('png') ||
+            link!.endsWith('jpg') ||
+            link!.endsWith('jpeg') ||
+            link!.endsWith('gif'))) {
+      return // column with text and image
+          Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          _buildMessageText(context),
+          Image.network(
+            link!,
+            errorBuilder: (context, error, stackTrace) {
+              if (kDebugMode) {
+                print('${link!} failed to load: $error');
+              }
+
+              return Image.network(
+                  'https://github.com/glowbom/glowby/assets/2455891/2aac86bf-3f76-4921-8523-1f01a5742950');
+            },
+          )
+        ],
+      );
     } else if (message == 'image') {
       return Image.network(
         link!,

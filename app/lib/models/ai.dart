@@ -42,14 +42,25 @@ class Ai {
       networkOperation = MultiOnApi.getResponseFromMultiOn(message,
           previousMessages: previousMessages);
       String response = await networkOperation!.value;
-      return [
-        Message(
-          text: response,
-          createdAt: Timestamp.now(),
-          userId: defaultUserId,
-          username: _name == '' ? 'AI' : _name,
-        ),
-      ];
+      return response.contains('[SCREENSHOT]')
+          ? [
+              // break response into multiple messages [SCREENSHOT] is a delimiter - after it has a link to the screenshot
+              Message(
+                text: response.split('[SCREENSHOT]')[0],
+                link: response.split('[SCREENSHOT]')[1],
+                createdAt: Timestamp.now(),
+                userId: defaultUserId,
+                username: _name == '' ? 'AI' : _name,
+              ),
+            ]
+          : [
+              Message(
+                text: response,
+                createdAt: Timestamp.now(),
+                userId: defaultUserId,
+                username: _name == '' ? 'AI' : _name,
+              ),
+            ];
     } else if (aiEnabled && OpenAiApi.oat().isNotEmpty) {
       // Call the OpenAI API if no matching questions are found locally
       networkOperation = OpenAiApi.getResponseFromOpenAI(message,

@@ -127,6 +127,8 @@ class MultiOnApi {
 
         finalResponse += receivedResponse;
 
+        finalResponse += '[SCREENSHOT]$screenshot';
+
         /*String apiUrlSceenshot =
             'https://api.multion.ai/v1/web/screenshot/$sessionId';
 
