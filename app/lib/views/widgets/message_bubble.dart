@@ -173,7 +173,7 @@ class MessageBubble extends StatelessWidget {
               }
 
               return Image.network(
-                  'https://github.com/glowbom/glowby/assets/2455891/2aac86bf-3f76-4921-8523-1f01a5742950');
+                  'https://github-production-user-asset-6210df.s3.amazonaws.com/2455891/324610197-f1d53e7a-4296-4fbd-a62e-aed8d126510e.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240422%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240422T205859Z&X-Amz-Expires=300&X-Amz-Signature=69a79ab14b012a8ce8b8d78df2efb4f2a910090987a12664c2739b4365527dd9&X-Amz-SignedHeaders=host&actor_id=2455891&key_id=0&repo_id=625003372');
             },
           )
         ],
