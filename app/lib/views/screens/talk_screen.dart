@@ -157,7 +157,7 @@ class TalkState extends State<Talk> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Chat',
+      title: 'Glowby + MultiOn',
       theme: ThemeData(
         primaryColor: _mainColor == 'Green'
             ? const Color.fromRGBO(85, 185, 158, 1)
