@@ -69,15 +69,6 @@ class MultiOnApi {
     String finalResponse = '';
     String inputMessage = message;
 
-    // Check if the message is safe
-    /*bool messageIsSafe = await isInputSafe(inputMessage);
-    if (!messageIsSafe) {
-      finalResponse =
-          'Sorry, the input provided is not considered safe. Please provide a different input.';
-      completer.complete(finalResponse);
-      return;
-    }*/
-
     final apiKey = oat();
 
     if (kDebugMode) {
@@ -136,37 +127,6 @@ class MultiOnApi {
           // add delay if there's a screenshot
           await Future.delayed(const Duration(seconds: 1));
         }
-
-        /*String apiUrlSceenshot =
-            'https://api.multion.ai/v1/web/screenshot/$sessionId';
-
-        final headersScreenshot = {
-          'X_MULTION_API_KEY': apiKey,
-        };
-
-        if (kDebugMode) {
-          print('apiUrlSceenshot: $apiUrlSceenshot');
-        }
-
-        final responseScreenshot = await http.get(
-          Uri.parse(apiUrlSceenshot),
-          headers: headersScreenshot,
-        );
-
-        if (responseScreenshot.statusCode == 200) {
-          final responseBodyScreenshot =
-              jsonDecode(utf8.decode(responseScreenshot.bodyBytes));
-          if (kDebugMode) {
-            print('responseBodyScreenshot: $responseBodyScreenshot');
-          }
-
-          String screenshot =
-              responseBodyScreenshot['screenshot'].toString().trim();
-
-          finalResponse += '\n\n$screenshot';
-        } else {
-          throw Exception('Failed to get screenshot from MultiOn API.');
-        }*/
       } else {
         throw Exception('Failed to get response from MultiOn API.');
       }
