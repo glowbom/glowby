@@ -116,7 +116,11 @@ class MultiOnApi {
 
         String receivedResponse = responseBody['message'].toString().trim();
         String sessionId = responseBody['session_id'].toString().trim();
-        String screenshot = responseBody['screenshot'].toString().trim();
+        String screenshot = '';
+
+        if (responseBody.containsKey('screenshot')) {
+          screenshot = responseBody['screenshot'].toString().trim();
+        }
 
         _lastSessionId = sessionId;
 
@@ -127,7 +131,11 @@ class MultiOnApi {
 
         finalResponse += receivedResponse;
 
-        finalResponse += '[SCREENSHOT]$screenshot';
+        if (screenshot.isNotEmpty) {
+          finalResponse += '[SCREENSHOT]$screenshot';
+          // add delay if there's a screenshot
+          await Future.delayed(const Duration(seconds: 1));
+        }
 
         /*String apiUrlSceenshot =
             'https://api.multion.ai/v1/web/screenshot/$sessionId';
