@@ -46,8 +46,8 @@ class Ai {
           ? 'Powered by GPT-4'
           : OpenAiApi.model == 'gpt-3.5-turbo'
               ? 'Powered by GPT-3.5'
-              : OpenAiApi.model == 'gpt-4-1106-preview'
-                  ? 'Powered by GPT-4 Turbo'
+              : OpenAiApi.model == 'gpt-4o'
+                  ? 'Powered by GPT-4o'
                   : OpenAiApi.model == 'huggingface'
                       ? HuggingFaceApi.model()
                       : OpenAiApi.model == 'pulzeai'

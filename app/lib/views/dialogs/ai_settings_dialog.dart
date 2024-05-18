@@ -86,8 +86,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
     super.initState();
     GlobalSettings().selectedModel = OpenAiApi.model;
     _systemPromptController.text = GlobalSettings().systemPrompt;
-    //_isGPT4Selected =
-    //    _selectedModel == 'gpt-4' || _selectedModel == 'gpt-4-1106-preview';
     _isHuggingFaceSelected = GlobalSettings().selectedModel == 'huggingface';
     _isPulzeSelected = GlobalSettings().selectedModel == 'pulzeai';
     _modelIdController.text = HuggingFaceApi.model();
@@ -157,8 +155,8 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                     child: Text('GPT-4 (Advanced)'),
                   ),
                   const DropdownMenuItem<String>(
-                    value: 'gpt-4-1106-preview',
-                    child: Text('GPT-4 Turbo (Preview)'),
+                    value: 'gpt-4o',
+                    child: Text('GPT-4o'),
                   ),
                   if (HuggingFaceApi.oat() != '')
                     const DropdownMenuItem<String>(
@@ -179,8 +177,6 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                 onChanged: (value) {
                   setState(() {
                     GlobalSettings().selectedModel = value!;
-                    //_isGPT4Selected =
-                    //    value == 'gpt-4' || value == 'gpt-4-1106-preview';
                     _isHuggingFaceSelected = value == 'huggingface';
                     _isPulzeSelected = value == 'pulzeai';
                   });
