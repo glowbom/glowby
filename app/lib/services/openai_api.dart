@@ -33,7 +33,7 @@ class OpenAiApi {
 
   static String defaultSystemPromptComplexTask =
       'You are Glowby, an AI assistant designed to break down complex tasks into a manageable 5-step plan. For each step, you offer the user 3 options to choose from. Once the user selects an option, you proceed to the next step based on their choice. After the user has chosen an option for the fifth step, you provide them with a customized, actionable plan based on their previous responses. You only reveal the current step and options to ensure an engaging, interactive experience.';
-  static String model = 'gpt-3.5-turbo'; //'gpt-4';
+  static String model = 'gpt-4o'; //'gpt-4';
   static String selectedLanguage = 'en-US';
   static String systemPrompt = defaultSystemPrompt;
   static const String _apiKeyKey = 'openai_api_key';
@@ -45,7 +45,7 @@ class OpenAiApi {
   static Future<void> loadOat() async {
     try {
       setOat(await _secureStorage.read(key: _apiKeyKey) ?? '');
-      model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-3.5-turbo';
+      model = (await _secureStorage.read(key: _modelKey)) ?? 'gpt-4o';
       selectedLanguage =
           (await _secureStorage.read(key: _selectedLanguageKey)) ?? 'en-US';
       systemPrompt = (await _secureStorage.read(key: _systemPromptKey)) ??
@@ -211,6 +211,11 @@ class OpenAiApi {
   }) {
     // Create a cancelable completer
     final completer = CancelableCompleter<String>();
+
+    // if previousMessages is not empty, remove the first one as it consist on the current message
+    if (previousMessages.isNotEmpty) {
+      previousMessages.removeAt(0);
+    }
 
     if (OpenAiApi.model == 'pulzeai') {
       _getResponseFromPulzeAI(

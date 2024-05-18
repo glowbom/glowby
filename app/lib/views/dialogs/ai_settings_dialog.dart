@@ -132,7 +132,7 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
         _isHuggingFaceSelected = false;
         _isPulzeSelected = false;
         //_isGPT4Selected = false;
-        GlobalSettings().selectedModel = 'gpt-3.5-turbo';
+        GlobalSettings().selectedModel = 'gpt-4o';
       });
     }
     return AlertDialog(
@@ -147,16 +147,16 @@ class AiSettingsDialogState extends State<AiSettingsDialog> {
                 value: GlobalSettings().selectedModel,
                 items: [
                   const DropdownMenuItem<String>(
-                    value: 'gpt-3.5-turbo',
-                    child: Text('GPT-3.5 (Recommended)'),
+                    value: 'gpt-4o',
+                    child: Text('GPT-4o (Recommended)'),
                   ),
                   const DropdownMenuItem<String>(
                     value: 'gpt-4',
-                    child: Text('GPT-4 (Advanced)'),
+                    child: Text('GPT-4'),
                   ),
                   const DropdownMenuItem<String>(
-                    value: 'gpt-4o',
-                    child: Text('GPT-4o'),
+                    value: 'gpt-3.5-turbo',
+                    child: Text('GPT-3.5'),
                   ),
                   if (HuggingFaceApi.oat() != '')
                     const DropdownMenuItem<String>(
