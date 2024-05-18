@@ -412,8 +412,8 @@ class ChatScreenState extends State<ChatScreen> {
   List<Widget> _buildLinkItems(BuildContext context) {
     final links = [
       {
-        'title': 'TestFlight',
-        'url': 'https://testflight.apple.com/join/kriNj2gR'
+        'title': 'App Store',
+        'url': 'https://apps.apple.com/us/app/glowby-genius/id6446417094'
       },
       {'title': 'Glowby GPT', 'url': 'https://glowbom.com/glowby/gpt'},
       {
@@ -580,7 +580,7 @@ class ChatScreenState extends State<ChatScreen> {
                       child: ElevatedButton(
                         onPressed: () async {
                           String url =
-                              'https://testflight.apple.com/join/kriNj2gR';
+                              'https://apps.apple.com/us/app/glowby-genius/id6446417094';
                           if (await canLaunchUrlString(url)) {
                             await launchUrlString(url);
                           } else {
@@ -588,7 +588,7 @@ class ChatScreenState extends State<ChatScreen> {
                           }
                         },
                         child: const Text(
-                          'TestFlight',
+                          'App Store',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
