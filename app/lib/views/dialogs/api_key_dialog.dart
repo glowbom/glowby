@@ -135,17 +135,7 @@ class ApiKeyDialogState extends State<ApiKeyDialog> {
                 onTap: () => Utils.launchURL(
                     'https://platform.openai.com/account/billing/overview'),
               ),
-              const Text('Ensure billing info is added in OpenAI Billing.'),
-              const SizedBox(height: 10),
-              InkWell(
-                child: const Text(
-                  'The Price is about 100,000 words per \$1',
-                  style: TextStyle(color: Colors.blue),
-                ),
-                onTap: () => Utils.launchURL(
-                    'https://openai.com/pricing#language-models'),
-              ),
-              const Text('ChatGPT Plus subscription not required.'),
+              const Text('Make sure you have enough OpenAI credits.'),
               const SizedBox(height: 10),
               const Divider(),
               ExpansionTile(
