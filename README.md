@@ -31,7 +31,7 @@ This project offers an easy way for creating customizable AI assistants like [Gl
 ## Features
 
 - **New!** Experimental Autonomous Mode (watch a [quick demo](https://twitter.com/jacobilin/status/1648870682972004352))
-- **New!** GPT-4 Turbo with Vision (watch a [quick demo](https://twitter.com/jacobilin/status/1739879716323274772))
+- **New!** GPT-4o (watch a [quick demo](https://x.com/jacobilin/status/1790258117567230012))
 - **New!** Image Generation powered by **DALL·E** (watch a [quick demo](https://twitter.com/jacobilin/status/1649910120988696576))
 - **New!** Multilingual Translations (watch a [quick demo](https://twitter.com/jacobilin/status/1651084311431622658))
 - **New!** Interactive Adventure (watch a [quick demo](https://twitter.com/jacobilin/status/1651449595447369729))
