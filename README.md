@@ -1,3 +1,8 @@
+## Why This Moved to Legacy
+
+This repo reflects an earlier version of Glowby. We are moving it into legacy/ as we focus the project on coding agents, which we believe are the most useful direction for AI in software creation. This code stays here for reference, but active development is moving to the new Glowby OSS agent stack.
+
+
 # Glowby Basic - Create Voice AI Assistant App in Minutes
 
 Glowby Basic is a powerful voice-based AI assistant that can help users with various tasks. Easily customizable, trainable, and deployable anywhere, Glowby Basic is designed to adapt to your specific needs. Built using Flutter, Glowby Basic provides a seamless web app experience with an intuitive voice interface.
