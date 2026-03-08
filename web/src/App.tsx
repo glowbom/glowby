@@ -33,11 +33,11 @@ const OPENCODE_DEFAULT_MODEL_VALUE = '__opencode_default__';
 const MAX_INSTRUCTION_ATTACHMENT_BYTES = 40 * 1024 * 1024;
 
 const RUN_STATUS_LABEL: Record<string, string> = {
-  idle: 'Idle',
-  running: 'Running',
-  completed: 'Completed',
-  failed: 'Failed',
-  cancelled: 'Cancelled',
+  idle: 'Ready',
+  running: 'Building',
+  completed: 'Done',
+  failed: 'Needs attention',
+  cancelled: 'Stopped',
 };
 
 const DEFAULT_PROVIDER_KEYS: ProviderKeyState = {
@@ -572,13 +572,11 @@ export default function App() {
 
       if (response.success && response.path) {
         setProjectPath(response.path);
-        setProjectEnvelope(null);
-        setIdeStatus(null);
-        setIdeStatusError(null);
-        setIdeOpenInfo(null);
-        setIdeOpenError(null);
-        setProjectError(null);
-        setFolderPickerInfo('Folder path selected locally. Click "Load Project".');
+        setIsPickingFolder(false);
+        const projectLoaded = await loadProject(response.path);
+        if (projectLoaded) {
+          setFolderPickerInfo('Project folder loaded locally.');
+        }
         return;
       }
 
@@ -657,7 +655,7 @@ export default function App() {
       });
 
       const addedCount = pickedFiles.length;
-      setInstructionPickerInfo(`Attached ${addedCount} local file${addedCount === 1 ? '' : 's'} for this refine run.`);
+      setInstructionPickerInfo(`Attached ${addedCount} local file${addedCount === 1 ? '' : 's'} for this build.`);
     } catch (error) {
       const message = toErrorMessage(error, 'unknown error').toLowerCase();
       if (message.includes('404') || message.includes('not found')) {
@@ -674,14 +672,15 @@ export default function App() {
     }
   };
 
-  const loadProject = async () => {
-    const trimmedPath = projectPath.trim();
+  const loadProject = async (pathOverride?: string) => {
+    const trimmedPath = (pathOverride ?? projectPath).trim();
     if (!trimmedPath) {
       setProjectError('Enter a local Glowbom project path first.');
-      return;
+      return false;
     }
 
     setProjectError(null);
+    setFolderPickerInfo(null);
     setProjectEnvelope(null);
     setIdeStatus(null);
     setIdeStatusError(null);
@@ -697,8 +696,10 @@ export default function App() {
       setProjectEnvelope(envelope);
       setProjectError(null);
       await refreshIDEStatus(trimmedPath);
+      return true;
     } catch (error) {
       setProjectError(toErrorMessage(error, 'Failed to load project.'));
+      return false;
     } finally {
       setIsLoadingProject(false);
     }
@@ -765,7 +766,7 @@ export default function App() {
         const oauthStatus = await openCodeApi.getOpenAIOAuthStatus(startResponse.state);
         if (oauthStatus.phase === 'succeeded') {
           setAuthStatus(oauthStatus.status);
-          setAuthConnectionInfo('ChatGPT account connected. You can run Auth mode now.');
+          setAuthConnectionInfo('ChatGPT account connected. You can build with your connected account now.');
           try {
             popupWindow.close();
           } catch {}
@@ -819,7 +820,7 @@ export default function App() {
     setFormError(null);
 
     if (!activeProject) {
-      setFormError('Load a Glowbom project before starting refinement.');
+      setFormError('Open a Glowbom project before building.');
       return;
     }
 
@@ -846,7 +847,7 @@ export default function App() {
       const providerForValidation = customModelProvider || selectedProvider;
 
       if (!providerForValidation && !customModelTrimmed) {
-        setFormError('Select a model before starting refinement.');
+        setFormError('Select an AI model before building.');
         return;
       }
 
@@ -856,7 +857,7 @@ export default function App() {
           return;
         }
         if (!isChatGPTConnected) {
-          setFormError('Connect ChatGPT first to run in Auth mode.');
+          setFormError('Connect ChatGPT first to build with your connected account.');
           return;
         }
       }
@@ -867,7 +868,7 @@ export default function App() {
           const requiredValue = providerKeys[providerDef.keyField].trim();
           if (!requiredValue) {
             if (providerDef.id === 'openai') {
-              setFormError('OpenAI model selected. Add your OpenAI API key before running refine.');
+              setFormError('OpenAI model selected. Add your OpenAI API key before building.');
             } else {
               setFormError(`${providerDef.label} model selected. Add ${providerDef.keyLabel || 'the provider API key'}.`);
             }
@@ -1122,17 +1123,24 @@ export default function App() {
               setIdeOpenInfo(null);
               setIdeOpenError(null);
             }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !isLoadingProject && !refine.isRunning) {
+                event.preventDefault();
+                void loadProject(event.currentTarget.value);
+              }
+            }}
             placeholder="/absolute/path/to/project"
             value={projectPath}
           />
-          <button className="button secondary" disabled={refine.isRunning || isPickingFolder} onClick={() => void openFolderPicker()}>
-            {isPickingFolder ? 'Choosing...' : 'Choose Folder'}
-          </button>
-          <button className="button" disabled={isLoadingProject || refine.isRunning} onClick={() => void loadProject()}>
-            {isLoadingProject ? 'Loading...' : 'Load Project'}
+          <button
+            className="button secondary"
+            disabled={refine.isRunning || isPickingFolder || isLoadingProject}
+            onClick={() => void openFolderPicker()}
+          >
+            {isPickingFolder ? 'Choosing...' : isLoadingProject ? 'Opening...' : 'Choose Project Folder...'}
           </button>
         </div>
-        <p className="meta">Choose Folder opens a native local picker and sets the path field. No uploads.</p>
+        <p className="meta">Choose Project Folder... opens and loads a local project. Or paste a path and press Enter. No uploads.</p>
 
         {folderPickerInfo ? <p className="meta ok">{folderPickerInfo}</p> : null}
         {folderPickerWarning ? <p className="meta warn">{folderPickerWarning}</p> : null}
@@ -1222,12 +1230,12 @@ export default function App() {
       </section>
 
       <section className="card">
-        <h2>2. Refine Config</h2>
+        <h2>2. Build Setup</h2>
 
         <div className="field-grid">
           <div>
             <label className="field-label" htmlFor="credentialMode">
-              Connection mode
+              AI access
             </label>
             <select
               className="input"
@@ -1236,16 +1244,16 @@ export default function App() {
               onChange={(event) => setCredentialMode(event.target.value as CredentialMode)}
               value={credentialMode}
             >
-              <option value="auth">Auth Providers</option>
-              <option value="api-key">API Keys (provider keys)</option>
-              <option value="opencode-config">Use OpenCode Config</option>
+              <option value="auth">Use connected account</option>
+              <option value="api-key">Use API keys</option>
+              <option value="opencode-config">Use OpenCode setup</option>
             </select>
           </div>
 
           {isAuthMode ? (
             <div>
               <label className="field-label" htmlFor="authProvider">
-                Auth provider
+                Connected account
               </label>
               <select
                 className="input"
@@ -1303,7 +1311,7 @@ export default function App() {
               </div>
             </div>
             <ol>
-              <li>Select <strong>Auth Providers</strong> mode.</li>
+              <li>Select <strong>Use connected account</strong>.</li>
               <li>Choose <strong>ChatGPT</strong> provider.</li>
               <li>Click <strong>Connect</strong> to use your local ChatGPT/Codex login.</li>
             </ol>
@@ -1321,15 +1329,15 @@ export default function App() {
 
         {isOpenCodeConfigMode ? (
           <div className="chatgpt-callout">
-            <h3>Use whatever OpenCode already has</h3>
-            <p>No key input required here. Glowby OSS will use current OpenCode configuration and available providers/models.</p>
+            <h3>Use your existing OpenCode setup</h3>
+            <p>No key input required here. Glowby will use your current OpenCode configuration and available models.</p>
           </div>
         ) : null}
 
         <div className="field-grid">
           <div>
             <label className="field-label" htmlFor="modelPreset">
-              Agent model
+              AI model
             </label>
             {isOpenCodeConfigMode ? (
               <select
@@ -1339,7 +1347,7 @@ export default function App() {
                 onChange={(event) => setSelectedOpenCodeModel(event.target.value)}
                 value={selectedOpenCodeModel}
               >
-                <option value={OPENCODE_DEFAULT_MODEL_VALUE}>Use OpenCode default model (configured)</option>
+                <option value={OPENCODE_DEFAULT_MODEL_VALUE}>Use OpenCode default model</option>
                 {openCodeConfigProviders.map((provider) => (
                   <optgroup key={provider.id} label={provider.displayName || provider.id}>
                     {provider.models.map((model) => (
@@ -1385,7 +1393,7 @@ export default function App() {
           {!isOpenCodeConfigMode ? (
             <div>
               <label className="field-label" htmlFor="customModel">
-                Custom model override (optional)
+                Custom model (optional)
               </label>
               <input
                 className="input"
@@ -1402,7 +1410,7 @@ export default function App() {
 
         {isAuthMode ? (
           <p className="meta">
-            Token fields are hidden in Auth mode. Connect starts ChatGPT OAuth and links your local OpenCode runtime.
+            API key fields are hidden here. Connect links your local ChatGPT login to OpenCode.
           </p>
         ) : null}
 
@@ -1462,7 +1470,7 @@ export default function App() {
         ) : null}
 
         <label className="field-label" htmlFor="instructions">
-          Refine instructions
+          Build instructions
         </label>
         <textarea
           className="input"
@@ -1475,7 +1483,7 @@ export default function App() {
 
         <div className="instruction-attachments">
           <div className="card-title-row">
-            <strong>Instruction attachments</strong>
+            <strong>Reference files</strong>
             <div className="row">
               <button
                 className="button secondary tiny"
@@ -1485,7 +1493,7 @@ export default function App() {
                 }}
                 type="button"
               >
-                {isPickingInstructionFiles ? 'Choosing...' : 'Attach Files'}
+                {isPickingInstructionFiles ? 'Choosing...' : 'Add Files'}
               </button>
               <button
                 className="button secondary tiny"
@@ -1501,7 +1509,7 @@ export default function App() {
               </button>
             </div>
           </div>
-          <p className="meta">Local-only picker. No uploads. Max 40MB per file.</p>
+          <p className="meta">Add local files for extra context. No uploads. Max 40MB per file.</p>
 
           {instructionPickerInfo ? <p className="meta ok">{instructionPickerInfo}</p> : null}
           {instructionPickerWarning ? <p className="meta warn">{instructionPickerWarning}</p> : null}
@@ -1545,7 +1553,7 @@ export default function App() {
 
       <section className="card">
         <div className="card-title-row">
-          <h2>3. Run</h2>
+          <h2>3. Build</h2>
           <span className={`run-status status-${refine.status}`}>{RUN_STATUS_LABEL[refine.status]}</span>
         </div>
 
@@ -1555,7 +1563,7 @@ export default function App() {
             disabled={refine.isRunning || refine.isSubmittingInput || !activeProject}
             onClick={startRefine}
           >
-            Refine with Agent
+            Build Project
           </button>
           <button className="button danger" disabled={!refine.isRunning} onClick={refine.stopRun}>
             Stop
@@ -1568,7 +1576,7 @@ export default function App() {
               checked={refine.continueSession}
               onChange={(e) => refine.setContinueSession(e.target.checked)}
             />
-            Continue previous session
+            Continue last build session
           </label>
         ) : null}
 
@@ -1589,20 +1597,20 @@ export default function App() {
 
       <section className="card">
         <div className="card-title-row">
-          <h2>4. Console</h2>
+          <h2>4. Activity</h2>
           <label className="checkbox-row">
             <input
               checked={autoScrollEnabled}
               onChange={(event) => setAutoScrollEnabled(event.target.checked)}
               type="checkbox"
             />
-            auto-scroll
+            Auto-scroll
           </label>
         </div>
 
         <div className="console" onScroll={onConsoleScroll} ref={consoleRef}>
           {runLogs.length === 0 ? (
-            <p className="placeholder">Ready. Load a project and start refinement.</p>
+            <p className="placeholder">Ready. Open a project and click Build Project.</p>
           ) : (
             runLogs.map((line, index) => renderConsoleLine(line, index, index === runLogs.length - 1 && !!refine.partialLine))
           )}

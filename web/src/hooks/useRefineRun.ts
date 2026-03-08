@@ -563,15 +563,15 @@ export function useRefineRun() {
           if (filesChanged.length > 0) {
             updateChangedFiles(filesChanged);
             setSummary(
-              `Refinement completed. ${filesChanged.length} file${filesChanged.length === 1 ? '' : 's'} changed.`,
+              `Build completed. ${filesChanged.length} file${filesChanged.length === 1 ? '' : 's'} changed.`,
             );
           } else {
-            setSummary('Refinement completed.');
+            setSummary('Build completed.');
           }
           return;
         }
 
-        const message = userFacingAgentErrorMessage(toStringValue(event.error) || 'Refinement failed.');
+        const message = userFacingAgentErrorMessage(toStringValue(event.error) || 'Build failed.');
         setStatus('failed');
         setError(message);
         setSummary(message);
@@ -691,16 +691,16 @@ export function useRefineRun() {
 
         flushPartialLine();
         setStatus((previous) => (previous === 'running' ? 'completed' : previous));
-        setSummary((previous) => previous || 'Refinement completed.');
+        setSummary((previous) => previous || 'Build completed.');
       } catch (requestError) {
         flushPartialLine();
 
         if (isAbortError(requestError)) {
           setStatus((previous) => (previous === 'running' ? 'cancelled' : previous));
-          setSummary((previous) => previous || 'Refinement stopped.');
-          appendLine('⏹️ Refinement stopped.');
+          setSummary((previous) => previous || 'Build stopped.');
+          appendLine('⏹️ Build stopped.');
         } else {
-          const message = toErrorMessage(requestError, 'Refinement failed.');
+          const message = toErrorMessage(requestError, 'Build failed.');
           setStatus('failed');
           setError(message);
           setSummary(message);
