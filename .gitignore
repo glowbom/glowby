@@ -24,3 +24,7 @@ chat/.DS_Store
 /presets/compose/.idea
 presets/swiftui/Custom.xcodeproj/xcuserdata/jacobilin.xcuserdatad/xcschemes/xcschememanagement.plist
 presets/swiftui/Custom.xcodeproj/project.xcworkspace/xcuserdata/jacobilin.xcuserdatad/UserInterfaceState.xcuserstate
+/docs/.react-router/
+/docs/.source/
+/docs/build/
+/docs/node_modules/

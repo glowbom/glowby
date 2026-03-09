@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@import "fumadocs-ui/style.css";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --color-fd-background: hsl(0, 0%, 100%);
+  --color-fd-foreground: hsl(222, 47%, 11%);
+  --color-fd-muted: hsl(210, 40%, 98%);
+  --color-fd-muted-foreground: hsl(215, 16%, 47%);
+  --color-fd-popover: hsl(0, 0%, 100%);
+  --color-fd-popover-foreground: hsl(222, 47%, 11%);
+  --color-fd-card: hsl(0, 0%, 100%);
+  --color-fd-card-foreground: hsl(222, 47%, 11%);
+  --color-fd-border: hsla(215, 25%, 27%, 0.12);
+  --color-fd-primary: hsl(222, 47%, 11%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-secondary: hsl(210, 40%, 96%);
+  --color-fd-secondary-foreground: hsl(222, 47%, 11%);
+  --color-fd-accent: hsla(214, 32%, 91%, 0.8);
+  --color-fd-accent-foreground: hsl(222, 47%, 11%);
+  --color-fd-ring: hsl(215, 20%, 65%);
+}
+
+.dark {
+  --color-fd-background: hsl(222, 47%, 8%);
+  --color-fd-foreground: hsl(210, 40%, 96%);
+  --color-fd-muted: hsl(223, 32%, 14%);
+  --color-fd-muted-foreground: hsl(215, 20%, 72%);
+  --color-fd-popover: hsl(222, 45%, 10%);
+  --color-fd-popover-foreground: hsl(210, 40%, 96%);
+  --color-fd-card: hsl(222, 45%, 10%);
+  --color-fd-card-foreground: hsl(210, 40%, 96%);
+  --color-fd-border: hsla(214, 32%, 91%, 0.12);
+  --color-fd-primary: hsl(210, 40%, 96%);
+  --color-fd-primary-foreground: hsl(222, 47%, 8%);
+  --color-fd-secondary: hsl(223, 30%, 18%);
+  --color-fd-secondary-foreground: hsl(210, 40%, 96%);
+  --color-fd-accent: hsla(214, 32%, 91%, 0.08);
+  --color-fd-accent-foreground: hsl(210, 40%, 96%);
+  --color-fd-ring: hsl(214, 20%, 65%);
+}
+
+html,
+body {
+  background-color: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+#nd-sidebar,
+#nd-subnav {
+  background-color: color-mix(in oklab, white 92%, var(--color-fd-muted) 8%);
+}
+
+.dark #nd-sidebar,
+.dark #nd-subnav {
+  background-color: color-mix(in oklab, hsl(222, 47%, 8%) 88%, var(--color-fd-muted) 12%);
+}

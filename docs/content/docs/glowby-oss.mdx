@@ -1,0 +1,46 @@
+---
+title: Glowby OSS
+description: Quickstart and project structure for the open source coding-agent workflow.
+---
+
+## Quickstart
+
+Install the core requirements first:
+
+- [Go](https://go.dev/)
+- [Bun](https://bun.sh/)
+- [OpenCode](https://opencode.ai/)
+
+Then run the backend:
+
+```bash
+cd backend
+go run .
+```
+
+The backend runs on `http://localhost:4569`.
+
+Run the web app in a second terminal:
+
+```bash
+cd web
+bun install
+bun run dev
+```
+
+The web app runs on `http://localhost:4572`.
+
+## Project structure
+
+- `backend/`: Go backend
+- `web/`: React + Vite web app
+- `docs/`: shared Glowbom and Glowby documentation app
+- `legacy/`: older code kept for reference
+
+## Next areas to document
+
+- Refine runs
+- Project loading
+- Model/provider setup
+- Instruction attachments
+- Recommended repository conventions
