@@ -11,6 +11,13 @@ import { RootProvider } from "fumadocs-ui/provider/react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
 
+const docsBasePath =
+  import.meta.env.VITE_DOCS_BASE_PATH ?? (import.meta.env.PROD ? "/docs" : "");
+
+function withBasePath(path: string) {
+  return docsBasePath ? `${docsBasePath}${path}` : path;
+}
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -22,9 +29,9 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;500;600;700;800&display=swap",
   },
-  { rel: "icon", type: "image/svg+xml", sizes: "any", href: "/favicon.svg" },
-  { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.png" },
-  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+  { rel: "icon", type: "image/svg+xml", sizes: "any", href: withBasePath("/favicon.svg") },
+  { rel: "icon", type: "image/png", sizes: "32x32", href: withBasePath("/favicon.png") },
+  { rel: "apple-touch-icon", href: withBasePath("/apple-touch-icon.png") },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

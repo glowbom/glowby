@@ -11,8 +11,6 @@ type BrowserDocsCollection = {
 };
 
 const docs = (browserCollections as any)?.docs;
-console.log("browserCollections =>", typeof browserCollections, browserCollections);
-
 
 export const docsContent = docs.createClientLoader({
   id: "glowbom-docs",
