@@ -71,10 +71,8 @@ struct GlowbyScreen: View {
 
                             Text("Made with ")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.black.opacity(0.55))
                             + Text("Glowbom")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color(red: 41 / 255, green: 222 / 255, blue: 146 / 255))
                         }
                     }
                     .frame(maxWidth: 360)
