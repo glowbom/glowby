@@ -1,0 +1,29 @@
+{
+  "name" : "Glowbom Project",
+  "version" : "1.0",
+  "bundleID" : "app.glowbom.glowby",
+  "updatedAt" : "2026-03-11T14:32:21Z",
+  "createdAt" : "2026-03-11T14:32:21Z",
+  "displayName" : "Glowby",
+  "buildNumber" : "1",
+  "targets" : {
+    "web" : {
+      "hasPreset" : true,
+      "outputDir" : "web",
+      "status" : "ready",
+      "stack" : "nextjs"
+    },
+    "android" : {
+      "status" : "ready",
+      "hasPreset" : true,
+      "stack" : "kotlin",
+      "outputDir" : "android"
+    },
+    "ios" : {
+      "outputDir" : "apple",
+      "hasPreset" : true,
+      "status" : "ready",
+      "stack" : "swiftui"
+    }
+  }
+}

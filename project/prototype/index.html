@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build Anything</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            page: '#F5F5F5',
+            ink: '#111111',
+            accent: '#29DE92'
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            soft: '0 20px 60px rgba(0, 0, 0, 0.08)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html,
+    body {
+      height: 100%;
+      background: #F5F5F5;
+    }
+
+    body {
+      color: #111111;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .float-gentle {
+      animation: floatGentle 4s ease-in-out infinite;
+    }
+
+    .pulse-glow {
+      animation: pulseGlow 2.8s ease-in-out infinite;
+    }
+
+    @keyframes floatGentle {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(41, 222, 146, 0.18);
+      }
+      50% {
+        box-shadow: 0 0 0 14px rgba(41, 222, 146, 0);
+      }
+    }
+
+    .grain-overlay::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-page text-ink antialiased selection:bg-accent/30">
+  <main class="relative grain-overlay flex min-h-screen items-center justify-center px-6">
+    <section class="w-full max-w-3xl text-center">
+      <div class="mx-auto flex flex-col items-center">
+        <button
+          id="iconButton"
+          type="button"
+          aria-label="Animate character"
+          class="group mb-8 rounded-full focus:outline-none focus:ring-4 focus:ring-accent/20"
+        >
+          <div class="pulse-glow rounded-full">
+            <div class="float-gentle flex h-24 w-24 items-center justify-center rounded-full border border-black/5 bg-white shadow-soft sm:h-28 sm:w-28">
+              <img
+                id="imgCharacter"
+                src="about:blank"
+                alt="Minimal friendly character icon"
+                class="h-14 w-14 rounded-2xl object-cover sm:h-16 sm:w-16"
+              />
+            </div>
+          </div>
+        </button>
+
+        <h1 class="max-w-2xl text-5xl font-extrabold tracking-tight text-ink sm:text-6xl md:text-7xl">
+          Build
+          <span class="relative inline-block">
+            <span>anything.</span>
+            <span class="absolute -bottom-2 left-1/2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-accent sm:w-20"></span>
+          </span>
+        </h1>
+
+        <p class="mt-16 text-sm font-medium tracking-wide text-black/55 sm:text-base">
+          Made with
+          <span class="text-accent">Glowbom</span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const imgCharacter = 'assets/image-001.png';
+
+    const characterEl = document.getElementById('imgCharacter');
+    const iconButton = document.getElementById('iconButton');
+
+    characterEl.src = imgCharacter;
+
+    iconButton.addEventListener('click', function () {
+      characterEl.classList.remove('scale-110', 'rotate-3');
+      void characterEl.offsetWidth;
+      characterEl.classList.add('scale-110', 'rotate-3');
+
+      setTimeout(function () {
+        characterEl.classList.remove('scale-110', 'rotate-3');
+      }, 280);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (document.activeElement === iconButton) {
+          event.preventDefault();
+          iconButton.click();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
