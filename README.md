@@ -45,8 +45,30 @@ The web app runs on `http://localhost:4572`.
    - OpenCode config
 4. Start a refine run
 
+## Using the Bundled Default Project
+
+This repo includes a ready-to-use Glowbom default project in `project/`.
+
+You can use `project/` as your main starting template without logging in to Glowbom.com or downloading a project export first. Just copy the folder, rename it if you want, and start customizing it locally.
+
+The bundled project includes:
+
+- `project/prototype/` - reference design and assets
+- `project/apple/` - Apple app project
+- `project/android/` - Android app project
+- `project/web/` - web app project
+- `project/glowbom.json` - project manifest
+
+If you only need some targets, remove the platform folders you do not want:
+
+- Delete `project/apple/` if you do not need Apple platforms
+- Delete `project/android/` if you do not need Android
+- Delete `project/web/` if you do not need web
+- Keep all of them if you want to build every platform in sync from one Glowbom project
+
 ## Project Structure
 
 - `backend/` - Go backend
+- `project/` - bundled default Glowbom project template
 - `web/` - React + Vite web app
 - `legacy/` - older Glowby code kept for reference
