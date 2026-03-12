@@ -1,87 +1,74 @@
-# Welcome to React Router!
+# Glowby OSS
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Glowby helps you build production-ready software with coding agents. It is an open source coding agent workflow for real projects. It is built primarily for Glowbom projects, but the workflow can also work with other project structures.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## What It Does
 
-## Features
+- Make software projects and prototypes production-ready with coding agents
+- Run on local projects with ChatGPT login, API keys, or OpenCode config
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Requirements
 
-## Getting Started
+Install these first:
 
-### Installation
+- [Go](https://go.dev/)
+- [Bun](https://bun.sh/)
+- [OpenCode](https://opencode.ai/)
 
-Install the dependencies:
+## Quickstart
 
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
+### 1. Run the backend
 
 ```bash
-npm run dev
+cd backend
+go run .
 ```
+The backend runs on `http://localhost:4569`.
 
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+### 2. Run the web app
 
 ```bash
-npm run build
+cd web
+bun install
+bun run dev
 ```
 
-## Deployment
+The web app runs on `http://localhost:4572`.
 
-### Docker Deployment
+### 3. Start using Glowby OSS
 
-To build and run using Docker:
+1. Open `http://localhost:4572`
+2. Load a local project
+3. Choose how you want to run the agent:
+   - ChatGPT login
+   - API keys
+   - OpenCode config
+4. Start a refine run
 
-```bash
-docker build -t my-app .
+## Using the Bundled Default Project
 
-# Run the container
-docker run -p 3000:3000 my-app
-```
+This repo includes a ready-to-use Glowbom default project in `project/`.
 
-The containerized application can be deployed to any platform that supports Docker, including:
+You can use `project/` as your main starting template without logging in to Glowbom.com or downloading a project export first. Just copy the folder, rename it if you want, and start customizing it locally.
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+The bundled project includes:
 
-### DIY Deployment
+- `project/prototype/` - reference design and assets
+- `project/apple/` - Apple app project
+- `project/android/` - Android app project
+- `project/web/` - web app project
+- `project/glowbom.json` - project manifest
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+If you only need some targets, remove the platform folders you do not want:
 
-Make sure to deploy the output of `npm run build`
+- Delete `project/apple/` if you do not need Apple platforms
+- Delete `project/android/` if you do not need Android
+- Delete `project/web/` if you do not need web
+- Keep all of them if you want to build every platform in sync from one Glowbom project
 
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
+## Project Structure
 
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+- `backend/` - Go backend
+- `project/` - bundled default Glowbom project template
+- `web/` - React + Vite web app
+- `legacy/` - older Glowby code kept for reference
