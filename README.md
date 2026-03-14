@@ -23,7 +23,7 @@ bun --version
 opencode --version
 ```
 
-If any command is not found, the tool may not be installed correctly or its install location may not be on your `PATH`. Add it to your `PATH` or reinstall it using the tool's recommended installer, then restart your terminal before continuing.
+If any command is not found, restart your terminal first. If it still does not work, add the tool's install location to your `PATH` or reinstall it using the tool's recommended installer.
 
 On macOS, a common fix is to add the tool's bin directory to your shell profile (usually `~/.zshrc`) and then reload it:
 
