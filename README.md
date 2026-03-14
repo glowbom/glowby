@@ -15,6 +15,32 @@ Install these first:
 - [Bun](https://bun.sh/)
 - [OpenCode](https://opencode.ai/)
 
+Before starting, make sure Go, Bun, and OpenCode are installed and available on your `PATH` so these commands work in the terminal you will use for Glowby:
+
+```bash
+go version
+bun --version
+opencode --version
+```
+
+If any command is not found, the tool may not be installed correctly or its install location may not be on your `PATH`. Add it to your `PATH` or reinstall it using the tool's recommended installer, then restart your terminal before continuing.
+
+On macOS, a common fix is to add the tool's bin directory to your shell profile (usually `~/.zshrc`) and then reload it:
+
+```bash
+# Common PATH fixes on macOS
+echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.zshrc
+echo 'export BUN_INSTALL="$HOME/.bun"' >> ~/.zshrc
+echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> ~/.zshrc
+
+# Add the directory that contains the opencode binary
+echo 'export PATH="/path/to/opencode/bin:$PATH"' >> ~/.zshrc
+
+source ~/.zshrc
+```
+
+If you use Bash instead of zsh, update `~/.bash_profile` or `~/.bashrc` instead.
+
 ## Quickstart
 
 ### 1. Run the backend
