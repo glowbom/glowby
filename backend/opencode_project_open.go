@@ -50,6 +50,11 @@ type openCodeProjectOpenResponse struct {
 	Error      string `json:"error,omitempty"`
 }
 
+type openCodeLaunchCommand struct {
+	Executable string
+	Args       []string
+}
+
 func openCodeProjectIDEStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -118,7 +123,7 @@ func openCodeProjectOpenHandler(w http.ResponseWriter, r *http.Request) {
 	openedPath, openErr := openProjectInIDE(normalizedPath, ide)
 	if openErr != nil {
 		statusCode := http.StatusInternalServerError
-		if runtime.GOOS != "darwin" {
+		if isPlatformUnsupportedOpenError(openErr) {
 			statusCode = http.StatusNotImplemented
 		}
 		if errors.Is(openErr, os.ErrNotExist) || strings.Contains(strings.ToLower(openErr.Error()), "not found") {
@@ -210,12 +215,22 @@ func inspectFinderAction(projectPath string) openCodeProjectIDEAction {
 		}
 	}
 
+	if _, ok := folderOpenLaunchCommand(); !ok {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEFinder,
+			Label:     label,
+			Available: false,
+			Path:      projectPath,
+			Reason:    folderOpenUnavailableReason(),
+		}
+	}
+
 	return openCodeProjectIDEAction{
 		IDE:       openCodeIDEFinder,
 		Label:     label,
 		Available: true,
 		Path:      projectPath,
-		Reason:    "Open project folder in Finder.",
+		Reason:    folderOpenReason(),
 	}
 }
 
@@ -224,6 +239,16 @@ func inspectXcodeAction(projectPath string) openCodeProjectIDEAction {
 	applePath := destinationPathForProject(projectPath, []string{
 		"apple", "ios", "ipados", "macos", "visionos", "watchos", "tvos",
 	}, "apple")
+
+	if runtime.GOOS != "darwin" {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEXcode,
+			Label:     label,
+			Available: false,
+			Path:      applePath,
+			Reason:    "Xcode is only available on macOS.",
+		}
+	}
 
 	if !projectDirectoryExists(applePath) {
 		return openCodeProjectIDEAction{
@@ -270,17 +295,32 @@ func inspectAndroidStudioAction(projectPath string) openCodeProjectIDEAction {
 		}
 	}
 
-	reason := "Detected Android project folder."
-	if !applicationExists("/Applications/Android Studio.app") {
-		reason = "Android Studio.app not found; folder will open instead."
+	if _, ok := androidStudioLaunchCommand(); ok {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEAndroidStudio,
+			Label:     label,
+			Available: true,
+			Path:      androidPath,
+			Reason:    "Detected Android Studio launcher for this platform.",
+		}
+	}
+
+	if _, ok := folderOpenLaunchCommand(); ok {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEAndroidStudio,
+			Label:     label,
+			Available: true,
+			Path:      androidPath,
+			Reason:    "Android Studio launcher not found; folder will open instead.",
+		}
 	}
 
 	return openCodeProjectIDEAction{
 		IDE:       openCodeIDEAndroidStudio,
 		Label:     label,
-		Available: true,
+		Available: false,
 		Path:      androidPath,
-		Reason:    reason,
+		Reason:    "No Android Studio launcher or folder opener found for this platform.",
 	}
 }
 
@@ -298,17 +338,32 @@ func inspectVSCodeAction(projectPath string) openCodeProjectIDEAction {
 		}
 	}
 
-	reason := "Detected Web project folder."
-	if !applicationExists("/Applications/Visual Studio Code.app") {
-		reason = "Visual Studio Code.app not found; folder will open instead."
+	if _, ok := vsCodeLaunchCommand(); ok {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEVSCode,
+			Label:     label,
+			Available: true,
+			Path:      webPath,
+			Reason:    "Detected VS Code launcher for this platform.",
+		}
+	}
+
+	if _, ok := folderOpenLaunchCommand(); ok {
+		return openCodeProjectIDEAction{
+			IDE:       openCodeIDEVSCode,
+			Label:     label,
+			Available: true,
+			Path:      webPath,
+			Reason:    "VS Code launcher not found; folder will open instead.",
+		}
 	}
 
 	return openCodeProjectIDEAction{
 		IDE:       openCodeIDEVSCode,
 		Label:     label,
-		Available: true,
+		Available: false,
 		Path:      webPath,
-		Reason:    reason,
+		Reason:    "No VS Code launcher or folder opener found for this platform.",
 	}
 }
 
@@ -356,13 +411,9 @@ func applicationExists(path string) bool {
 }
 
 func openProjectInIDE(projectPath, ide string) (string, error) {
-	if runtime.GOOS != "darwin" {
-		return "", errors.New("Project opening is only available on macOS.")
-	}
-
 	switch ide {
 	case openCodeIDEFinder:
-		return openInFinder(projectPath)
+		return openProjectFolder(projectPath)
 	case openCodeIDEXcode:
 		return openInXcode(projectPath)
 	case openCodeIDEAndroidStudio:
@@ -374,18 +425,22 @@ func openProjectInIDE(projectPath, ide string) (string, error) {
 	}
 }
 
-func openInFinder(projectPath string) (string, error) {
+func openProjectFolder(projectPath string) (string, error) {
 	if !projectDirectoryExists(projectPath) {
 		return "", errors.New("Project folder not found")
 	}
 
-	if err := runMacOpenCommand(projectPath); err != nil {
+	if err := openFolderWithSystemDefault(projectPath); err != nil {
 		return "", err
 	}
 	return projectPath, nil
 }
 
 func openInXcode(projectPath string) (string, error) {
+	if runtime.GOOS != "darwin" {
+		return "", errors.New("Xcode opening is only available on macOS.")
+	}
+
 	applePath := destinationPathForProject(projectPath, []string{
 		"apple", "ios", "ipados", "macos", "visionos", "watchos", "tvos",
 	}, "apple")
@@ -414,14 +469,14 @@ func openInAndroidStudio(projectPath string) (string, error) {
 		return "", errors.New("Android output folder not found")
 	}
 
-	if applicationExists("/Applications/Android Studio.app") {
-		if err := runMacOpenWithApp("/Applications/Android Studio.app", androidPath); err != nil {
+	if command, ok := androidStudioLaunchCommand(); ok {
+		if err := runLaunchCommand(command, androidPath); err != nil {
 			return "", err
 		}
 		return androidPath, nil
 	}
 
-	if err := runMacOpenCommand(androidPath); err != nil {
+	if err := openFolderWithSystemDefault(androidPath); err != nil {
 		return "", err
 	}
 	return androidPath, nil
@@ -434,34 +489,190 @@ func openInVSCode(projectPath string) (string, error) {
 		return "", errors.New("Web output folder not found")
 	}
 
-	if applicationExists("/Applications/Visual Studio Code.app") {
-		if err := runMacOpenWithApp("/Applications/Visual Studio Code.app", webPath); err != nil {
+	if command, ok := vsCodeLaunchCommand(); ok {
+		if err := runLaunchCommand(command, webPath); err != nil {
 			return "", err
 		}
 		return webPath, nil
 	}
 
-	if err := runMacOpenCommand(webPath); err != nil {
+	if err := openFolderWithSystemDefault(webPath); err != nil {
 		return "", err
 	}
 	return webPath, nil
 }
 
 func runMacOpenWithApp(appPath, targetPath string) error {
-	cmd := exec.Command("open", "-a", appPath, targetPath)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		message := strings.TrimSpace(string(output))
-		if message != "" {
-			return fmt.Errorf("failed to open project: %s", message)
-		}
-		return fmt.Errorf("failed to open project: %w", err)
+	openExecutable := resolveLaunchExecutable("open")
+	if openExecutable == "" {
+		return errors.New("open command not found")
 	}
-	return nil
+	return runLaunchCommand(openCodeLaunchCommand{
+		Executable: openExecutable,
+		Args:       []string{"-a", appPath},
+	}, targetPath)
 }
 
 func runMacOpenCommand(targetPath string) error {
-	cmd := exec.Command("open", targetPath)
+	openExecutable := resolveLaunchExecutable("open")
+	if openExecutable == "" {
+		return errors.New("open command not found")
+	}
+	return runLaunchCommand(openCodeLaunchCommand{
+		Executable: openExecutable,
+	}, targetPath)
+}
+
+func folderOpenLaunchCommand() (openCodeLaunchCommand, bool) {
+	switch runtime.GOOS {
+	case "darwin":
+		if openExecutable := resolveLaunchExecutable("open"); openExecutable != "" {
+			return openCodeLaunchCommand{Executable: openExecutable}, true
+		}
+	case "windows":
+		if explorerExecutable := resolveLaunchExecutable("explorer.exe"); explorerExecutable != "" {
+			return openCodeLaunchCommand{Executable: explorerExecutable}, true
+		}
+	case "linux":
+		if xdgOpen := resolveLaunchExecutable("xdg-open"); xdgOpen != "" {
+			return openCodeLaunchCommand{Executable: xdgOpen}, true
+		}
+		if gio := resolveLaunchExecutable("gio"); gio != "" {
+			return openCodeLaunchCommand{
+				Executable: gio,
+				Args:       []string{"open"},
+			}, true
+		}
+	}
+
+	return openCodeLaunchCommand{}, false
+}
+
+func androidStudioLaunchCommand() (openCodeLaunchCommand, bool) {
+	switch runtime.GOOS {
+	case "darwin":
+		if applicationExists("/Applications/Android Studio.app") {
+			if openExecutable := resolveLaunchExecutable("open"); openExecutable != "" {
+				return openCodeLaunchCommand{
+					Executable: openExecutable,
+					Args:       []string{"-a", "/Applications/Android Studio.app"},
+				}, true
+			}
+		}
+	case "windows":
+		candidates := []string{"studio64.exe", "studio.exe", "studio64", "studio"}
+		if programFiles := os.Getenv("ProgramFiles"); programFiles != "" {
+			candidates = append(candidates,
+				filepath.Join(programFiles, "Android", "Android Studio", "bin", "studio64.exe"),
+				filepath.Join(programFiles, "Android", "Android Studio", "bin", "studio.exe"),
+			)
+		}
+		if localAppData := os.Getenv("LocalAppData"); localAppData != "" {
+			candidates = append(candidates,
+				filepath.Join(localAppData, "Programs", "Android Studio", "bin", "studio64.exe"),
+				filepath.Join(localAppData, "Programs", "Android Studio", "bin", "studio.exe"),
+			)
+		}
+		if executable := firstResolvedExecutable(candidates); executable != "" {
+			return openCodeLaunchCommand{Executable: executable}, true
+		}
+	case "linux":
+		if executable := firstResolvedExecutable([]string{
+			"android-studio",
+			"studio.sh",
+			"studio",
+			"/opt/android-studio/bin/studio.sh",
+			"/usr/local/android-studio/bin/studio.sh",
+			"/snap/bin/android-studio",
+		}); executable != "" {
+			return openCodeLaunchCommand{Executable: executable}, true
+		}
+	}
+
+	return openCodeLaunchCommand{}, false
+}
+
+func vsCodeLaunchCommand() (openCodeLaunchCommand, bool) {
+	switch runtime.GOOS {
+	case "darwin":
+		if applicationExists("/Applications/Visual Studio Code.app") {
+			if openExecutable := resolveLaunchExecutable("open"); openExecutable != "" {
+				return openCodeLaunchCommand{
+					Executable: openExecutable,
+					Args:       []string{"-a", "/Applications/Visual Studio Code.app"},
+				}, true
+			}
+		}
+	case "windows":
+		candidates := []string{"code.cmd", "code.exe", "code"}
+		if localAppData := os.Getenv("LocalAppData"); localAppData != "" {
+			candidates = append(candidates,
+				filepath.Join(localAppData, "Programs", "Microsoft VS Code", "Code.exe"),
+			)
+		}
+		if programFiles := os.Getenv("ProgramFiles"); programFiles != "" {
+			candidates = append(candidates,
+				filepath.Join(programFiles, "Microsoft VS Code", "Code.exe"),
+			)
+		}
+		if programFilesX86 := os.Getenv("ProgramFiles(x86)"); programFilesX86 != "" {
+			candidates = append(candidates,
+				filepath.Join(programFilesX86, "Microsoft VS Code", "Code.exe"),
+			)
+		}
+		if executable := firstResolvedExecutable(candidates); executable != "" {
+			return openCodeLaunchCommand{Executable: executable}, true
+		}
+	case "linux":
+		if executable := firstResolvedExecutable([]string{
+			"code",
+			"code-insiders",
+			"codium",
+			"code-oss",
+		}); executable != "" {
+			return openCodeLaunchCommand{Executable: executable}, true
+		}
+	}
+
+	return openCodeLaunchCommand{}, false
+}
+
+func folderOpenReason() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "Open project folder in Finder."
+	case "windows":
+		return "Open project folder in File Explorer."
+	case "linux":
+		return "Open project folder in your file manager."
+	default:
+		return "Open project folder."
+	}
+}
+
+func folderOpenUnavailableReason() string {
+	switch runtime.GOOS {
+	case "darwin", "windows", "linux":
+		return "No supported folder opener found for this platform."
+	default:
+		return "Project folder opening is not available on this platform."
+	}
+}
+
+func openFolderWithSystemDefault(targetPath string) error {
+	command, ok := folderOpenLaunchCommand()
+	if !ok {
+		return errors.New("Project opening is not available on this platform.")
+	}
+
+	return runLaunchCommand(command, targetPath)
+}
+
+func runLaunchCommand(command openCodeLaunchCommand, targetPath string) error {
+	args := append([]string{}, command.Args...)
+	args = append(args, targetPath)
+
+	cmd := exec.Command(command.Executable, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		message := strings.TrimSpace(string(output))
@@ -471,4 +682,38 @@ func runMacOpenCommand(targetPath string) error {
 		return fmt.Errorf("failed to open path: %w", err)
 	}
 	return nil
+}
+
+func resolveLaunchExecutable(candidate string) string {
+	if strings.TrimSpace(candidate) == "" {
+		return ""
+	}
+
+	if filepath.IsAbs(candidate) || strings.ContainsAny(candidate, `/\`) {
+		info, err := os.Stat(candidate)
+		if err == nil && !info.IsDir() {
+			return candidate
+		}
+		return ""
+	}
+
+	resolved, err := exec.LookPath(candidate)
+	if err != nil {
+		return ""
+	}
+	return resolved
+}
+
+func firstResolvedExecutable(candidates []string) string {
+	for _, candidate := range candidates {
+		if executable := resolveLaunchExecutable(candidate); executable != "" {
+			return executable
+		}
+	}
+	return ""
+}
+
+func isPlatformUnsupportedOpenError(err error) bool {
+	message := strings.ToLower(strings.TrimSpace(err.Error()))
+	return strings.Contains(message, "only available on") || strings.Contains(message, "not available on this platform")
 }

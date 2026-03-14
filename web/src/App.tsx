@@ -8,7 +8,7 @@ import {
   resolveRefineModel,
 } from './lib/model-catalog';
 import { lineLooksLikeMarkdown, parseConsoleHeading, parseConsoleMarkdown } from './lib/console-render';
-import { openCodeApi, toErrorMessage } from './lib/api';
+import { ApiError, openCodeApi, toErrorMessage } from './lib/api';
 import { useRefineRun } from './hooks/useRefineRun';
 import type {
   AuthProviderID,
@@ -168,6 +168,14 @@ function defaultModelOptionValue(dynamicOpenAIModels: OpenAIModelsResponseModel[
 
 function ideActionFor(actions: OpenCodeProjectIDEAction[], ide: OpenCodeIDE): OpenCodeProjectIDEAction | undefined {
   return actions.find((item) => item.ide === ide);
+}
+
+function isUnsupportedNativePickerError(error: unknown): boolean {
+  if (error instanceof ApiError && error.status === 501) {
+    return true;
+  }
+
+  return toErrorMessage(error, '').toLowerCase().includes('only available on');
 }
 
 export default function App() {
@@ -587,14 +595,19 @@ export default function App() {
 
       const apiMessage = (response.error || '').trim();
       if (apiMessage) {
-        if (apiMessage.toLowerCase().includes('only available on macos')) {
-          setFolderPickerWarning('Native folder picker is macOS-only. Paste the project path manually.');
+        if (apiMessage.toLowerCase().includes('only available on')) {
+          setFolderPickerWarning('This built-in folder picker is not available on this platform. Paste the project path manually.');
         } else {
           setFolderPickerWarning(`${apiMessage} Paste the project path manually if needed.`);
         }
         return;
       }
     } catch (error) {
+      if (isUnsupportedNativePickerError(error)) {
+        setFolderPickerWarning('This built-in folder picker is not available on this platform. Paste the project path manually.');
+        return;
+      }
+
       const message = toErrorMessage(error, 'unknown error').toLowerCase();
       if (message.includes('404') || message.includes('not found')) {
         setFolderPickerWarning(
@@ -657,6 +670,11 @@ export default function App() {
       const addedCount = pickedFiles.length;
       setInstructionPickerInfo(`Attached ${addedCount} local file${addedCount === 1 ? '' : 's'} for this build.`);
     } catch (error) {
+      if (isUnsupportedNativePickerError(error)) {
+        setInstructionPickerWarning('This built-in file picker is not available on this platform.');
+        return;
+      }
+
       const message = toErrorMessage(error, 'unknown error').toLowerCase();
       if (message.includes('404') || message.includes('not found')) {
         setInstructionPickerWarning(

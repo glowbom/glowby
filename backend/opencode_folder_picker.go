@@ -37,6 +37,12 @@ type openCodeInstructionFilesPickResponse struct {
 	Error    string                          `json:"error,omitempty"`
 }
 
+type nativePickerCommand struct {
+	Executable      string
+	Args            []string
+	CancelExitCodes []int
+}
+
 func openCodePickProjectFolderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -45,16 +51,28 @@ func openCodePickProjectFolderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if runtime.GOOS != "darwin" {
+	var (
+		path     string
+		canceled bool
+		err      error
+	)
+
+	switch runtime.GOOS {
+	case "darwin":
+		path, canceled, err = pickProjectFolderMacOS()
+	case "windows":
+		path, canceled, err = pickProjectFolderWindows()
+	case "linux":
+		path, canceled, err = pickProjectFolderLinux()
+	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		_ = json.NewEncoder(w).Encode(openCodeProjectPickResponse{
 			Success: false,
-			Error:   "Native folder picker is only available on macOS.",
+			Error:   "Native folder picker is only available on macOS, Windows, and Linux.",
 		})
 		return
 	}
 
-	path, canceled, err := pickProjectFolderMacOS()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(openCodeProjectPickResponse{
@@ -98,16 +116,28 @@ func openCodePickInstructionFilesHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if runtime.GOOS != "darwin" {
+	var (
+		paths    []string
+		canceled bool
+		err      error
+	)
+
+	switch runtime.GOOS {
+	case "darwin":
+		paths, canceled, err = pickInstructionFilesMacOS()
+	case "windows":
+		paths, canceled, err = pickInstructionFilesWindows()
+	case "linux":
+		paths, canceled, err = pickInstructionFilesLinux()
+	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		_ = json.NewEncoder(w).Encode(openCodeInstructionFilesPickResponse{
 			Success: false,
-			Error:   "Native file picker is only available on macOS.",
+			Error:   "Native file picker is only available on macOS, Windows, and Linux.",
 		})
 		return
 	}
 
-	paths, canceled, err := pickInstructionFilesMacOS()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(openCodeInstructionFilesPickResponse{
@@ -169,22 +199,13 @@ func pickProjectFolderMacOS() (string, bool, error) {
 		"-e", "end try",
 	)
 
-	output, err := cmd.Output()
+	selected, err := runPickerCommand(cmd)
 	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			stderr := strings.TrimSpace(string(exitErr.Stderr))
-			if strings.Contains(strings.ToLower(stderr), "user canceled") {
-				return "", true, nil
-			}
-			if stderr != "" {
-				return "", false, errors.New(stderr)
-			}
+		if strings.Contains(strings.ToLower(err.Error()), "user canceled") {
+			return "", true, nil
 		}
 		return "", false, err
 	}
-
-	selected := strings.TrimSpace(string(output))
 	if selected == "" {
 		return "", false, errors.New("no folder path returned")
 	}
@@ -214,22 +235,13 @@ func pickInstructionFilesMacOS() ([]string, bool, error) {
 		"-e", "end try",
 	)
 
-	output, err := cmd.Output()
+	selected, err := runPickerCommand(cmd)
 	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			stderr := strings.TrimSpace(string(exitErr.Stderr))
-			if strings.Contains(strings.ToLower(stderr), "user canceled") {
-				return nil, true, nil
-			}
-			if stderr != "" {
-				return nil, false, errors.New(stderr)
-			}
+		if strings.Contains(strings.ToLower(err.Error()), "user canceled") {
+			return nil, true, nil
 		}
 		return nil, false, err
 	}
-
-	selected := strings.TrimSpace(string(output))
 	if selected == "" {
 		return nil, false, errors.New("no file paths returned")
 	}
@@ -252,6 +264,237 @@ func pickInstructionFilesMacOS() ([]string, bool, error) {
 	}
 
 	return paths, false, nil
+}
+
+func pickProjectFolderLinux() (string, bool, error) {
+	startDir := defaultPickerStartDir()
+	selected, canceled, err := runLinuxPicker([]nativePickerCommand{
+		{
+			Executable:      "zenity",
+			Args:            []string{"--file-selection", "--directory", "--title=Select local Glowbom project folder"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "qarma",
+			Args:            []string{"--file-selection", "--directory", "--title=Select local Glowbom project folder"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "yad",
+			Args:            []string{"--file-selection", "--directory", "--title=Select local Glowbom project folder"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "kdialog",
+			Args:            []string{"--getexistingdirectory", startDir},
+			CancelExitCodes: []int{1},
+		},
+	}, "No supported Linux folder picker found. Install zenity, kdialog, yad, or qarma.")
+	if err != nil || canceled {
+		return "", canceled, err
+	}
+	if selected == "" {
+		return "", false, errors.New("no folder path returned")
+	}
+
+	return selected, false, nil
+}
+
+func pickInstructionFilesLinux() ([]string, bool, error) {
+	startDir := defaultPickerStartDir()
+	selected, canceled, err := runLinuxPicker([]nativePickerCommand{
+		{
+			Executable:      "zenity",
+			Args:            []string{"--file-selection", "--multiple", "--separator=\n", "--title=Select local files for custom instructions"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "qarma",
+			Args:            []string{"--file-selection", "--multiple", "--separator=\n", "--title=Select local files for custom instructions"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "yad",
+			Args:            []string{"--file-selection", "--multiple", "--separator=\n", "--title=Select local files for custom instructions"},
+			CancelExitCodes: []int{1},
+		},
+		{
+			Executable:      "kdialog",
+			Args:            []string{"--getopenfilename", startDir, "", "--multiple", "--separate-output"},
+			CancelExitCodes: []int{1},
+		},
+	}, "No supported Linux file picker found. Install zenity, kdialog, yad, or qarma.")
+	if err != nil || canceled {
+		return nil, canceled, err
+	}
+	if selected == "" {
+		return nil, false, errors.New("no file paths returned")
+	}
+
+	lines := strings.Split(selected, "\n")
+	paths := make([]string, 0, len(lines))
+	for _, line := range lines {
+		path := strings.TrimSpace(line)
+		if path == "" {
+			continue
+		}
+		paths = append(paths, path)
+	}
+	if len(paths) == 0 {
+		return nil, false, errors.New("no valid file paths returned")
+	}
+
+	return paths, false, nil
+}
+
+func pickProjectFolderWindows() (string, bool, error) {
+	cmd := exec.Command(
+		"powershell.exe",
+		"-NoProfile",
+		"-STA",
+		"-Command",
+		`Add-Type -AssemblyName System.Windows.Forms
+$dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+$dialog.Description = 'Select local Glowbom project folder'
+$dialog.ShowNewFolderButton = $false
+$result = $dialog.ShowDialog()
+if ($result -ne [System.Windows.Forms.DialogResult]::OK -or [string]::IsNullOrWhiteSpace($dialog.SelectedPath)) {
+  Write-Output '__GLOWBOM_PICKER_CANCELED__'
+  exit 0
+}
+Write-Output $dialog.SelectedPath`,
+	)
+
+	selected, err := runPickerCommand(cmd)
+	if err != nil {
+		return "", false, err
+	}
+	if selected == "" {
+		return "", false, errors.New("no folder path returned")
+	}
+	if selected == folderPickerCanceledToken {
+		return "", true, nil
+	}
+
+	return selected, false, nil
+}
+
+func pickInstructionFilesWindows() ([]string, bool, error) {
+	cmd := exec.Command(
+		"powershell.exe",
+		"-NoProfile",
+		"-STA",
+		"-Command",
+		`Add-Type -AssemblyName System.Windows.Forms
+$dialog = New-Object System.Windows.Forms.OpenFileDialog
+$dialog.Title = 'Select local files for custom instructions'
+$dialog.Multiselect = $true
+$dialog.CheckFileExists = $true
+$dialog.CheckPathExists = $true
+$result = $dialog.ShowDialog()
+if ($result -ne [System.Windows.Forms.DialogResult]::OK -or $dialog.FileNames.Count -eq 0) {
+  Write-Output '__GLOWBOM_PICKER_CANCELED__'
+  exit 0
+}
+$dialog.FileNames | ForEach-Object { Write-Output $_ }`,
+	)
+
+	selected, err := runPickerCommand(cmd)
+	if err != nil {
+		return nil, false, err
+	}
+	if selected == "" {
+		return nil, false, errors.New("no file paths returned")
+	}
+	if selected == folderPickerCanceledToken {
+		return nil, true, nil
+	}
+
+	lines := strings.Split(selected, "\n")
+	paths := make([]string, 0, len(lines))
+	for _, line := range lines {
+		path := strings.TrimSpace(line)
+		if path == "" {
+			continue
+		}
+		paths = append(paths, path)
+	}
+	if len(paths) == 0 {
+		return nil, false, errors.New("no valid file paths returned")
+	}
+
+	return paths, false, nil
+}
+
+func runPickerCommand(cmd *exec.Cmd) (string, error) {
+	output, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			stderr := strings.TrimSpace(string(exitErr.Stderr))
+			if stderr != "" {
+				return "", errors.New(stderr)
+			}
+		}
+		return "", err
+	}
+
+	return strings.TrimSpace(string(output)), nil
+}
+
+func runPickerCommandWithCancel(cmd *exec.Cmd, cancelExitCodes ...int) (string, bool, error) {
+	output, err := cmd.Output()
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			for _, code := range cancelExitCodes {
+				if exitErr.ExitCode() == code {
+					return "", true, nil
+				}
+			}
+
+			stderr := strings.TrimSpace(string(exitErr.Stderr))
+			if stderr != "" {
+				return "", false, errors.New(stderr)
+			}
+		}
+		return "", false, err
+	}
+
+	selected := strings.TrimSpace(string(output))
+	if selected == folderPickerCanceledToken {
+		return "", true, nil
+	}
+
+	return selected, false, nil
+}
+
+func runLinuxPicker(commands []nativePickerCommand, missingMessage string) (string, bool, error) {
+	for _, candidate := range commands {
+		executable, err := exec.LookPath(candidate.Executable)
+		if err != nil {
+			continue
+		}
+
+		selected, canceled, runErr := runPickerCommandWithCancel(
+			exec.Command(executable, candidate.Args...),
+			candidate.CancelExitCodes...,
+		)
+		if runErr != nil || canceled {
+			return "", canceled, runErr
+		}
+		return selected, false, nil
+	}
+
+	return "", false, errors.New(missingMessage)
+}
+
+func defaultPickerStartDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err == nil && strings.TrimSpace(homeDir) != "" {
+		return homeDir
+	}
+	return "."
 }
 
 func inferMimeTypeForPath(path string) string {
