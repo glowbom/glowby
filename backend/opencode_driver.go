@@ -606,6 +606,48 @@ func shouldRestartForOpenAIAuthChange(serverWasAlreadyRunning bool, requestedMod
 	return false
 }
 
+func isSessionNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	lower := strings.ToLower(strings.TrimSpace(err.Error()))
+	return strings.Contains(lower, "session not found") || strings.Contains(lower, "404 not found")
+}
+
+func (d *OpenCodeDriver) createRefineSession(ctx context.Context, projectPath string) (*opencode.Session, error) {
+	session, err := d.client.Session.New(ctx, opencode.SessionNewParams{
+		Title:     opencode.F("Refine Glowbom Project"),
+		Directory: opencode.F(projectPath),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
+
+func (d *OpenCodeDriver) resolveRefineSession(ctx context.Context, projectPath, requestedSessionID string) (*opencode.Session, bool, error) {
+	trimmedSessionID := strings.TrimSpace(requestedSessionID)
+	if trimmedSessionID != "" {
+		session, err := d.client.Session.Get(ctx, trimmedSessionID, opencode.SessionGetParams{})
+		if err == nil && session != nil {
+			return session, true, nil
+		}
+		if err != nil && !isSessionNotFoundError(err) {
+			return nil, false, err
+		}
+		if err != nil {
+			log.Printf("[OPENCODE] Stored session %s is unavailable, creating a fresh session: %v", trimmedSessionID, err)
+		}
+	}
+
+	session, err := d.createRefineSession(ctx, projectPath)
+	if err != nil {
+		return nil, false, err
+	}
+	return session, false, nil
+}
+
 func openAIOAuthClientID() string {
 	if value := strings.TrimSpace(os.Getenv("OPENAI_OAUTH_CLIENT_ID")); value != "" {
 		return value
@@ -3906,22 +3948,19 @@ func openCodeRefineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Reuse existing session or create a new one
-	var session *opencode.Session
-	if req.SessionID != "" {
-		log.Printf("[OPENCODE] Reusing existing session: %s", req.SessionID)
-		session = &opencode.Session{ID: req.SessionID}
+	session, reusedSession, err := driver.resolveRefineSession(ctx, req.ProjectPath, req.SessionID)
+	if err != nil {
+		log.Printf("[OPENCODE] Error: Failed to prepare session: %v", err)
+		historySummary = userFacingAgentErrorMessage(err.Error())
+		sendSSEData(w, flusher, map[string]interface{}{"done": true, "success": false, "error": userFacingAgentErrorMessage(err.Error())})
+		return
+	}
+	if reusedSession {
+		log.Printf("[OPENCODE] Reusing existing session: %s", session.ID)
 		sendSSEData(w, flusher, map[string]interface{}{"output": fmt.Sprintf("Session resumed: %s", session.ID)})
 	} else {
-		var err error
-		session, err = driver.client.Session.New(ctx, opencode.SessionNewParams{
-			Title:     opencode.F("Refine Glowbom Project"),
-			Directory: opencode.F(req.ProjectPath),
-		})
-		if err != nil {
-			log.Printf("[OPENCODE] Error: Failed to create session: %v", err)
-			historySummary = userFacingAgentErrorMessage(err.Error())
-			sendSSEData(w, flusher, map[string]interface{}{"done": true, "success": false, "error": userFacingAgentErrorMessage(err.Error())})
-			return
+		if strings.TrimSpace(req.SessionID) != "" {
+			sendSSEData(w, flusher, map[string]interface{}{"output": "Previous session was unavailable. Starting a new session."})
 		}
 		sendSSEData(w, flusher, map[string]interface{}{"output": fmt.Sprintf("Session created: %s", session.ID)})
 		log.Printf("[OPENCODE] Session created for refinement: %s", session.ID)

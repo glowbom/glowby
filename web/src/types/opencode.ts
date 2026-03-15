@@ -129,6 +129,33 @@ export interface OpenCodeInstructionPickedFile {
   mimeType?: string;
 }
 
+export type OpenCodeHistoryStatus = 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface OpenCodeProjectHistoryAttachment extends OpenCodeInstructionPickedFile {
+  filename: string;
+  mediaType?: string;
+  relativePath?: string;
+}
+
+export interface OpenCodeProjectHistoryEntry {
+  id: string;
+  timestamp: string;
+  instructions: string;
+  taskType: string;
+  status?: OpenCodeHistoryStatus | string;
+  outputSummary?: string;
+  folderName: string;
+  missingAttachmentCount?: number;
+  attachments?: OpenCodeProjectHistoryAttachment[];
+}
+
+export interface OpenCodeProjectHistoryResponse {
+  success: boolean;
+  path?: string;
+  entries?: OpenCodeProjectHistoryEntry[];
+  error?: string;
+}
+
 export interface OpenCodeInstructionFilesPickResponse {
   success: boolean;
   files?: OpenCodeInstructionPickedFile[];

@@ -37,6 +37,7 @@ func main() {
 	http.HandleFunc("/opencode/auth/openai/disconnect", openCodeOpenAIDisconnectHandler)
 	http.HandleFunc("/opencode/project/init", openCodeInitProjectHandler)
 	http.HandleFunc("/opencode/project", openCodeGetProjectHandler)
+	http.HandleFunc("/opencode/project/history", openCodeProjectHistoryHandler)
 	http.HandleFunc("/opencode/project/pick", openCodePickProjectFolderHandler)
 	http.HandleFunc("/opencode/instructions/files/pick", openCodePickInstructionFilesHandler)
 	http.HandleFunc("/opencode/project/ide/status", openCodeProjectIDEStatusHandler)

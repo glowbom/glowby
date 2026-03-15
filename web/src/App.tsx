@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MODEL_PROVIDERS,
   decodeModelOptionValue,
@@ -17,8 +17,11 @@ import type {
   OpenAIModelsResponseModel,
   OpenCodeIDE,
   OpenCodeAuthStatus,
+  OpenCodeHistoryStatus,
   OpenCodeInstructionPickedFile,
   OpenCodeHealthResponse,
+  OpenCodeProjectHistoryAttachment,
+  OpenCodeProjectHistoryEntry,
   OpenCodeProjectIDEAction,
   OpenCodeProjectIDEStatusResponse,
   OpenCodeProject,
@@ -29,8 +32,16 @@ import type {
 } from './types/opencode';
 
 type CredentialMode = 'auth' | 'api-key' | 'opencode-config';
-const OPENCODE_DEFAULT_MODEL_VALUE = '__opencode_default__';
+const OPENCODE_RECOMMENDED_MODEL_VALUE = '__opencode_recommended__';
 const MAX_INSTRUCTION_ATTACHMENT_BYTES = 40 * 1024 * 1024;
+const PROJECT_HISTORY_STORAGE_KEY = 'glowby_oss_project_history';
+const DEFAULT_BUILD_INSTRUCTIONS = 'Make this project production ready. Follow AGENTS.md when present.';
+const OPENCODE_MODEL_PREFERENCE_ORDER = [
+  { providerId: 'openai', modelIds: ['gpt-5.4'] },
+  { providerId: 'opencode', modelIds: ['big-pickle'] },
+  { providerId: 'openai', modelIds: ['gpt-5.3-codex', 'gpt-5.2', 'gpt-5.1-codex-max', 'gpt-5.1-codex-mini'] },
+  { providerId: 'opencode', modelIds: ['kimi-k2.5-free', 'glm-5-free', 'minimax-m2.5-free'] },
+] as const;
 
 const RUN_STATUS_LABEL: Record<string, string> = {
   idle: 'Ready',
@@ -49,6 +60,87 @@ const DEFAULT_PROVIDER_KEYS: ProviderKeyState = {
   opencodeZenKey: '',
   xaiKey: '',
 };
+
+interface ProjectHistoryEntry {
+  path: string;
+  name: string;
+  version: string;
+  lastOpenedAt: string;
+}
+
+interface PreferredOpenCodeModel {
+  value: string;
+  providerLabel: string;
+  modelLabel: string;
+  fullLabel: string;
+}
+
+interface HistoryViewEntry extends Omit<OpenCodeProjectHistoryEntry, 'attachments'> {
+  attachments: OpenCodeProjectHistoryAttachment[];
+  optimistic?: boolean;
+}
+
+function IDEQuickActionIcon({ ide }: { ide: OpenCodeIDE }) {
+  switch (ide) {
+    case 'finder':
+      return (
+        <svg aria-hidden="true" fill="none" viewBox="0 0 16 16">
+          <path
+            d="M1.75 4.25a1 1 0 0 1 1-1h3.1l1.2 1.5h6.2a1 1 0 0 1 1 1v5.5a1.5 1.5 0 0 1-1.5 1.5h-10.5a1.5 1.5 0 0 1-1.5-1.5v-7Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+          />
+          <path d="M2 6h12" stroke="currentColor" strokeLinecap="round" strokeWidth="1.3" />
+        </svg>
+      );
+    case 'xcode':
+      return (
+        <svg aria-hidden="true" fill="none" viewBox="0 0 16 16">
+          <path
+            d="M9.66 2.03c-.48.06-1.04.39-1.43.83-.34.38-.63.94-.56 1.5.53.04 1.08-.27 1.45-.71.39-.46.63-1.01.54-1.62Z"
+            fill="currentColor"
+          />
+          <path
+            d="M12.94 10.88c-.22.51-.49.98-.83 1.43-.48.64-.88 1.36-1.64 1.37-.66.02-.87-.39-1.76-.39-.88 0-1.13.37-1.74.4-.73.03-1.29-.71-1.78-1.35-1.38-1.8-1.53-4.95-.34-6.73.58-.88 1.53-1.44 2.45-1.44.77 0 1.49.44 1.94.44.44 0 1.27-.54 2.14-.46.36.02 1.38.15 2.04 1.13-.05.04-1.22.73-1.21 2.19.02 1.74 1.53 2.32 1.55 2.33-.01.05-.24.75-.82 1.48Z"
+            fill="currentColor"
+          />
+        </svg>
+      );
+    case 'android-studio':
+      return (
+        <svg aria-hidden="true" fill="none" viewBox="0 0 16 16">
+          <path d="m5.14 3.28-.92-1.33m6.64 1.33.92-1.33" stroke="currentColor" strokeLinecap="round" strokeWidth="1.15" />
+          <path
+            d="M4.2 5.88A3.82 3.82 0 0 1 8 3.64a3.82 3.82 0 0 1 3.8 2.24H4.2Z"
+            fill="currentColor"
+          />
+          <circle cx="6.56" cy="4.9" fill="#f7fcfa" r=".42" />
+          <circle cx="9.44" cy="4.9" fill="#f7fcfa" r=".42" />
+          <rect fill="currentColor" height="5.14" rx="1.35" width="7.08" x="4.46" y="6.28" />
+          <rect fill="currentColor" height="2.82" rx=".55" width=".96" x="3.28" y="6.78" />
+          <rect fill="currentColor" height="2.82" rx=".55" width=".96" x="11.76" y="6.78" />
+          <rect fill="currentColor" height="2.62" rx=".55" width=".96" x="5.68" y="10.72" />
+          <rect fill="currentColor" height="2.62" rx=".55" width=".96" x="9.36" y="10.72" />
+        </svg>
+      );
+    case 'vscode':
+      return (
+        <svg aria-hidden="true" fill="none" viewBox="0 0 16 16">
+          <path
+            d="m10.8 2.2 3 1.4v8.8l-3 1.4-5.9-5.1 5.9-6.5Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.2"
+          />
+          <path d="M5 5.6 2.3 3.5 1.1 4.7 3.8 8l-2.7 3.3 1.2 1.2L5 10.4" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.2" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 function isMultiSelect(prompt: string, inputType?: string): boolean {
   const promptLower = prompt.toLowerCase();
@@ -138,6 +230,167 @@ function formatAttachmentSize(sizeBytes: number): string {
   return `${(mib / 1024).toFixed(1)} GB`;
 }
 
+function compactPathLabel(path: string): string {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return 'No project';
+  }
+
+  const parts = trimmed.split(/[\\/]/).filter((part) => part.length > 0);
+  return parts[parts.length - 1] || trimmed;
+}
+
+function compactHistoryText(value: string, maxLength = 180, fallback = 'No saved instructions.') {
+  const collapsed = value.trim().replace(/\s+/g, ' ');
+  if (!collapsed) {
+    return fallback;
+  }
+  if (collapsed.length <= maxLength) {
+    return collapsed;
+  }
+  return `${collapsed.slice(0, maxLength).trimEnd()}...`;
+}
+
+function formatHistoryTimestamp(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value || 'Unknown time';
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(parsed);
+}
+
+function inferHistoryAttachmentMediaType(mimeType?: string, fileName?: string): string {
+  const normalizedMimeType = (mimeType || '').trim().toLowerCase();
+  if (normalizedMimeType.startsWith('image/')) {
+    return 'screenshot';
+  }
+  if (normalizedMimeType.startsWith('video/')) {
+    return 'video';
+  }
+  if (normalizedMimeType.startsWith('audio/')) {
+    return 'audio';
+  }
+  if (normalizedMimeType.startsWith('text/')) {
+    return 'document';
+  }
+
+  const extension = (fileName || '').split('.').pop()?.toLowerCase() || '';
+  if (['md', 'txt', 'json', 'yaml', 'yml', 'xml', 'csv', 'pdf'].includes(extension)) {
+    return 'document';
+  }
+
+  return 'other';
+}
+
+function normalizeHistoryEntries(entries: OpenCodeProjectHistoryEntry[]): HistoryViewEntry[] {
+  return entries.map((entry) => ({
+    ...entry,
+    attachments: (entry.attachments || []).map((attachment) => ({
+      ...attachment,
+      filename: attachment.filename || attachment.name,
+      mediaType: attachment.mediaType || inferHistoryAttachmentMediaType(attachment.mimeType, attachment.filename || attachment.name),
+      relativePath: attachment.relativePath || attachment.path,
+    })),
+  }));
+}
+
+function historyAttachmentCountLabel(count: number): string {
+  return `${count} file${count === 1 ? '' : 's'}`;
+}
+
+function normalizeProjectHistory(raw: unknown): ProjectHistoryEntry[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  const seen = new Set<string>();
+  const entries: ProjectHistoryEntry[] = [];
+
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+
+    const path = typeof item.path === 'string' ? item.path.trim() : '';
+    if (!path || seen.has(path)) {
+      continue;
+    }
+
+    seen.add(path);
+    entries.push({
+      path,
+      name:
+        typeof item.name === 'string' && item.name.trim().length > 0
+          ? item.name.trim()
+          : compactPathLabel(path),
+      version: typeof item.version === 'string' ? item.version.trim() : '',
+      lastOpenedAt: typeof item.lastOpenedAt === 'string' ? item.lastOpenedAt : '',
+    });
+  }
+
+  return entries
+    .sort((left, right) => right.lastOpenedAt.localeCompare(left.lastOpenedAt))
+    .slice(0, 10);
+}
+
+function upsertProjectHistory(previous: ProjectHistoryEntry[], entry: ProjectHistoryEntry): ProjectHistoryEntry[] {
+  return normalizeProjectHistory([entry, ...previous.filter((item) => item.path !== entry.path)]);
+}
+
+function normalizeOpenCodeLookupValue(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function formatOpenCodeModelSelection(
+  provider: OpenCodeAvailableProvider,
+  model: OpenCodeAvailableProvider['models'][number],
+): PreferredOpenCodeModel {
+  const providerLabel = provider.displayName || provider.id;
+  const modelLabel = model.displayName || model.id;
+
+  return {
+    value: `${provider.id}/${model.id}`,
+    providerLabel,
+    modelLabel,
+    fullLabel: `${providerLabel}: ${modelLabel}`,
+  };
+}
+
+function preferredOpenCodeModel(providers: OpenCodeAvailableProvider[]): PreferredOpenCodeModel | null {
+  for (const preference of OPENCODE_MODEL_PREFERENCE_ORDER) {
+    const provider = providers.find(
+      (item) => normalizeOpenCodeLookupValue(item.id) === normalizeOpenCodeLookupValue(preference.providerId),
+    );
+    if (!provider) {
+      continue;
+    }
+
+    for (const candidateModelId of preference.modelIds) {
+      const model = provider.models.find(
+        (item) => normalizeOpenCodeLookupValue(item.id) === normalizeOpenCodeLookupValue(candidateModelId),
+      );
+      if (model) {
+        return formatOpenCodeModelSelection(provider, model);
+      }
+    }
+  }
+
+  for (const provider of providers) {
+    const firstModel = provider.models[0];
+    if (firstModel) {
+      return formatOpenCodeModelSelection(provider, firstModel);
+    }
+  }
+
+  return null;
+}
+
 function inferProviderFromCustomModel(customModel: string): ProviderID | null {
   const trimmed = customModel.trim();
   const slashIndex = trimmed.indexOf('/');
@@ -179,6 +432,7 @@ function isUnsupportedNativePickerError(error: unknown): boolean {
 }
 
 export default function App() {
+  const topbarLogoSrc = `${import.meta.env.BASE_URL}logo-svg.svg`;
   const [health, setHealth] = useState<OpenCodeHealthResponse | null>(null);
   const [authStatus, setAuthStatus] = useState<OpenCodeAuthStatus | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);
@@ -196,6 +450,12 @@ export default function App() {
   const [isPickingInstructionFiles, setIsPickingInstructionFiles] = useState(false);
   const [instructionPickerInfo, setInstructionPickerInfo] = useState<string | null>(null);
   const [instructionPickerWarning, setInstructionPickerWarning] = useState<string | null>(null);
+  const [projectHistory, setProjectHistory] = useState<ProjectHistoryEntry[]>([]);
+  const [historyEntries, setHistoryEntries] = useState<HistoryViewEntry[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyInfo, setHistoryInfo] = useState<string | null>(null);
+  const [optimisticHistoryEntry, setOptimisticHistoryEntry] = useState<HistoryViewEntry | null>(null);
   const [ideStatus, setIdeStatus] = useState<OpenCodeProjectIDEStatusResponse | null>(null);
   const [isLoadingIdeStatus, setIsLoadingIdeStatus] = useState(false);
   const [ideStatusError, setIdeStatusError] = useState<string | null>(null);
@@ -215,16 +475,14 @@ export default function App() {
   const [openAIModelsInfo, setOpenAIModelsInfo] = useState<string | null>(null);
   const [openAIModelsWarning, setOpenAIModelsWarning] = useState<string | null>(null);
   const [openCodeConfigProviders, setOpenCodeConfigProviders] = useState<OpenCodeAvailableProvider[]>([]);
-  const [selectedOpenCodeModel, setSelectedOpenCodeModel] = useState(OPENCODE_DEFAULT_MODEL_VALUE);
+  const [selectedOpenCodeModel, setSelectedOpenCodeModel] = useState(OPENCODE_RECOMMENDED_MODEL_VALUE);
   const [isLoadingOpenCodeModels, setIsLoadingOpenCodeModels] = useState(false);
   const [openCodeModelsInfo, setOpenCodeModelsInfo] = useState<string | null>(null);
   const [openCodeModelsWarning, setOpenCodeModelsWarning] = useState<string | null>(null);
 
   const [selectedModelOption, setSelectedModelOption] = useState(() => defaultModelOptionValue());
   const [customModel, setCustomModel] = useState('');
-  const [instructions, setInstructions] = useState(
-    'Make this project production ready. Follow AGENTS.md when present.',
-  );
+  const [instructions, setInstructions] = useState(DEFAULT_BUILD_INSTRUCTIONS);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [simpleAnswerText, setSimpleAnswerText] = useState('');
@@ -237,8 +495,12 @@ export default function App() {
 
   const consoleRef = useRef<HTMLDivElement | null>(null);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
+  const [isProjectPickerOpen, setIsProjectPickerOpen] = useState(false);
+  const [isContextOpen, setIsContextOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const refine = useRefineRun();
+  const previousRefineStatusRef = useRef(refine.status);
 
   const activeProject = projectEnvelope?.project ?? null;
   const targetRows = useMemo(() => targetSummary(activeProject), [activeProject]);
@@ -293,13 +555,141 @@ export default function App() {
     return [...refine.logs, refine.partialLine];
   }, [refine.logs, refine.partialLine]);
 
-  const setupStatusText = health?.healthy ? 'Backend connected' : 'Backend unavailable';
+  const setupStatusText = health?.healthy ? 'Backend connected' : health ? 'Backend unavailable' : 'Checking backend';
   const shouldFetchOpenAIModels = isAuthMode && selectedProvider === 'openai';
   const ideActions = useMemo(() => ideStatus?.actions ?? [], [ideStatus?.actions]);
   const finderAction = useMemo(() => ideActionFor(ideActions, 'finder'), [ideActions]);
   const xcodeAction = useMemo(() => ideActionFor(ideActions, 'xcode'), [ideActions]);
   const androidStudioAction = useMemo(() => ideActionFor(ideActions, 'android-studio'), [ideActions]);
   const vscodeAction = useMemo(() => ideActionFor(ideActions, 'vscode'), [ideActions]);
+  const selectedProjectPath = projectPath.trim();
+  const attachmentCount = instructionAttachments.length;
+  const recommendedOpenCodeModel = useMemo(
+    () => preferredOpenCodeModel(openCodeConfigProviders),
+    [openCodeConfigProviders],
+  );
+  const resolvedOpenCodeModelValue = useMemo(() => {
+    if (selectedOpenCodeModel === OPENCODE_RECOMMENDED_MODEL_VALUE) {
+      return recommendedOpenCodeModel?.value || '';
+    }
+
+    return selectedOpenCodeModel;
+  }, [recommendedOpenCodeModel, selectedOpenCodeModel]);
+  const selectedOpenCodeModelLabel = useMemo(() => {
+    if (selectedOpenCodeModel === OPENCODE_RECOMMENDED_MODEL_VALUE) {
+      return recommendedOpenCodeModel?.fullLabel || 'Recommended model';
+    }
+
+    for (const provider of openCodeConfigProviders) {
+      const matchingModel = provider.models.find((model) => `${provider.id}/${model.id}` === selectedOpenCodeModel);
+      if (matchingModel) {
+        return `${provider.displayName || provider.id}: ${matchingModel.displayName || matchingModel.id}`;
+      }
+    }
+
+    return selectedOpenCodeModel;
+  }, [openCodeConfigProviders, recommendedOpenCodeModel, selectedOpenCodeModel]);
+  const recommendedOpenCodeModelOptionLabel = recommendedOpenCodeModel
+    ? `Recommended · ${recommendedOpenCodeModel.modelLabel}`
+    : 'Recommended';
+  const systemNeedsAttention = Boolean(
+    healthError || authError || health?.healthy === false || authStatus?.serverRunning === false,
+  );
+  const systemStatusSummary = useMemo(() => {
+    if (healthError) {
+      return 'Health check failed';
+    }
+    if (!health && !authStatus && !authError) {
+      return 'Checking setup';
+    }
+    if (health?.healthy === false) {
+      return 'Backend needs attention';
+    }
+    if (authError) {
+      return 'Auth check failed';
+    }
+    if (authStatus?.serverRunning === false) {
+      return 'Agent server stopped';
+    }
+    return 'Local backend ready';
+  }, [authError, authStatus, health, healthError]);
+  const agentStatusSummary = useMemo(() => {
+    if (isOpenCodeConfigMode) {
+      return selectedOpenCodeModelLabel;
+    }
+
+    if (customModel.trim()) {
+      return customModel.trim();
+    }
+
+    if (resolvedSelection) {
+      return resolvedSelection.label;
+    }
+
+    if (isAuthMode) {
+      return isChatGPTConnected ? 'ChatGPT connected' : 'Connect ChatGPT';
+    }
+
+    return 'Choose a model';
+  }, [
+    customModel,
+    isAuthMode,
+    isChatGPTConnected,
+    isOpenCodeConfigMode,
+    selectedOpenCodeModelLabel,
+    resolvedSelection,
+  ]);
+  const projectButtonLabel = activeProject?.name || (selectedProjectPath ? compactPathLabel(selectedProjectPath) : 'Project');
+  const contextButtonLabel = attachmentCount > 0 ? `Context ${attachmentCount}` : 'Context';
+
+  const refreshProjectHistory = useCallback(
+    async (
+      pathOverride?: string,
+      options: {
+        silent?: boolean;
+        clearOptimisticOnSuccess?: boolean;
+      } = {},
+    ) => {
+      const trimmedPath = (pathOverride ?? projectPath).trim();
+      if (!trimmedPath) {
+        setHistoryEntries([]);
+        if (!options.silent) {
+          setHistoryError(null);
+          setIsLoadingHistory(false);
+        }
+        return false;
+      }
+
+      if (!options.silent) {
+        setIsLoadingHistory(true);
+        setHistoryError(null);
+      }
+
+      try {
+        const response = await openCodeApi.getProjectHistory(trimmedPath);
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to load build history.');
+        }
+
+        setHistoryEntries(normalizeHistoryEntries(response.entries || []));
+        setHistoryError(null);
+        if (options.clearOptimisticOnSuccess) {
+          setOptimisticHistoryEntry(null);
+        }
+        return true;
+      } catch (error) {
+        if (!options.silent) {
+          setHistoryError(toErrorMessage(error, 'Failed to load build history.'));
+        }
+        return false;
+      } finally {
+        if (!options.silent) {
+          setIsLoadingHistory(false);
+        }
+      }
+    },
+    [projectPath],
+  );
 
   useEffect(() => {
     if (allOptionValues.length === 0) {
@@ -365,6 +755,24 @@ export default function App() {
       setIsLoadingIdeStatus(false);
     }
   };
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PROJECT_HISTORY_STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+      const history = normalizeProjectHistory(JSON.parse(raw));
+      const lastProject = history[0];
+      setProjectHistory(history);
+      if (lastProject?.path) {
+        setProjectPath((previous) => previous.trim() || lastProject.path);
+        void loadProject(lastProject.path);
+      }
+    } catch {
+      setProjectHistory([]);
+    }
+  }, []);
 
   useEffect(() => {
     void refreshSetup();
@@ -465,7 +873,7 @@ export default function App() {
       setOpenCodeModelsInfo(null);
       setOpenCodeModelsWarning(null);
       setIsLoadingOpenCodeModels(false);
-      setSelectedOpenCodeModel(OPENCODE_DEFAULT_MODEL_VALUE);
+      setSelectedOpenCodeModel(OPENCODE_RECOMMENDED_MODEL_VALUE);
       return;
     }
 
@@ -497,7 +905,7 @@ export default function App() {
           `Loaded ${providers.length} provider${providers.length === 1 ? '' : 's'} and ${modelCount} model${modelCount === 1 ? '' : 's'} from OpenCode config.`,
         );
         if (modelCount === 0) {
-          setOpenCodeModelsWarning('OpenCode returned no models. You can still run with configured default model.');
+          setOpenCodeModelsWarning('OpenCode returned no models. Refresh Settings or choose another AI access mode.');
         } else {
           setOpenCodeModelsWarning(null);
         }
@@ -510,7 +918,7 @@ export default function App() {
         setOpenCodeConfigProviders([]);
         setOpenCodeModelsInfo(null);
         setOpenCodeModelsWarning(
-          `Could not load OpenCode provider catalog. You can still run with configured default model. ${toErrorMessage(error, '')}`.trim(),
+          `Could not load OpenCode provider catalog. Refresh Settings or choose another AI access mode. ${toErrorMessage(error, '')}`.trim(),
         );
       })
       .finally(() => {
@@ -540,7 +948,7 @@ export default function App() {
       return;
     }
 
-    if (selectedOpenCodeModel === OPENCODE_DEFAULT_MODEL_VALUE) {
+    if (selectedOpenCodeModel === OPENCODE_RECOMMENDED_MODEL_VALUE) {
       return;
     }
 
@@ -549,15 +957,99 @@ export default function App() {
     );
 
     if (!exists) {
-      setSelectedOpenCodeModel(OPENCODE_DEFAULT_MODEL_VALUE);
+      setSelectedOpenCodeModel(OPENCODE_RECOMMENDED_MODEL_VALUE);
     }
   }, [isOpenCodeConfigMode, openCodeConfigProviders, selectedOpenCodeModel]);
+
+  useEffect(() => {
+    if (!isProjectPickerOpen || refine.isRunning || !activeProject || !selectedProjectPath) {
+      return;
+    }
+
+    void refreshProjectHistory(selectedProjectPath);
+  }, [activeProject, isProjectPickerOpen, refreshProjectHistory, refine.isRunning, selectedProjectPath]);
+
+  useEffect(() => {
+    const previousStatus = previousRefineStatusRef.current;
+    previousRefineStatusRef.current = refine.status;
+
+    if (previousStatus !== 'running' || refine.status === 'running') {
+      return;
+    }
+
+    setOptimisticHistoryEntry((previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        status: refine.status as OpenCodeHistoryStatus,
+        outputSummary: refine.summary || previous.outputSummary,
+      };
+    });
+    if (!selectedProjectPath) {
+      return;
+    }
+
+    void refreshProjectHistory(selectedProjectPath, { clearOptimisticOnSuccess: true });
+  }, [refine.status, refine.summary, refreshProjectHistory, selectedProjectPath]);
 
   const updateProviderKey = (field: keyof ProviderKeyState, value: string) => {
     setProviderKeys((previous) => ({
       ...previous,
       [field]: value,
     }));
+  };
+
+  const toggleProjectPicker = () => {
+    setIsProjectPickerOpen((previous) => {
+      const next = !previous;
+      if (next) {
+        setIsContextOpen(false);
+        setIsSettingsOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleContextPanel = () => {
+    setIsContextOpen((previous) => {
+      const next = !previous;
+      if (next) {
+        setIsProjectPickerOpen(false);
+        setIsSettingsOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleSettingsPanel = () => {
+    setIsSettingsOpen((previous) => {
+      const next = !previous;
+      if (next) {
+        setIsProjectPickerOpen(false);
+        setIsContextOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const clearProjectSelection = () => {
+    setProjectPath('');
+    setProjectEnvelope(null);
+    setProjectError(null);
+    setFolderPickerInfo(null);
+    setFolderPickerWarning(null);
+    setIdeStatus(null);
+    setIdeStatusError(null);
+    setIdeOpenInfo(null);
+    setIdeOpenError(null);
+    setHistoryEntries([]);
+    setHistoryError(null);
+    setHistoryInfo(null);
+    setOptimisticHistoryEntry(null);
+    setIsProjectPickerOpen(false);
   };
 
   const onConsoleScroll = () => {
@@ -704,6 +1196,10 @@ export default function App() {
     setIdeStatusError(null);
     setIdeOpenInfo(null);
     setIdeOpenError(null);
+    setHistoryEntries([]);
+    setHistoryError(null);
+    setHistoryInfo(null);
+    setOptimisticHistoryEntry(null);
     setIsLoadingProject(true);
 
     try {
@@ -711,8 +1207,23 @@ export default function App() {
       if (!envelope.success || !envelope.project) {
         throw new Error(envelope.error || 'The provided path is not a valid Glowbom project.');
       }
+      setProjectPath(trimmedPath);
       setProjectEnvelope(envelope);
       setProjectError(null);
+      setProjectHistory((previous) => {
+        const next = upsertProjectHistory(previous, {
+          path: trimmedPath,
+          name: envelope.project?.name?.trim() || compactPathLabel(trimmedPath),
+          version: envelope.project?.version?.trim() || '',
+          lastOpenedAt: new Date().toISOString(),
+        });
+        try {
+          window.localStorage.setItem(PROJECT_HISTORY_STORAGE_KEY, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      setIsProjectPickerOpen(false);
+      void refreshProjectHistory(trimmedPath, { silent: true });
       await refreshIDEStatus(trimmedPath);
       return true;
     } catch (error) {
@@ -834,11 +1345,53 @@ export default function App() {
     }
   };
 
-  const startRefine = () => {
+  const restoreHistoryEntry = (entry: HistoryViewEntry) => {
+    setInstructions(entry.instructions);
+    setInstructionAttachments(entry.attachments);
+    setInstructionPickerInfo(null);
+    setInstructionPickerWarning(null);
+    setFormError(null);
+    setHistoryInfo(
+      `Restored ${formatHistoryTimestamp(entry.timestamp)} with ${historyAttachmentCountLabel(entry.attachments.length)}.`,
+    );
+    if ((entry.missingAttachmentCount || 0) > 0) {
+      setHistoryError(
+        `${entry.missingAttachmentCount} archived file${entry.missingAttachmentCount === 1 ? ' is' : 's are'} missing, so only the available context was restored.`,
+      );
+    } else {
+      setHistoryError(null);
+    }
+    setIsProjectPickerOpen(false);
+  };
+
+  const startRefine = async () => {
     setFormError(null);
 
-    if (!activeProject) {
-      setFormError('Open a Glowbom project before building.');
+    let hasLoadedProject = Boolean(activeProject);
+
+    if (!hasLoadedProject) {
+      if (!selectedProjectPath) {
+        setFormError('Choose a local project folder first.');
+        return;
+      }
+
+      const projectLoaded = await loadProject();
+      if (!projectLoaded) {
+        return;
+      }
+      hasLoadedProject = true;
+    }
+
+    if (!hasLoadedProject) {
+      setFormError('Choose a valid Glowbom project folder before building.');
+      return;
+    }
+
+    const finalInstructions = instructions.trim() || DEFAULT_BUILD_INSTRUCTIONS;
+
+    if (healthError || health?.healthy === false) {
+      setFormError('Glowby cannot reach the local backend right now. Open Settings, refresh the checks, and try again.');
+      setIsSettingsOpen(true);
       return;
     }
 
@@ -858,7 +1411,12 @@ export default function App() {
 
     let modelValue = '';
     if (isOpenCodeConfigMode) {
-      modelValue = selectedOpenCodeModel === OPENCODE_DEFAULT_MODEL_VALUE ? '' : selectedOpenCodeModel;
+      modelValue = resolvedOpenCodeModelValue;
+      if (!modelValue) {
+        setFormError('No OpenCode model is available right now. Open Settings and refresh the model list.');
+        setIsSettingsOpen(true);
+        return;
+      }
     } else {
       const customModelTrimmed = customModel.trim();
       const customModelProvider = inferProviderFromCustomModel(customModelTrimmed);
@@ -866,16 +1424,19 @@ export default function App() {
 
       if (!providerForValidation && !customModelTrimmed) {
         setFormError('Select an AI model before building.');
+        setIsSettingsOpen(true);
         return;
       }
 
       if (isAuthMode) {
         if (customModelProvider && customModelProvider !== 'openai') {
           setFormError('Auth provider mode currently supports OpenAI models only.');
+          setIsSettingsOpen(true);
           return;
         }
         if (!isChatGPTConnected) {
           setFormError('Connect ChatGPT first to build with your connected account.');
+          setIsSettingsOpen(true);
           return;
         }
       }
@@ -890,6 +1451,7 @@ export default function App() {
             } else {
               setFormError(`${providerDef.label} model selected. Add ${providerDef.keyLabel || 'the provider API key'}.`);
             }
+            setIsSettingsOpen(true);
             return;
           }
         }
@@ -898,13 +1460,40 @@ export default function App() {
       modelValue = customModelTrimmed || resolvedSelection?.value || '';
       if (!modelValue) {
         setFormError('Model is required.');
+        setIsSettingsOpen(true);
         return;
       }
     }
 
+    setHistoryInfo(null);
+    setHistoryError(null);
+    setIsProjectPickerOpen(false);
+    setIsContextOpen(false);
+    setIsSettingsOpen(false);
+    setOptimisticHistoryEntry({
+      id: `optimistic-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      instructions: finalInstructions,
+      taskType: 'refine',
+      status: 'running',
+      outputSummary: '',
+      folderName: '',
+      missingAttachmentCount: 0,
+      attachments: instructionAttachments.map((attachment) => ({
+        path: attachment.path,
+        name: attachment.name,
+        filename: attachment.name,
+        sizeBytes: attachment.sizeBytes,
+        mimeType: attachment.mimeType,
+        mediaType: inferHistoryAttachmentMediaType(attachment.mimeType, attachment.name),
+        relativePath: attachment.path,
+      })),
+      optimistic: true,
+    });
+
     void refine.startRefine({
-      projectPath: projectPath.trim(),
-      instructions,
+      projectPath: selectedProjectPath,
+      instructions: finalInstructions,
       persistCurrentInstructionsToHistory: true,
       instructionAttachmentPaths,
       model: modelValue || undefined,
@@ -1055,12 +1644,116 @@ export default function App() {
     );
   };
 
+  const renderHistoryEntryCard = (entry: HistoryViewEntry) => {
+    const attachments = entry.attachments || [];
+    const missingAttachmentCount = entry.missingAttachmentCount || 0;
+    const rawStatus = (entry.status || 'failed').toLowerCase();
+    const statusKey = rawStatus in RUN_STATUS_LABEL ? rawStatus : 'idle';
+    const statusLabel = RUN_STATUS_LABEL[statusKey] || 'Saved';
+
+    const itemContent = (
+      <>
+        <div className="run-history-item-head">
+          <div className="run-history-item-title">
+            {entry.optimistic ? (
+              <span aria-hidden="true" className="history-spinner" />
+            ) : (
+              <span>{formatHistoryTimestamp(entry.timestamp)}</span>
+            )}
+          </div>
+          <span className={`run-status status-${statusKey}`}>{statusLabel}</span>
+        </div>
+
+        <p className="run-history-item-instructions">
+          {compactHistoryText(
+            entry.instructions,
+            180,
+            entry.attachments.length > 0 ? 'Saved files only.' : 'No saved instructions.',
+          )}
+        </p>
+
+        {entry.outputSummary ? (
+          <p className="run-history-item-summary">{compactHistoryText(entry.outputSummary, 220, '')}</p>
+        ) : null}
+
+        <div className="run-history-item-meta">
+          <span>{historyAttachmentCountLabel(attachments.length)}</span>
+          {missingAttachmentCount > 0 ? (
+            <span>
+              {missingAttachmentCount} missing file{missingAttachmentCount === 1 ? '' : 's'}
+            </span>
+          ) : null}
+          {!entry.optimistic && entry.folderName ? <span>{entry.folderName}</span> : null}
+        </div>
+
+        {attachments.length > 0 ? (
+          <div className="run-history-item-attachments">
+            {attachments.slice(0, 3).map((attachment) => (
+              <span className="history-attachment-chip" key={`${entry.id}-${attachment.path}`}>
+                {attachment.name}
+              </span>
+            ))}
+            {attachments.length > 3 ? (
+              <span className="history-attachment-chip">+{attachments.length - 3} more</span>
+            ) : null}
+          </div>
+        ) : null}
+      </>
+    );
+
+    if (entry.optimistic) {
+      return (
+        <div className="run-history-item optimistic" key={entry.id}>
+          {itemContent}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        className="run-history-item"
+        key={entry.id || `${entry.folderName}-${entry.timestamp}`}
+        onClick={() => restoreHistoryEntry(entry)}
+        type="button"
+      >
+        {itemContent}
+      </button>
+    );
+  };
+
+  const renderProjectLaunchButton = (
+    ide: OpenCodeIDE,
+    label: string,
+    action: OpenCodeProjectIDEAction | undefined,
+  ) => {
+    const isOpening = openingIDE === ide;
+    const isDisabled = !action?.available || openingIDE !== null;
+    const title = action?.available ? `Open in ${label}` : `${label} unavailable`;
+
+    return (
+      <button
+        aria-label={isOpening ? `Opening in ${label}` : title}
+        className={`project-launch-button ${isOpening ? 'opening' : ''}`}
+        disabled={isDisabled}
+        key={ide}
+        onClick={() => {
+          void openProjectInIDE(ide);
+        }}
+        title={title}
+        type="button"
+      >
+        {isOpening ? <span aria-hidden="true" className="history-spinner toolbar-spinner" /> : <IDEQuickActionIcon ide={ide} />}
+        <span className="sr-only">{label}</span>
+      </button>
+    );
+  };
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-inner">
           <a className="topbar-logo" href="https://glowbom.com" rel="noreferrer" target="_blank">
-            <img alt="Glowbom" src="/logo-svg.svg" />
+            <img alt="Glowbom" src={topbarLogoSrc} />
           </a>
           <nav className="topbar-links">
             <a href="https://glowbom.com/glowby/" rel="noreferrer" target="_blank">
@@ -1089,552 +1782,659 @@ export default function App() {
       </header>
 
       <main className="page">
-        <header className="brand-header">
+        <header className="brand-header brand-header-minimal">
           <div className="brand-copy">
-            <h1>Glowby</h1>
-            <p>Choose a project folder and let Glowby finish the engineering work locally.</p>
+            <h1>Glowby OSS</h1>
+            <p>Build Anything Locally</p>
           </div>
         </header>
 
-        <section className="card">
-        <div className="card-title-row">
-          <h2>1. Setup</h2>
-          <button
-            className="button secondary"
-            disabled={isCheckingSetup || refine.isRunning}
-            onClick={() => void refreshSetup()}
-          >
-            {isCheckingSetup ? 'Checking...' : 'Refresh'}
-          </button>
-        </div>
+        <section className="card composer-card">
+          <div className="composer-toolbar">
+            <div className="composer-toolbar-primary">
+              <button
+                className={`composer-chip-button ${activeProject ? 'has-value' : ''} ${isProjectPickerOpen ? 'active' : ''}`}
+                disabled={refine.isRunning || isLoadingProject}
+                onClick={toggleProjectPicker}
+                type="button"
+              >
+                <span className="composer-chip-label">Project</span>
+                <span className="composer-chip-value">{projectButtonLabel}</span>
+              </button>
 
-        <div className="status-grid">
-          <div className="status-tile">
-            <span className="status-label">Backend</span>
-            <strong className={health?.healthy ? 'ok' : 'warn'}>{setupStatusText}</strong>
-            {health?.server ? <span className="meta">{health.server}</span> : null}
-            {health?.hint ? <span className="meta">{health.hint}</span> : null}
-            {healthError ? <span className="error-inline">{healthError}</span> : null}
-          </div>
-
-          <div className="status-tile">
-            <span className="status-label">Auth Diagnostics</span>
-            <strong>{authStatus?.serverRunning ? 'Agent server running' : 'Agent server stopped'}</strong>
-            <span className="meta">Credential type: {formatCredentialType(authStatus?.openaiCredentialType)}</span>
-            <span className="meta">Cached auth mode: {formatAuthMode(authStatus?.cachedGlowbomAuthMode)}</span>
-            {authError ? <span className="error-inline">{authError}</span> : null}
-          </div>
-        </div>
-
-        <label className="field-label" htmlFor="projectPath">
-          Glowbom project path
-        </label>
-        <div className="row compact">
-          <input
-            className="input"
-            id="projectPath"
-            onChange={(event) => {
-              setProjectPath(event.target.value);
-              setProjectEnvelope(null);
-              setIdeStatus(null);
-              setIdeStatusError(null);
-              setIdeOpenInfo(null);
-              setIdeOpenError(null);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !isLoadingProject && !refine.isRunning) {
-                event.preventDefault();
-                void loadProject(event.currentTarget.value);
-              }
-            }}
-            placeholder="/absolute/path/to/project"
-            value={projectPath}
-          />
-          <button
-            className="button secondary"
-            disabled={refine.isRunning || isPickingFolder || isLoadingProject}
-            onClick={() => void openFolderPicker()}
-          >
-            {isPickingFolder ? 'Choosing...' : isLoadingProject ? 'Opening...' : 'Choose Project Folder...'}
-          </button>
-        </div>
-        <p className="meta">Choose Project Folder... opens and loads a local project. Or paste a path and press Enter. No uploads.</p>
-
-        {folderPickerInfo ? <p className="meta ok">{folderPickerInfo}</p> : null}
-        {folderPickerWarning ? <p className="meta warn">{folderPickerWarning}</p> : null}
-        {projectError ? <p className="error-inline">{projectError}</p> : null}
-
-        {activeProject ? (
-          <div className="project-summary">
-            <div className="project-summary-header">
-              <strong>{activeProject.name}</strong>
-              <span>v{activeProject.version}</span>
-            </div>
-            <div className="chip-list">
-              {targetRows.map((target) => (
-                <span className="chip" key={target.id}>
-                  {target.id} · {target.stack} · {target.outputDir}
-                </span>
-              ))}
+              {activeProject ? (
+                <div className="project-launch-strip" role="group" aria-label="Open project in apps">
+                  {renderProjectLaunchButton('finder', 'Finder', finderAction)}
+                  {renderProjectLaunchButton('xcode', 'Xcode', xcodeAction)}
+                  {renderProjectLaunchButton('android-studio', 'Android Studio', androidStudioAction)}
+                  {renderProjectLaunchButton('vscode', 'VS Code', vscodeAction)}
+                </div>
+              ) : null}
             </div>
 
-            <div className="project-ide-tools">
-              <div className="card-title-row">
-                <strong>Open Project</strong>
+            <div className="row composer-toolbar-actions">
+              <button
+                className={`composer-chip-button ${attachmentCount > 0 ? 'has-value' : ''} ${isContextOpen ? 'active' : ''}`}
+                disabled={refine.isRunning}
+                onClick={toggleContextPanel}
+                type="button"
+              >
+                <span className="composer-chip-value">{contextButtonLabel}</span>
+              </button>
+              <button
+                className={`composer-chip-button ${systemNeedsAttention ? 'attention' : ''} ${isSettingsOpen ? 'active' : ''}`}
+                disabled={refine.isRunning}
+                onClick={toggleSettingsPanel}
+                type="button"
+              >
+                <span className="composer-chip-value">Settings</span>
+              </button>
+            </div>
+          </div>
+
+          {isProjectPickerOpen ? (
+            <div className="composer-popover">
+              <div className="composer-popover-header">
+                <strong>Project</strong>
+                {activeProject || selectedProjectPath ? (
+                  <button className="button secondary tiny" onClick={clearProjectSelection} type="button">
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="row compact">
+                <input
+                  className="input"
+                  id="projectPath"
+                  onChange={(event) => {
+                    setProjectPath(event.target.value);
+                    setFormError(null);
+                    setProjectEnvelope(null);
+                    setProjectError(null);
+                    setIdeStatus(null);
+                    setIdeStatusError(null);
+                    setIdeOpenInfo(null);
+                    setIdeOpenError(null);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !isLoadingProject && !refine.isRunning) {
+                      event.preventDefault();
+                      void loadProject(event.currentTarget.value);
+                    }
+                  }}
+                  placeholder="/absolute/path/to/project"
+                  value={projectPath}
+                />
                 <button
-                  className="button secondary tiny"
-                  disabled={isLoadingIdeStatus}
-                  onClick={() => void refreshIDEStatus(projectPath)}
+                  className="button secondary"
+                  disabled={refine.isRunning || isPickingFolder || isLoadingProject}
+                  onClick={() => void openFolderPicker()}
+                  type="button"
                 >
-                  {isLoadingIdeStatus ? 'Scanning...' : 'Refresh IDE Scan'}
+                  {isPickingFolder ? 'Choosing...' : isLoadingProject ? 'Loading...' : 'Choose'}
                 </button>
               </div>
 
-              <div className="row">
-                <button
-                  className="button secondary"
-                  disabled={!finderAction?.available || openingIDE !== null}
-                  onClick={() => {
-                    void openProjectInIDE('finder');
-                  }}
-                >
-                  {openingIDE === 'finder' ? 'Opening...' : 'Open Folder'}
-                </button>
-                <button
-                  className="button secondary"
-                  disabled={!xcodeAction?.available || openingIDE !== null}
-                  onClick={() => {
-                    void openProjectInIDE('xcode');
-                  }}
-                >
-                  {openingIDE === 'xcode' ? 'Opening...' : 'Open in Xcode'}
-                </button>
-                <button
-                  className="button secondary"
-                  disabled={!androidStudioAction?.available || openingIDE !== null}
-                  onClick={() => {
-                    void openProjectInIDE('android-studio');
-                  }}
-                >
-                  {openingIDE === 'android-studio' ? 'Opening...' : 'Open in Android Studio'}
-                </button>
-                <button
-                  className="button secondary"
-                  disabled={!vscodeAction?.available || openingIDE !== null}
-                  onClick={() => {
-                    void openProjectInIDE('vscode');
-                  }}
-                >
-                  {openingIDE === 'vscode' ? 'Opening...' : 'Open in VS Code'}
-                </button>
-              </div>
+              {folderPickerInfo ? <p className="meta ok">{folderPickerInfo}</p> : null}
+              {folderPickerWarning ? <p className="meta warn">{folderPickerWarning}</p> : null}
+              {projectError ? <p className="error-inline">{projectError}</p> : null}
 
-              {ideActions.length > 0 ? (
-                <div className="ide-diagnostics">
-                  {ideActions.map((action) => (
-                    <p className={`meta ${action.available ? 'ok' : 'warn'}`} key={action.ide}>
-                      {action.label}: {action.reason || (action.available ? 'Ready' : 'Not ready')}
-                    </p>
-                  ))}
+              {activeProject ? (
+                <div className="project-summary compact-project-summary">
+                  <div className="project-summary-header">
+                    <div className="project-heading">
+                      <strong>{activeProject.name}</strong>
+                      <span className="meta">
+                        v{activeProject.version} · {targetRows.length} target{targetRows.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="meta project-path-meta">{selectedProjectPath}</p>
+                  {targetRows.length > 0 ? (
+                    <div className="chip-list">
+                      {targetRows.map((target) => (
+                        <span className="chip" key={target.id}>
+                          {target.id}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <details className="project-tools-disclosure">
+                    <summary>Tools</summary>
+                    <div className="project-ide-tools">
+                      <div className="card-title-row">
+                        <strong>Open</strong>
+                        <button
+                          className="button secondary tiny"
+                          disabled={isLoadingIdeStatus}
+                          onClick={() => void refreshIDEStatus(projectPath)}
+                          type="button"
+                        >
+                          {isLoadingIdeStatus ? 'Scanning...' : 'Refresh'}
+                        </button>
+                      </div>
+
+                      <div className="row">
+                        <button
+                          className="button secondary"
+                          disabled={!finderAction?.available || openingIDE !== null}
+                          onClick={() => {
+                            void openProjectInIDE('finder');
+                          }}
+                          type="button"
+                        >
+                          {openingIDE === 'finder' ? 'Opening...' : 'Folder'}
+                        </button>
+                        <button
+                          className="button secondary"
+                          disabled={!xcodeAction?.available || openingIDE !== null}
+                          onClick={() => {
+                            void openProjectInIDE('xcode');
+                          }}
+                          type="button"
+                        >
+                          {openingIDE === 'xcode' ? 'Opening...' : 'Xcode'}
+                        </button>
+                        <button
+                          className="button secondary"
+                          disabled={!androidStudioAction?.available || openingIDE !== null}
+                          onClick={() => {
+                            void openProjectInIDE('android-studio');
+                          }}
+                          type="button"
+                        >
+                          {openingIDE === 'android-studio' ? 'Opening...' : 'Android Studio'}
+                        </button>
+                        <button
+                          className="button secondary"
+                          disabled={!vscodeAction?.available || openingIDE !== null}
+                          onClick={() => {
+                            void openProjectInIDE('vscode');
+                          }}
+                          type="button"
+                        >
+                          {openingIDE === 'vscode' ? 'Opening...' : 'VS Code'}
+                        </button>
+                      </div>
+
+                      {ideStatusError ? <p className="error-inline">{ideStatusError}</p> : null}
+                      {ideOpenInfo ? <p className="meta ok">{ideOpenInfo}</p> : null}
+                      {ideOpenError ? <p className="error-inline">{ideOpenError}</p> : null}
+                    </div>
+                  </details>
+
+                  <div className="project-history-section">
+                    <div className="card-title-row">
+                      <strong>History</strong>
+                      <button
+                        className="button secondary tiny"
+                        disabled={isLoadingHistory || !selectedProjectPath || !activeProject}
+                        onClick={() => {
+                          void refreshProjectHistory(selectedProjectPath);
+                        }}
+                        type="button"
+                      >
+                        {isLoadingHistory ? 'Refreshing...' : 'Refresh'}
+                      </button>
+                    </div>
+
+                    {historyError ? <p className="error-inline">{historyError}</p> : null}
+
+                    {historyEntries.length === 0 ? (
+                      <div className="empty-inline-state compact-empty-state">
+                        <strong>{isLoadingHistory ? 'Loading history...' : 'No history yet'}</strong>
+                        <p className="meta">Build once and Glowby will archive the prompt and attached files here.</p>
+                      </div>
+                    ) : (
+                      <div className="run-history-list project-history-list">
+                        {historyEntries.map((entry) => renderHistoryEntryCard(entry))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : null}
 
-              {ideStatusError ? <p className="error-inline">{ideStatusError}</p> : null}
-              {ideOpenInfo ? <p className="meta ok">{ideOpenInfo}</p> : null}
-              {ideOpenError ? <p className="error-inline">{ideOpenError}</p> : null}
-            </div>
-          </div>
-        ) : null}
-      </section>
-
-      <section className="card">
-        <h2>2. Build Setup</h2>
-
-        <div className="field-grid">
-          <div>
-            <label className="field-label" htmlFor="credentialMode">
-              AI access
-            </label>
-            <select
-              className="input"
-              disabled={refine.isRunning}
-              id="credentialMode"
-              onChange={(event) => setCredentialMode(event.target.value as CredentialMode)}
-              value={credentialMode}
-            >
-              <option value="auth">Use connected account</option>
-              <option value="api-key">Use API keys</option>
-              <option value="opencode-config">Use OpenCode setup</option>
-            </select>
-          </div>
-
-          {isAuthMode ? (
-            <div>
-              <label className="field-label" htmlFor="authProvider">
-                Connected account
-              </label>
-              <select
-                className="input"
-                disabled={refine.isRunning || isUpdatingAuthConnection}
-                id="authProvider"
-                onChange={(event) => {
-                  setAuthProvider(event.target.value as AuthProviderID);
-                  setAuthConnectionInfo(null);
-                  setAuthConnectionError(null);
-                }}
-                value={authProvider}
-              >
-                <option value="chatgpt">ChatGPT (recommended)</option>
-              </select>
+              {projectHistory.length > 0 ? (
+                <div className="history-list">
+                  {projectHistory.map((entry) => {
+                    const isCurrent = entry.path === selectedProjectPath;
+                    return (
+                      <button
+                        className={`history-item ${isCurrent ? 'current' : ''}`}
+                        key={entry.path}
+                        onClick={() => {
+                          setProjectPath(entry.path);
+                          void loadProject(entry.path);
+                        }}
+                        type="button"
+                      >
+                        <span className="history-item-title">{entry.name}</span>
+                        <span className="history-item-meta">{entry.path}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           ) : null}
-        </div>
 
-        {isAuthMode ? (
-          <div className="chatgpt-callout">
-            <h3>Use your ChatGPT account</h3>
-            <p>Auth providers are account-level connections. ChatGPT is available now and is recommended.</p>
-            <div className={`auth-connection-card ${authProviderConnected ? 'connected' : 'disconnected'}`}>
-              <span className="status-label">Connection status</span>
-              <strong className={authProviderConnected ? 'ok' : 'warn'}>
-                {authProviderConnected ? 'Connected' : 'Not connected'}
-              </strong>
-              <span className="meta">Provider: ChatGPT</span>
-              <span className="meta">Credential type: {formatCredentialType(authStatus?.openaiCredentialType)}</span>
-              <span className="meta">Cached auth mode: {formatAuthMode(authStatus?.cachedGlowbomAuthMode)}</span>
-              <div className="row">
-                {authProviderConnected ? (
+          {isContextOpen ? (
+            <div className="composer-popover">
+              <div className="composer-popover-header">
+                <strong>Context</strong>
+                <div className="row">
                   <button
-                    className="button secondary"
-                    disabled={refine.isRunning || isUpdatingAuthConnection}
+                    className="button secondary tiny"
+                    disabled={refine.isRunning || isPickingInstructionFiles}
                     onClick={() => {
-                      void disconnectAuthProvider();
+                      void pickInstructionFiles();
                     }}
                     type="button"
                   >
-                    {isUpdatingAuthConnection ? 'Disconnecting...' : 'Disconnect'}
+                    {isPickingInstructionFiles ? 'Choosing...' : 'Add files'}
                   </button>
-                ) : (
                   <button
-                    className="button"
-                    disabled={refine.isRunning || isUpdatingAuthConnection}
+                    className="button secondary tiny"
+                    disabled={refine.isRunning || instructionAttachments.length === 0}
                     onClick={() => {
-                      void connectAuthProvider();
+                      setInstructionAttachments([]);
+                      setInstructionPickerInfo(null);
+                      setInstructionPickerWarning(null);
                     }}
                     type="button"
                   >
-                    {isUpdatingAuthConnection ? 'Connecting...' : 'Connect'}
+                    Clear
                   </button>
-                )}
+                </div>
               </div>
-            </div>
-            <ol>
-              <li>Select <strong>Use connected account</strong>.</li>
-              <li>Choose <strong>ChatGPT</strong> provider.</li>
-              <li>Click <strong>Connect</strong> to use your local ChatGPT/Codex login.</li>
-            </ol>
-            {authConnectionInfo ? <p className="meta ok">{authConnectionInfo}</p> : null}
-            {authConnectionError ? <p className="error-inline">{authConnectionError}</p> : null}
-          </div>
-        ) : null}
 
-        {isApiKeyMode ? (
-          <div className="chatgpt-callout">
-            <h3>Use provider API keys</h3>
-            <p>Select any supported provider/model and add the matching provider key.</p>
-          </div>
-        ) : null}
+              {instructionPickerInfo ? <p className="meta ok">{instructionPickerInfo}</p> : null}
+              {instructionPickerWarning ? <p className="meta warn">{instructionPickerWarning}</p> : null}
 
-        {isOpenCodeConfigMode ? (
-          <div className="chatgpt-callout">
-            <h3>Use your existing OpenCode setup</h3>
-            <p>No key input required here. Glowby will use your current OpenCode configuration and available models.</p>
-          </div>
-        ) : null}
-
-        <div className="field-grid">
-          <div>
-            <label className="field-label" htmlFor="modelPreset">
-              AI model
-            </label>
-            {isOpenCodeConfigMode ? (
-              <select
-                className="input"
-                disabled={refine.isRunning || isLoadingOpenCodeModels}
-                id="modelPreset"
-                onChange={(event) => setSelectedOpenCodeModel(event.target.value)}
-                value={selectedOpenCodeModel}
-              >
-                <option value={OPENCODE_DEFAULT_MODEL_VALUE}>Use OpenCode default model</option>
-                {openCodeConfigProviders.map((provider) => (
-                  <optgroup key={provider.id} label={provider.displayName || provider.id}>
-                    {provider.models.map((model) => (
-                      <option key={`${provider.id}-${model.id}`} value={`${provider.id}/${model.id}`}>
-                        {model.displayName || model.id}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            ) : (
-              <select
-                className="input"
-                disabled={refine.isRunning || allOptionValues.length === 0}
-                id="modelPreset"
-                onChange={(event) => setSelectedModelOption(event.target.value)}
-                value={selectedModelOption}
-              >
-                {visibleModelGroups.map((group) => (
-                  <optgroup key={group.provider.id} label={group.provider.label}>
-                    {group.models.map((model) => {
-                      const value = encodeModelOptionValue(group.provider.id, model.id);
-                      return (
-                        <option key={`${group.provider.id}-${model.id}`} value={value}>
-                          {model.label}
-                        </option>
-                      );
-                    })}
-                  </optgroup>
-                ))}
-              </select>
-            )}
-
-            {!isOpenCodeConfigMode && resolvedSelection ? <p className="meta">Selected: {resolvedSelection.value}</p> : null}
-            {isLoadingOpenAIModels ? <p className="meta">Loading OpenAI model catalog...</p> : null}
-            {openAIModelsInfo ? <p className="meta ok">{openAIModelsInfo}</p> : null}
-            {openAIModelsWarning ? <p className="meta warn">{openAIModelsWarning}</p> : null}
-            {isLoadingOpenCodeModels ? <p className="meta">Loading OpenCode provider catalog...</p> : null}
-            {openCodeModelsInfo ? <p className="meta ok">{openCodeModelsInfo}</p> : null}
-            {openCodeModelsWarning ? <p className="meta warn">{openCodeModelsWarning}</p> : null}
-          </div>
-
-          {!isOpenCodeConfigMode ? (
-            <div>
-              <label className="field-label" htmlFor="customModel">
-                Custom model (optional)
-              </label>
-              <input
-                className="input"
-                disabled={refine.isRunning}
-                id="customModel"
-                onChange={(event) => setCustomModel(event.target.value)}
-                placeholder="provider/model"
-                value={customModel}
-              />
-              <p className="meta">If set, this overrides the dropdown selection.</p>
+              {instructionAttachments.length > 0 ? (
+                <ul className="attachment-list">
+                  {instructionAttachments.map((attachment) => {
+                    const oversize = attachment.sizeBytes > MAX_INSTRUCTION_ATTACHMENT_BYTES;
+                    return (
+                      <li className={`attachment-item ${oversize ? 'oversize' : ''}`} key={attachment.path}>
+                        <div className="attachment-item-copy">
+                          <span className="attachment-name">{attachment.name}</span>
+                          <span className="attachment-meta">
+                            {formatAttachmentSize(attachment.sizeBytes)}
+                            {attachment.mimeType ? ` · ${attachment.mimeType}` : ''}
+                          </span>
+                        </div>
+                        <button
+                          className="button secondary tiny"
+                          disabled={refine.isRunning}
+                          onClick={() => {
+                            setInstructionAttachments((previous) => previous.filter((item) => item.path !== attachment.path));
+                          }}
+                          type="button"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="meta">No files.</p>
+              )}
             </div>
           ) : null}
-        </div>
 
-        {isAuthMode ? (
-          <p className="meta">
-            API key fields are hidden here. Connect links your local ChatGPT login to OpenCode.
-          </p>
-        ) : null}
+          {isSettingsOpen ? (
+            <div className="composer-popover settings-popover">
+              <div className="composer-popover-header">
+                <strong>Settings</strong>
+                <button
+                  className="button secondary tiny"
+                  disabled={isCheckingSetup || refine.isRunning}
+                  onClick={() => void refreshSetup()}
+                  type="button"
+                >
+                  {isCheckingSetup ? 'Checking...' : 'Refresh'}
+                </button>
+              </div>
 
-        {isApiKeyMode ? (
-          <div className="field-grid">
-            <div>
-              <label className="field-label" htmlFor="openaiKey">
-                OpenAI API key
-              </label>
-              <input
-                className="input"
-                disabled={refine.isRunning}
-                id="openaiKey"
-                onChange={(event) => updateProviderKey('openaiKey', event.target.value)}
-                placeholder="sk-..."
-                type="password"
-                value={providerKeys.openaiKey}
-              />
-            </div>
-          </div>
-        ) : null}
+              <div className="summary-pill-row">
+                <span
+                  className={`summary-pill ${
+                    systemNeedsAttention ? 'tone-warning' : health?.healthy ? 'tone-success' : 'tone-neutral'
+                  }`}
+                >
+                  {systemStatusSummary}
+                </span>
+                <span className={`summary-pill ${isAuthMode && !authProviderConnected ? 'tone-warning' : 'tone-neutral'}`}>
+                  {agentStatusSummary}
+                </span>
+              </div>
 
-        {isApiKeyMode ? (
-          <details className="provider-keys">
-            <summary>Provider Keys</summary>
-            <p className="meta">Add keys for non-OpenAI providers. The selected model's provider key is required.</p>
-            <div className="field-grid provider-keys-grid">
-              {MODEL_PROVIDERS.filter((provider) => provider.keyField && provider.id !== 'openai').map((provider) => {
-                const keyField = provider.keyField!;
-                const isActive = provider.id === selectedProvider;
+              <div className="field-grid">
+                <div>
+                  <label className="field-label" htmlFor="credentialMode">
+                    AI access
+                  </label>
+                  <select
+                    className="input"
+                    disabled={refine.isRunning}
+                    id="credentialMode"
+                    onChange={(event) => setCredentialMode(event.target.value as CredentialMode)}
+                    value={credentialMode}
+                  >
+                    <option value="auth">Connected account</option>
+                    <option value="api-key">API keys</option>
+                    <option value="opencode-config">OpenCode setup</option>
+                  </select>
+                </div>
 
-                return (
-                  <label className={`provider-key-item ${isActive ? 'active' : ''}`} key={provider.id}>
-                    <span className="field-label">{provider.keyLabel || provider.label}</span>
+                {isAuthMode ? (
+                  <div>
+                    <label className="field-label" htmlFor="authProvider">
+                      Account
+                    </label>
+                    <select
+                      className="input"
+                      disabled={refine.isRunning || isUpdatingAuthConnection}
+                      id="authProvider"
+                      onChange={(event) => {
+                        setAuthProvider(event.target.value as AuthProviderID);
+                        setAuthConnectionInfo(null);
+                        setAuthConnectionError(null);
+                      }}
+                      value={authProvider}
+                    >
+                      <option value="chatgpt">ChatGPT</option>
+                    </select>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="field-grid">
+                <div>
+                  <label className="field-label" htmlFor="modelPreset">
+                    Model
+                  </label>
+                  {isOpenCodeConfigMode ? (
+                    <select
+                      className="input"
+                      disabled={refine.isRunning || isLoadingOpenCodeModels}
+                      id="modelPreset"
+                      onChange={(event) => setSelectedOpenCodeModel(event.target.value)}
+                      value={selectedOpenCodeModel}
+                    >
+                      <option value={OPENCODE_RECOMMENDED_MODEL_VALUE}>{recommendedOpenCodeModelOptionLabel}</option>
+                      {openCodeConfigProviders.map((provider) => (
+                        <optgroup key={provider.id} label={provider.displayName || provider.id}>
+                          {provider.models.map((model) => (
+                            <option key={`${provider.id}-${model.id}`} value={`${provider.id}/${model.id}`}>
+                              {model.displayName || model.id}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      className="input"
+                      disabled={refine.isRunning || allOptionValues.length === 0}
+                      id="modelPreset"
+                      onChange={(event) => setSelectedModelOption(event.target.value)}
+                      value={selectedModelOption}
+                    >
+                      {visibleModelGroups.map((group) => (
+                        <optgroup key={group.provider.id} label={group.provider.label}>
+                          {group.models.map((model) => {
+                            const value = encodeModelOptionValue(group.provider.id, model.id);
+                            return (
+                              <option key={`${group.provider.id}-${model.id}`} value={value}>
+                                {model.label}
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {!isOpenCodeConfigMode ? (
+                  <div>
+                    <label className="field-label" htmlFor="customModel">
+                      Custom
+                    </label>
                     <input
                       className="input"
                       disabled={refine.isRunning}
-                      onChange={(event) => updateProviderKey(keyField, event.target.value)}
-                      placeholder={`${provider.label} key`}
-                      type="password"
-                      value={providerKeys[keyField]}
+                      id="customModel"
+                      onChange={(event) => setCustomModel(event.target.value)}
+                      placeholder="provider/model"
+                      value={customModel}
                     />
-                  </label>
-                );
-              })}
+                  </div>
+                ) : null}
+              </div>
+
+              {isAuthMode ? (
+                <div className={`auth-connection-card ${authProviderConnected ? 'connected' : 'disconnected'}`}>
+                  <strong>{authProviderConnected ? 'ChatGPT connected' : 'ChatGPT not connected'}</strong>
+                  <span className="meta">Credential: {formatCredentialType(authStatus?.openaiCredentialType)}</span>
+                  <div className="row">
+                    {authProviderConnected ? (
+                      <button
+                        className="button secondary"
+                        disabled={refine.isRunning || isUpdatingAuthConnection}
+                        onClick={() => {
+                          void disconnectAuthProvider();
+                        }}
+                        type="button"
+                      >
+                        {isUpdatingAuthConnection ? 'Disconnecting...' : 'Disconnect'}
+                      </button>
+                    ) : (
+                      <button
+                        className="button"
+                        disabled={refine.isRunning || isUpdatingAuthConnection}
+                        onClick={() => {
+                          void connectAuthProvider();
+                        }}
+                        type="button"
+                      >
+                        {isUpdatingAuthConnection ? 'Connecting...' : 'Connect'}
+                      </button>
+                    )}
+                  </div>
+                  {authConnectionInfo ? <p className="meta ok">{authConnectionInfo}</p> : null}
+                  {authConnectionError ? <p className="error-inline">{authConnectionError}</p> : null}
+                </div>
+              ) : null}
+
+              {isApiKeyMode ? (
+                <div className="field-grid">
+                  <div>
+                    <label className="field-label" htmlFor="openaiKey">
+                      OpenAI key
+                    </label>
+                    <input
+                      className="input"
+                      disabled={refine.isRunning}
+                      id="openaiKey"
+                      onChange={(event) => updateProviderKey('openaiKey', event.target.value)}
+                      placeholder="sk-..."
+                      type="password"
+                      value={providerKeys.openaiKey}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {isApiKeyMode ? (
+                <details className="provider-keys">
+                  <summary>Other keys</summary>
+                  <div className="field-grid provider-keys-grid">
+                    {MODEL_PROVIDERS.filter((provider) => provider.keyField && provider.id !== 'openai').map((provider) => {
+                      const keyField = provider.keyField!;
+                      const isActive = provider.id === selectedProvider;
+
+                      return (
+                        <label className={`provider-key-item ${isActive ? 'active' : ''}`} key={provider.id}>
+                          <span className="field-label">{provider.keyLabel || provider.label}</span>
+                          <input
+                            className="input"
+                            disabled={refine.isRunning}
+                            onChange={(event) => updateProviderKey(keyField, event.target.value)}
+                            placeholder={`${provider.label} key`}
+                            type="password"
+                            value={providerKeys[keyField]}
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                </details>
+              ) : null}
+
+              <div className="status-grid">
+                <div className="status-tile">
+                  <span className="status-label">Backend</span>
+                  <strong className={health?.healthy ? 'ok' : health ? 'warn' : ''}>{setupStatusText}</strong>
+                  {health?.server ? <span className="meta">{health.server}</span> : null}
+                  {health?.hint ? <span className="meta">{health.hint}</span> : null}
+                  {healthError ? <span className="error-inline">{healthError}</span> : null}
+                </div>
+
+                <div className="status-tile">
+                  <span className="status-label">Agent server</span>
+                  <strong className={authStatus?.serverRunning ? 'ok' : authStatus ? 'warn' : ''}>
+                    {authStatus ? (authStatus.serverRunning ? 'Running' : 'Stopped') : 'Checking...'}
+                  </strong>
+                  <span className="meta">Auth: {formatAuthMode(authStatus?.cachedGlowbomAuthMode)}</span>
+                  {authError ? <span className="error-inline">{authError}</span> : null}
+                </div>
+              </div>
+
+              {isLoadingOpenAIModels ? <p className="meta">Loading OpenAI models...</p> : null}
+              {openAIModelsInfo ? <p className="meta ok">{openAIModelsInfo}</p> : null}
+              {openAIModelsWarning ? <p className="meta warn">{openAIModelsWarning}</p> : null}
+              {isLoadingOpenCodeModels ? <p className="meta">Loading OpenCode models...</p> : null}
+              {openCodeModelsInfo ? <p className="meta ok">{openCodeModelsInfo}</p> : null}
+              {openCodeModelsWarning ? <p className="meta warn">{openCodeModelsWarning}</p> : null}
             </div>
-          </details>
-        ) : null}
+          ) : null}
 
-        {isApiKeyMode && selectedProviderKeyField && selectedProviderDefinition?.requiresKey ? (
-          <p className="meta">
-            Selected provider: {selectedProviderDefinition.label}.
-            {providerKeys[selectedProviderKeyField].trim()
-              ? ' Credential detected.'
-              : ` Missing ${selectedProviderDefinition.keyLabel || 'provider key'}.`}
-          </p>
-        ) : null}
+          <div className="composer-input-wrap">
+            {refine.isRunning ? (
+              optimisticHistoryEntry ? (
+                renderHistoryEntryCard(optimisticHistoryEntry)
+              ) : (
+                <div className="empty-inline-state">
+                  <strong>Preparing current build...</strong>
+                  <p className="meta">Glowby is working on the current run.</p>
+                </div>
+              )
+            ) : (
+              <textarea
+                className="input minimal-input"
+                disabled={refine.isRunning}
+                id="instructions"
+                onChange={(event) => {
+                  setInstructions(event.target.value);
+                  setFormError(null);
+                }}
+                placeholder="What should Glowby build?"
+                rows={7}
+                value={instructions}
+              />
+            )}
+          </div>
 
-        <label className="field-label" htmlFor="instructions">
-          Build instructions
-        </label>
-        <textarea
-          className="input"
-          disabled={refine.isRunning}
-          id="instructions"
-          onChange={(event) => setInstructions(event.target.value)}
-          rows={5}
-          value={instructions}
-        />
+          {formError ? <p className="error-inline composer-error">{formError}</p> : null}
+          {!formError && projectError && !isProjectPickerOpen ? <p className="error-inline composer-error">{projectError}</p> : null}
+          {!isProjectPickerOpen && historyError ? <p className="error-inline composer-error">{historyError}</p> : null}
+          {!isProjectPickerOpen && historyInfo ? <p className="meta ok composer-note">{historyInfo}</p> : null}
 
-        <div className="instruction-attachments">
-          <div className="card-title-row">
-            <strong>Reference files</strong>
-            <div className="row">
+          <div className="composer-footer minimal-composer-footer">
+            <div className="composer-footer-copy">
+              {refine.summary ? <p className="summary-text">{refine.summary}</p> : null}
+              {refine.hasSession && !refine.isRunning ? (
+                <label className="toggle-label">
+                  <input
+                    type="checkbox"
+                    checked={refine.continueSession}
+                    onChange={(event) => refine.setContinueSession(event.target.checked)}
+                  />
+                  Continue last session
+                </label>
+              ) : !refine.summary ? (
+                <p className="meta minimal-meta">
+                  {activeProject ? projectButtonLabel : 'Choose a project'}
+                  {` · `}
+                  {agentStatusSummary}
+                </p>
+              ) : null}
+            </div>
+            <div className="row composer-actions">
+              <span className={`run-status status-${refine.status}`}>{RUN_STATUS_LABEL[refine.status]}</span>
               <button
-                className="button secondary tiny"
-                disabled={refine.isRunning || isPickingInstructionFiles}
+                className="button"
+                disabled={refine.isRunning || refine.isSubmittingInput || isLoadingProject}
                 onClick={() => {
-                  void pickInstructionFiles();
+                  void startRefine();
                 }}
                 type="button"
               >
-                {isPickingInstructionFiles ? 'Choosing...' : 'Add Files'}
+                Build
               </button>
-              <button
-                className="button secondary tiny"
-                disabled={refine.isRunning || instructionAttachments.length === 0}
-                onClick={() => {
-                  setInstructionAttachments([]);
-                  setInstructionPickerInfo(null);
-                  setInstructionPickerWarning(null);
-                }}
-                type="button"
-              >
-                Clear
+              <button className="button danger" disabled={!refine.isRunning} onClick={refine.stopRun} type="button">
+                Stop
               </button>
             </div>
           </div>
-          <p className="meta">Add local files for extra context. No uploads. Max 40MB per file.</p>
+        </section>
 
-          {instructionPickerInfo ? <p className="meta ok">{instructionPickerInfo}</p> : null}
-          {instructionPickerWarning ? <p className="meta warn">{instructionPickerWarning}</p> : null}
+        <section className="card activity-card">
+          <div className="card-title-row">
+            <div>
+              <h2>Activity</h2>
+              <p className="meta">Logs, follow-up questions, and permission requests show up here while Glowby works.</p>
+            </div>
+            <label className="checkbox-row">
+              <input
+                checked={autoScrollEnabled}
+                onChange={(event) => setAutoScrollEnabled(event.target.checked)}
+                type="checkbox"
+              />
+              Auto-scroll
+            </label>
+          </div>
 
-          {instructionAttachments.length > 0 ? (
-            <ul className="attachment-list">
-              {instructionAttachments.map((attachment) => {
-                const oversize = attachment.sizeBytes > MAX_INSTRUCTION_ATTACHMENT_BYTES;
-                return (
-                  <li className={`attachment-item ${oversize ? 'oversize' : ''}`} key={attachment.path}>
-                    <div className="attachment-item-copy">
-                      <span className="attachment-name">{attachment.name}</span>
-                      <span className="attachment-meta">
-                        {formatAttachmentSize(attachment.sizeBytes)}
-                        {attachment.mimeType ? ` · ${attachment.mimeType}` : ''}
-                      </span>
-                    </div>
-                    <button
-                      className="button secondary tiny"
-                      disabled={refine.isRunning}
-                      onClick={() => {
-                        setInstructionAttachments((previous) =>
-                          previous.filter((item) => item.path !== attachment.path),
-                        );
-                      }}
-                      type="button"
-                    >
-                      Remove
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="meta">No files attached yet.</p>
-          )}
-        </div>
+          {refine.error ? <p className="error-inline">{refine.error}</p> : null}
 
-        {formError ? <p className="error-inline">{formError}</p> : null}
-      </section>
+          <div className="console" onScroll={onConsoleScroll} ref={consoleRef}>
+            {runLogs.length === 0 ? (
+              <p className="placeholder">Ready. Choose a project folder, describe the work, and click Build.</p>
+            ) : (
+              runLogs.map((line, index) =>
+                renderConsoleLine(line, index, index === runLogs.length - 1 && !!refine.partialLine),
+              )
+            )}
+          </div>
 
-      <section className="card">
-        <div className="card-title-row">
-          <h2>3. Build</h2>
-          <span className={`run-status status-${refine.status}`}>{RUN_STATUS_LABEL[refine.status]}</span>
-        </div>
+          {refine.changedFiles.length > 0 ? (
+            <details className="changed-files">
+              <summary>Changed files ({refine.changedFiles.length})</summary>
+              <ul>
+                {refine.changedFiles.slice(0, 200).map((filePath) => (
+                  <li key={filePath}>{filePath}</li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
 
-        <div className="row">
-          <button
-            className="button"
-            disabled={refine.isRunning || refine.isSubmittingInput || !activeProject}
-            onClick={startRefine}
-          >
-            Build Project
-          </button>
-          <button className="button danger" disabled={!refine.isRunning} onClick={refine.stopRun}>
-            Stop
-          </button>
-        </div>
-        {refine.hasSession && !refine.isRunning ? (
-          <label className="toggle-label">
-            <input
-              type="checkbox"
-              checked={refine.continueSession}
-              onChange={(e) => refine.setContinueSession(e.target.checked)}
-            />
-            Continue last build session
-          </label>
-        ) : null}
-
-        {refine.summary ? <p className="summary-text">{refine.summary}</p> : null}
-        {refine.error ? <p className="error-inline">{refine.error}</p> : null}
-
-        {refine.changedFiles.length > 0 ? (
-          <details className="changed-files">
-            <summary>Changed files ({refine.changedFiles.length})</summary>
-            <ul>
-              {refine.changedFiles.slice(0, 200).map((filePath) => (
-                <li key={filePath}>{filePath}</li>
-              ))}
-            </ul>
-          </details>
-        ) : null}
-      </section>
-
-      <section className="card">
-        <div className="card-title-row">
-          <h2>4. Activity</h2>
-          <label className="checkbox-row">
-            <input
-              checked={autoScrollEnabled}
-              onChange={(event) => setAutoScrollEnabled(event.target.checked)}
-              type="checkbox"
-            />
-            Auto-scroll
-          </label>
-        </div>
-
-        <div className="console" onScroll={onConsoleScroll} ref={consoleRef}>
-          {runLogs.length === 0 ? (
-            <p className="placeholder">Ready. Open a project and click Build Project.</p>
-          ) : (
-            runLogs.map((line, index) => renderConsoleLine(line, index, index === runLogs.length - 1 && !!refine.partialLine))
-          )}
-        </div>
-
-        {refine.pendingQuestion ? (
+          {refine.pendingQuestion ? (
           <div className="input-panel">
             <h3>Agent needs input</h3>
             <p>{refine.pendingQuestion.prompt}</p>
@@ -1711,7 +2511,7 @@ export default function App() {
           </div>
         ) : null}
 
-        {refine.pendingPermission ? (
+          {refine.pendingPermission ? (
           <div className="input-panel">
             <h3>Permission requested</h3>
             <p>{refine.pendingPermission.title}</p>
@@ -1750,8 +2550,8 @@ export default function App() {
               </button>
             </div>
           </div>
-        ) : null}
-      </section>
+          ) : null}
+        </section>
       </main>
     </div>
   );

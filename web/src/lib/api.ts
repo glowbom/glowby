@@ -12,6 +12,7 @@ import type {
   OpenCodeAuthStatus,
   OpenCodeHealthResponse,
   OpenCodeInstructionFilesPickResponse,
+  OpenCodeProjectHistoryResponse,
   OpenCodeProjectIDEStatusResponse,
   OpenCodePermissionRespondRequest,
   OpenCodeProjectPickResponse,
@@ -96,6 +97,11 @@ export const openCodeApi = {
   async getProject(projectPath: string): Promise<OpenCodeProjectEnvelope> {
     const search = new URLSearchParams({ path: projectPath });
     return requestJson<OpenCodeProjectEnvelope>(`${API_PREFIX}/opencode/project?${search.toString()}`);
+  },
+
+  async getProjectHistory(projectPath: string): Promise<OpenCodeProjectHistoryResponse> {
+    const search = new URLSearchParams({ path: projectPath });
+    return requestJson<OpenCodeProjectHistoryResponse>(`${API_PREFIX}/opencode/project/history?${search.toString()}`);
   },
 
   async getProjectIDEStatus(projectPath: string): Promise<OpenCodeProjectIDEStatusResponse> {
