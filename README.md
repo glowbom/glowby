@@ -1,5 +1,7 @@
 # Glowby OSS
 
+Build anything locally. We believe that you should own your code and data. Every line of code the system generates lives on your machine, in standard project files you can open with any editor. No vendor lock-in.
+
 Glowby helps you build production-ready software with coding agents. It is an open source coding agent workflow for real projects. It is built primarily for Glowbom projects, but the workflow can also work with other project structures.
 
 ## What It Does
