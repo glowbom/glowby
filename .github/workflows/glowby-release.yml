@@ -1,0 +1,87 @@
+name: Release glowby
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [darwin, linux, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          if [ -d oss/cli ]; then
+            CLI_DIR="oss/cli"
+          else
+            CLI_DIR="cli"
+          fi
+          TAG="${GITHUB_REF#refs/tags/}"
+          SHA="$(git rev-parse --short HEAD)"
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          EXT=""
+          if [ "${{ matrix.goos }}" = "windows" ]; then EXT=".exe"; fi
+          cd "${CLI_DIR}"
+          go build \
+            -ldflags "-s -w -X main.version=${TAG} -X main.commit=${SHA} -X main.date=${DATE}" \
+            -o "glowby-${{ matrix.goos }}-${{ matrix.goarch }}${EXT}" \
+            .
+
+      - name: Create archive
+        run: |
+          if [ -d oss/cli ]; then
+            CLI_DIR="oss/cli"
+          else
+            CLI_DIR="cli"
+          fi
+          cd "${CLI_DIR}"
+          BIN="glowby-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            mv "${BIN}.exe" glowby.exe
+            zip "${BIN}.zip" glowby.exe
+          else
+            mv "${BIN}" glowby
+            tar czf "${BIN}.tar.gz" glowby
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: glowby-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            oss/cli/glowby-*.tar.gz
+            oss/cli/glowby-*.zip
+            cli/glowby-*.tar.gz
+            cli/glowby-*.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*
