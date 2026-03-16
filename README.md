@@ -57,6 +57,10 @@ Run those commands from the Glowby repo root, where `backend/` and `web/` live s
    - OpenCode config
 4. Start a refine run
 
+## Cost
+
+You can build with Glowby for free. Run local AI models on your own computer or connect to free cloud models. If you want access to premium models, you can connect a paid account or your own API keys, but you do not need to.
+
 ## Requirements And Setup
 
 If `glowby doctor` reports missing tools, install them first and confirm they are available on your `PATH`:
