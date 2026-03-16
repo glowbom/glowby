@@ -17,13 +17,6 @@ curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install
 
 For Windows, we recommend using WSL and running the install command inside Ubuntu.
 
-If you prefer a user-local install directory:
-
-```bash
-mkdir -p ~/.local/bin
-GLOWBY_INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install.sh | sh
-```
-
 Then clone the repo and enter it:
 
 ```bash
