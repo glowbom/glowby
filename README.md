@@ -43,25 +43,16 @@ If you use Bash instead of zsh, update `~/.bash_profile` or `~/.bashrc` instead.
 
 ## Quickstart
 
-### 1. Run the backend
+### 1. Start Glowby with the CLI
 
 ```bash
-cd backend
-go run .
-```
-The backend runs on `http://localhost:4569`.
-
-### 2. Run the web app
-
-```bash
-cd web
-bun install
-bun run dev
+glowby doctor
+glowby code
 ```
 
-The web app runs on `http://localhost:4572`.
+Run those commands from the Glowby repo root, where `backend/` and `web/` live side by side.
 
-### 3. Start using Glowby OSS
+### 2. Start using Glowby OSS
 
 1. Open `http://localhost:4572`
 2. Load a local project
@@ -70,6 +61,28 @@ The web app runs on `http://localhost:4572`.
    - API keys
    - OpenCode config
 4. Start a refine run
+
+### Manual fallback
+
+If you prefer to launch the stack without the CLI, run the backend and web app separately:
+
+#### Backend
+
+```bash
+cd backend
+go run .
+```
+The backend runs on `http://localhost:4569`.
+
+#### Web app
+
+```bash
+cd web
+bun install
+bun run dev
+```
+
+The web app runs on `http://localhost:4572`.
 
 ## Using the Bundled Default Project
 
