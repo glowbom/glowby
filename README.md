@@ -7,15 +7,58 @@ Glowby helps you build production-ready software with coding agents. It is an op
 - Make software projects and prototypes production-ready with coding agents
 - Run on local projects with ChatGPT login, API keys, or OpenCode config
 
-## Requirements
+## Install
 
-Install these first:
+Install the Glowby CLI:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install.sh | sh
+```
+
+If you prefer a user-local install directory:
+
+```bash
+mkdir -p ~/.local/bin
+GLOWBY_INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install.sh | sh
+```
+
+Then clone the repo and enter it:
+
+```bash
+git clone https://github.com/glowbom/glowby.git
+cd glowby
+```
+
+## Quickstart
+
+Glowby needs these tools available on your `PATH`:
 
 - [Go](https://go.dev/)
 - [Bun](https://bun.sh/)
 - [OpenCode](https://opencode.ai/)
 
-Before starting, make sure Go, Bun, and OpenCode are installed and available on your `PATH` so these commands work in the terminal you will use for Glowby:
+Run the built-in environment check and launch Glowby:
+
+```bash
+glowby doctor
+glowby code
+```
+
+Run those commands from the Glowby repo root, where `backend/` and `web/` live side by side.
+
+## Start Using Glowby OSS
+
+1. Open `http://localhost:4572`
+2. Load a local project
+3. Choose how you want to run the agent:
+   - ChatGPT login
+   - API keys
+   - OpenCode config
+4. Start a refine run
+
+## Requirements And Setup
+
+If `glowby doctor` reports missing tools, install them first and confirm they are available on your `PATH`:
 
 ```bash
 go version
@@ -40,27 +83,6 @@ source ~/.zshrc
 ```
 
 If you use Bash instead of zsh, update `~/.bash_profile` or `~/.bashrc` instead.
-
-## Quickstart
-
-### 1. Start Glowby with the CLI
-
-```bash
-glowby doctor
-glowby code
-```
-
-Run those commands from the Glowby repo root, where `backend/` and `web/` live side by side.
-
-### 2. Start using Glowby OSS
-
-1. Open `http://localhost:4572`
-2. Load a local project
-3. Choose how you want to run the agent:
-   - ChatGPT login
-   - API keys
-   - OpenCode config
-4. Start a refine run
 
 ### Manual fallback
 
