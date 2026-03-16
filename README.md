@@ -12,8 +12,10 @@ Glowby helps you build production-ready software with coding agents. It is an op
 Install the Glowby CLI:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/glowbom/glowby/main/scripts/install.sh | sudo sh
 ```
+
+For Windows, we recommend using WSL and running the install command inside Ubuntu.
 
 If you prefer a user-local install directory:
 
