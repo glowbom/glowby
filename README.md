@@ -55,6 +55,8 @@ Run those commands from the Glowby repo root, where `backend/` and `web/` live s
 - the backend API requires a per-run bearer token
 - the OpenCode bridge runs with `OPENCODE_SERVER_PASSWORD`
 
+To view the generated credentials for the current session, start Glowby with `glowby code --show-local-auth`.
+
 If you launch the stack manually, set equivalent env vars yourself:
 
 ```bash
