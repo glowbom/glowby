@@ -36,3 +36,16 @@ project.zip
 /web/node_modules
 Untitled.md
 /web/dist
+backend/glowbom-backend
+backend/assets/flux-comfyui-workflow.json
+backend/assets/128.json
+backend/assets/128-api.json
+backend/assets/104.json
+backend/node/local.ts
+backend/package.json
+/backend/saved_audio
+/backend/saved_images
+backend/veo-bridge.js
+backend/veo-cli.js
+cli/glowby
+backend/server

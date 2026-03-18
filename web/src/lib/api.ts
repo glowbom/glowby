@@ -21,6 +21,7 @@ import type {
   OpenCodeProjectOpenResponse,
   OpenCodeQuestionRespondRequest,
 } from '../types/opencode';
+import { withServerAuthHeaders } from './server-auth';
 
 const API_PREFIX = '/api';
 
@@ -49,7 +50,10 @@ async function parseResponseError(response: Response): Promise<string> {
 }
 
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
+  const response = await fetch(input, {
+    ...init,
+    headers: withServerAuthHeaders(init?.headers),
+  });
   if (!response.ok) {
     throw new ApiError(await parseResponseError(response), response.status);
   }

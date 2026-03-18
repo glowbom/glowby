@@ -495,6 +495,39 @@ func getAgentPort() string {
 	return "4571"
 }
 
+func openCodeServerHostname() string {
+	if host := strings.TrimSpace(os.Getenv("OPENCODE_SERVER_HOSTNAME")); host != "" {
+		return host
+	}
+	return "127.0.0.1"
+}
+
+func openCodeServerUsername() string {
+	if username := strings.TrimSpace(os.Getenv("OPENCODE_SERVER_USERNAME")); username != "" {
+		return username
+	}
+	return "opencode"
+}
+
+func openCodeServerPassword() string {
+	return strings.TrimSpace(os.Getenv("OPENCODE_SERVER_PASSWORD"))
+}
+
+func openCodeServerAuthorizationHeader() string {
+	password := openCodeServerPassword()
+	if password == "" {
+		return ""
+	}
+	token := base64.StdEncoding.EncodeToString([]byte(openCodeServerUsername() + ":" + password))
+	return "Basic " + token
+}
+
+func applyOpenCodeServerAuthorization(req *http.Request) {
+	if header := openCodeServerAuthorizationHeader(); header != "" {
+		req.Header.Set("Authorization", header)
+	}
+}
+
 func glowbomOpenCodeRuntimePaths() (openCodeRuntimePaths, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil || strings.TrimSpace(homeDir) == "" {
@@ -881,6 +914,7 @@ func isServerRunning(serverURL string) bool {
 	if err != nil {
 		return false
 	}
+	applyOpenCodeServerAuthorization(req)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -987,7 +1021,14 @@ func startOpenCodeServer(openAIKey, anthropicKey, geminiKey, fireworksKey, openR
 	if openCodeLogLevel == "" {
 		openCodeLogLevel = "WARN"
 	}
-	cmd := exec.Command("opencode", "serve", "--port", getAgentPort(), "--print-logs", "--log-level", openCodeLogLevel)
+	cmd := exec.Command(
+		"opencode",
+		"serve",
+		"--port", getAgentPort(),
+		"--hostname", openCodeServerHostname(),
+		"--print-logs",
+		"--log-level", openCodeLogLevel,
+	)
 	cmd.Env = env
 
 	// Create pipes to capture stdout and stderr
@@ -1089,6 +1130,7 @@ func syncOpenAIAuth(serverURL, accessToken, refreshToken string, expiresAt float
 		return fmt.Errorf("failed to create auth sync request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	applyOpenCodeServerAuthorization(req)
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
@@ -1111,6 +1153,7 @@ func clearOpenAIAuth(serverURL string) error {
 	if err != nil {
 		return fmt.Errorf("failed creating OpenAI auth clear request: %w", err)
 	}
+	applyOpenCodeServerAuthorization(req)
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
@@ -1217,7 +1260,7 @@ func stopOpenCodeServerOnPort(port string) error {
 
 func restartOpenCodeServer(openAIKey, anthropicKey, geminiKey, fireworksKey, openRouterKey, openCodeZenKey, xaiKey, model, openAIAuthMode string) error {
 	port := getAgentPort()
-	serverURL := "http://127.0.0.1:" + port
+	serverURL := "http://" + openCodeServerHostname() + ":" + port
 
 	if err := stopOpenCodeServerOnPort(port); err != nil {
 		return fmt.Errorf("failed to stop existing OpenCode server: %w", err)
@@ -1582,7 +1625,7 @@ func ensureOpenCodeServerReady(projectPath, model, openAIKey, anthropicKey, gemi
 	openCodeServerPrepMu.Lock()
 	defer openCodeServerPrepMu.Unlock()
 
-	serverURL := "http://127.0.0.1:" + getAgentPort()
+	serverURL := "http://" + openCodeServerHostname() + ":" + getAgentPort()
 	openAIAuthMode = normalizeOpenAIAuthMode(openAIAuthMode)
 	if openAIAuthMode == "codex-jwt" && strings.TrimSpace(openAIKey) == "" {
 		resolved, err := resolveOpenAIOAuthCredentialForConnect(OpenCodeAuthConnectRequest{
@@ -1684,14 +1727,18 @@ func NewOpenCodeDriver(serverURL string) *OpenCodeDriver {
 		serverURL = os.Getenv("OPENCODE_URL")
 	}
 	if serverURL == "" {
-		serverURL = "http://127.0.0.1:" + getAgentPort()
+		serverURL = "http://" + openCodeServerHostname() + ":" + getAgentPort()
 	}
 
 	log.Printf("[OPENCODE] Connecting to server at %s", serverURL)
 
-	client := opencode.NewClient(
+	clientOptions := []option.RequestOption{
 		option.WithBaseURL(serverURL),
-	)
+	}
+	if header := openCodeServerAuthorizationHeader(); header != "" {
+		clientOptions = append(clientOptions, option.WithHeader("Authorization", header))
+	}
+	client := opencode.NewClient(clientOptions...)
 
 	return &OpenCodeDriver{
 		client:              client,
@@ -3161,7 +3208,7 @@ func currentOpenCodeAuthStatus() openCodeAuthStatusResponse {
 		log.Printf("[OPENCODE] Warning: failed resolving runtime paths for auth diagnostics: %v", err)
 	}
 
-	serverURL := "http://127.0.0.1:" + getAgentPort()
+	serverURL := "http://" + openCodeServerHostname() + ":" + getAgentPort()
 	return openCodeAuthStatusResponse{
 		ServerRunning:         isServerRunning(serverURL),
 		ConfiguredDataHome:    runtimePaths.DataHome,

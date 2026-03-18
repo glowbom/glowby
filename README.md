@@ -47,6 +47,28 @@ glowby code
 
 Run those commands from the Glowby repo root, where `backend/` and `web/` live side by side.
 
+## Security Defaults
+
+`glowby code` now hardens the local stack by default:
+
+- Glowby services bind to loopback (`127.0.0.1`) instead of all interfaces
+- the backend API requires a per-run bearer token
+- the OpenCode bridge runs with `OPENCODE_SERVER_PASSWORD`
+
+If you launch the stack manually, set equivalent env vars yourself:
+
+```bash
+export GLOWBY_BIND_HOST=127.0.0.1
+export GLOWBY_SERVER_TOKEN="$(openssl rand -hex 32)"
+export OPENCODE_SERVER_PASSWORD="$(openssl rand -hex 32)"
+```
+
+Then run the backend with those env vars, and start the web app with:
+
+```bash
+export VITE_GLOWBY_SERVER_TOKEN="$GLOWBY_SERVER_TOKEN"
+```
+
 ## Start Using Glowby OSS
 
 1. Open `http://localhost:4572`

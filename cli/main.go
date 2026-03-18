@@ -14,13 +14,15 @@ var (
 const usage = `glowby - terminal-first local AI coding agent
 
 Usage:
-  glowby code [project-path]    Start Glowby from this checkout and open the browser
+  glowby code [project-path] [--show-local-auth]
+                                Start Glowby from this checkout and open the browser
   glowby doctor                 Check environment dependencies
   glowby version                Print version info
   glowby help                   Show this help
 
 Examples:
   glowby code                   Start Glowby from the current checkout
+  glowby code --show-local-auth Start Glowby and print local dev auth credentials
   glowby code /path/to/project  Start Glowby and print a project path hint
 `
 

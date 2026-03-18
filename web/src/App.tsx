@@ -709,23 +709,20 @@ export default function App() {
     setHealthError(null);
     setAuthError(null);
 
-    const [healthResult, authResult] = await Promise.allSettled([
-      openCodeApi.getHealth(),
-      openCodeApi.getAuthStatus(),
-    ]);
-
-    if (healthResult.status === 'fulfilled') {
-      setHealth(healthResult.value);
-    } else {
+    try {
+      const healthResult = await openCodeApi.getHealth();
+      setHealth(healthResult);
+    } catch (error) {
       setHealth(null);
-      setHealthError(toErrorMessage(healthResult.reason, 'Failed to check backend health.'));
+      setHealthError(toErrorMessage(error, 'Failed to check backend health.'));
     }
 
-    if (authResult.status === 'fulfilled') {
-      setAuthStatus(authResult.value);
-    } else {
+    try {
+      const authResult = await openCodeApi.getAuthStatus();
+      setAuthStatus(authResult);
+    } catch (error) {
       setAuthStatus(null);
-      setAuthError(toErrorMessage(authResult.reason, 'Failed to fetch auth status.'));
+      setAuthError(toErrorMessage(error, 'Failed to fetch auth status.'));
     }
 
     setIsCheckingSetup(false);

@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/rand"
 	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +29,24 @@ const (
 )
 
 func runCode(args []string) int {
+	showLocalAuth := false
+	var positionalArgs []string
+	for _, arg := range args {
+		switch arg {
+		case "--show-local-auth":
+			showLocalAuth = true
+		case "-h", "--help":
+			fmt.Print(usage)
+			return 0
+		default:
+			positionalArgs = append(positionalArgs, arg)
+		}
+	}
+	if len(positionalArgs) > 1 {
+		fmt.Fprintln(os.Stderr, "error: glowby code accepts at most one project path")
+		return 2
+	}
+
 	glowbyRoot, err := findGlowbyRoot()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -48,14 +68,14 @@ func runCode(args []string) int {
 
 	// Parse optional project path
 	projectPath := ""
-	if len(args) > 0 {
-		p, err := filepath.Abs(args[0])
+	if len(positionalArgs) > 0 {
+		p, err := filepath.Abs(positionalArgs[0])
 		if err == nil && isDir(p) {
 			projectPath = p
-		} else if isDir(args[0]) {
-			projectPath = args[0]
+		} else if isDir(positionalArgs[0]) {
+			projectPath = positionalArgs[0]
 		} else {
-			fmt.Fprintf(os.Stderr, "error: %s is not a directory\n", args[0])
+			fmt.Fprintf(os.Stderr, "error: %s is not a directory\n", positionalArgs[0])
 			return 1
 		}
 	}
@@ -80,16 +100,64 @@ func runCode(args []string) int {
 		fmt.Fprintf(os.Stderr, "error preparing web port: %v\n", err)
 		return 1
 	}
+	agentPort, err := strconv.Atoi(localAgentPort())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: invalid OpenCode agent port %q\n", localAgentPort())
+		return 1
+	}
+	if err := reclaimManagedAgentService(agentPort); err != nil {
+		fmt.Fprintf(os.Stderr, "error preparing OpenCode agent port: %v\n", err)
+		return 1
+	}
+
+	serverToken, err := resolveOrGenerateSecret("GLOWBY_SERVER_TOKEN", "GLOWBOM_SERVER_TOKEN")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error creating backend security token: %v\n", err)
+		return 1
+	}
+	opencodePassword, err := resolveOrGenerateSecret("OPENCODE_SERVER_PASSWORD")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error creating OpenCode server password: %v\n", err)
+		return 1
+	}
+
+	backendEnv := append(
+		os.Environ(),
+		"GLOWBY_BIND_HOST=127.0.0.1",
+		"GLOWBOM_BIND_HOST=127.0.0.1",
+		"GLOWBY_SERVER_TOKEN="+serverToken,
+		"GLOWBOM_SERVER_TOKEN="+serverToken,
+		"OPENCODE_SERVER_PASSWORD="+opencodePassword,
+	)
+	webEnv := append(
+		os.Environ(),
+		"GLOWBY_BIND_HOST=127.0.0.1",
+		"GLOWBOM_BIND_HOST=127.0.0.1",
+		fmt.Sprintf("VITE_BACKEND_TARGET=http://127.0.0.1:%d", backendPort),
+		"VITE_GLOWBY_SERVER_TOKEN="+serverToken,
+		"VITE_GLOWBOM_SERVER_TOKEN="+serverToken,
+	)
 
 	// Start backend
 	fmt.Println("Starting backend...")
 	backendCmd := exec.CommandContext(ctx, "go", "run", ".")
 	backendCmd.Dir = backendDir
+	backendCmd.Env = backendEnv
 	backendCmd.Stdout = os.Stdout
 	backendCmd.Stderr = os.Stderr
 	if err := backendCmd.Start(); err != nil {
 		fmt.Fprintf(os.Stderr, "error starting backend: %v\n", err)
 		return 1
+	}
+
+	if !waitForServer(ctx, fmt.Sprintf("http://127.0.0.1:%d/healthz", backendPort), 30*time.Second) {
+		fmt.Fprintln(os.Stderr, "error: backend did not become ready on time")
+		cancel()
+		_ = backendCmd.Wait()
+		return 1
+	}
+	if showLocalAuth {
+		printLocalAuth(serverToken, opencodePassword)
 	}
 
 	// Install web dependencies if needed
@@ -107,18 +175,15 @@ func runCode(args []string) int {
 		}
 	}
 
-	go func() {
-		if waitForServer(ctx, fmt.Sprintf("http://127.0.0.1:%d", backendPort), 30*time.Second) {
-			if err := recordManagedService(glowbyRoot, "backend", backendPort); err != nil {
-				fmt.Fprintf(os.Stderr, "warning: could not record backend process info: %v\n", err)
-			}
-		}
-	}()
+	if err := recordManagedService(glowbyRoot, "backend", backendPort); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: could not record backend process info: %v\n", err)
+	}
 
 	// Start web dev server
 	fmt.Println("Starting web UI...")
 	webCmd := exec.CommandContext(ctx, "bun", "run", "dev")
 	webCmd.Dir = webDir
+	webCmd.Env = webEnv
 	webCmd.Stdout = os.Stdout
 	webCmd.Stderr = os.Stderr
 	if err := webCmd.Start(); err != nil {
@@ -166,6 +231,9 @@ func runCode(args []string) int {
 	}()
 
 	wg.Wait()
+	if err := stopManagedAgentService(agentPort); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: could not stop OpenCode agent server on port %d: %v\n", agentPort, err)
+	}
 	clearManagedService(glowbyRoot, "backend")
 	clearManagedService(glowbyRoot, "web")
 	return exitCode
@@ -250,7 +318,10 @@ func reclaimManagedService(glowbyRoot, service string, port int) error {
 		return err
 	}
 	if len(recorded) == 0 || !isSubset(pids, recorded) {
-		if !isExpectedGlowbyService(service, port) {
+		if service == "backend" && isExpectedGlowbyService(service, port) {
+			// Backend auth is per-run, so pid files can drift across rebuilds/restarts.
+			// If /healthz still identifies Glowby on this port, reclaim it safely.
+		} else if !isExpectedGlowbyService(service, port) {
 			return fmt.Errorf("port %d is already in use by another app. Stop it and retry", port)
 		}
 	}
@@ -271,6 +342,19 @@ func reclaimManagedService(glowbyRoot, service string, port int) error {
 
 	clearManagedService(glowbyRoot, service)
 	return nil
+}
+
+func reclaimManagedAgentService(port int) error {
+	pids, err := listPortPIDs(port)
+	if err != nil {
+		return err
+	}
+	if len(pids) == 0 {
+		return nil
+	}
+
+	fmt.Printf("Stopping existing agent server on port %d...\n", port)
+	return killProcessesOnPort(port, pids, "agent server")
 }
 
 func recordManagedService(glowbyRoot, service string, port int) error {
@@ -326,6 +410,17 @@ func clearManagedService(glowbyRoot, service string) {
 	_ = os.Remove(managedStatePath(glowbyRoot, service))
 }
 
+func stopManagedAgentService(port int) error {
+	pids, err := listPortPIDs(port)
+	if err != nil {
+		return err
+	}
+	if len(pids) == 0 {
+		return nil
+	}
+	return killProcessesOnPort(port, pids, "agent server")
+}
+
 func managedStateDir(glowbyRoot string) string {
 	sum := sha1.Sum([]byte(glowbyRoot))
 	return filepath.Join(os.TempDir(), "glowby", fmt.Sprintf("%x", sum[:8]))
@@ -347,6 +442,22 @@ func waitForPortFree(port int, timeout time.Duration) bool {
 	return false
 }
 
+func killProcessesOnPort(port int, pids []int, label string) error {
+	for _, pid := range pids {
+		proc, findErr := os.FindProcess(pid)
+		if findErr != nil {
+			return fmt.Errorf("could not find existing %s process %d: %w", label, pid, findErr)
+		}
+		if killErr := proc.Kill(); killErr != nil {
+			return fmt.Errorf("could not stop existing %s process %d: %w", label, pid, killErr)
+		}
+	}
+	if !waitForPortFree(port, 5*time.Second) {
+		return fmt.Errorf("port %d did not become available after stopping the existing %s", port, label)
+	}
+	return nil
+}
+
 func isExpectedGlowbyService(service string, port int) bool {
 	client := &http.Client{Timeout: 1 * time.Second}
 	url := ""
@@ -354,7 +465,7 @@ func isExpectedGlowbyService(service string, port int) bool {
 
 	switch service {
 	case "backend":
-		url = fmt.Sprintf("http://127.0.0.1:%d/opencode/about", port)
+		url = fmt.Sprintf("http://127.0.0.1:%d/healthz", port)
 		expected = `"name":"Glowby"`
 	case "web":
 		url = fmt.Sprintf("http://127.0.0.1:%d", port)
@@ -376,6 +487,67 @@ func isExpectedGlowbyService(service string, port int) bool {
 	return strings.Contains(string(body), expected)
 }
 
+func areExpectedOpenCodeProcesses(pids []int) bool {
+	if len(pids) == 0 {
+		return true
+	}
+	for _, pid := range pids {
+		command, err := processCommandSummary(pid)
+		if err != nil {
+			return false
+		}
+		if !strings.Contains(strings.ToLower(command), "opencode") {
+			return false
+		}
+	}
+	return true
+}
+
+func resolveOrGenerateSecret(envKeys ...string) (string, error) {
+	for _, key := range envKeys {
+		if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+			return value, nil
+		}
+	}
+	return randomHexSecret(32)
+}
+
+func printLocalAuth(serverToken, opencodePassword string) {
+	fmt.Println()
+	fmt.Println("Local auth credentials:")
+	fmt.Printf("  Glowby backend http://127.0.0.1:%d\n", backendPort)
+	fmt.Printf("    Authorization: Bearer %s\n", serverToken)
+	fmt.Printf("  OpenCode http://127.0.0.1:%s\n", localAgentPort())
+	fmt.Printf("    Username: %s\n", localOpenCodeUsername())
+	fmt.Printf("    Password: %s\n", opencodePassword)
+	fmt.Println()
+}
+
+func localAgentPort() string {
+	if port := strings.TrimSpace(os.Getenv("GLOWBOM_AGENT_PORT")); port != "" {
+		return port
+	}
+	return "4571"
+}
+
+func localOpenCodeUsername() string {
+	if username := strings.TrimSpace(os.Getenv("OPENCODE_SERVER_USERNAME")); username != "" {
+		return username
+	}
+	return "opencode"
+}
+
+func randomHexSecret(byteLen int) (string, error) {
+	if byteLen <= 0 {
+		byteLen = 32
+	}
+	buf := make([]byte, byteLen)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(buf), nil
+}
+
 func listPortPIDs(port int) ([]int, error) {
 	switch runtime.GOOS {
 	case "windows":
@@ -383,6 +555,31 @@ func listPortPIDs(port int) ([]int, error) {
 	default:
 		return listPortPIDsUnix(port)
 	}
+}
+
+func processCommandSummary(pid int) (string, error) {
+	switch runtime.GOOS {
+	case "windows":
+		return processCommandSummaryWindows(pid)
+	default:
+		return processCommandSummaryUnix(pid)
+	}
+}
+
+func processCommandSummaryUnix(pid int) (string, error) {
+	out, err := exec.Command("ps", "-o", "command=", "-p", strconv.Itoa(pid)).Output()
+	if err != nil {
+		return "", fmt.Errorf("could not inspect process %d with ps: %w", pid, err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+func processCommandSummaryWindows(pid int) (string, error) {
+	out, err := exec.Command("tasklist", "/FI", fmt.Sprintf("PID eq %d", pid), "/FO", "CSV", "/NH").Output()
+	if err != nil {
+		return "", fmt.Errorf("could not inspect process %d with tasklist: %w", pid, err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }
 
 func listPortPIDsUnix(port int) ([]int, error) {

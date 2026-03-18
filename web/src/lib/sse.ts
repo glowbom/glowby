@@ -1,3 +1,5 @@
+import { withServerAuthHeaders } from './server-auth';
+
 interface StreamJsonSseOptions<TRequest, TEvent extends Record<string, unknown>> {
   url: string;
   body: TRequest;
@@ -36,10 +38,10 @@ export async function streamJsonSse<TRequest extends object, TEvent extends Reco
 ): Promise<void> {
   const response = await fetch(options.url, {
     method: 'POST',
-    headers: {
+    headers: withServerAuthHeaders({
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
-    },
+    }),
     body: JSON.stringify(options.body),
     signal: options.signal,
   });
