@@ -2,7 +2,14 @@ const logoSrc = `${import.meta.env.BASE_URL}glowbom-logo.svg`;
 
 export function BrandTitle() {
   return (
-    <span className="inline-flex items-center">
+    <span
+      className="inline-flex items-center"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = "https://glowbom.com";
+      }}
+    >
       <img
         alt="Glowbom"
         className="h-[26px] w-auto"

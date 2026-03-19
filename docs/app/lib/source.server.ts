@@ -2,7 +2,7 @@ import { loader } from "fumadocs-core/source";
 import { docs } from "fumadocs-mdx:collections/server";
 import type { LoadedDocPage, SearchRecord } from "./docs";
 
-const baseUrl = process.env.DOCS_BASE_PATH ?? (process.env.NODE_ENV === "production" ? "/docs" : "/");
+const baseUrl = "/";
 
 export const source = loader({
   baseUrl,

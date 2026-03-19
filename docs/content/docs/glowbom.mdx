@@ -1,23 +1,45 @@
 ---
 title: Glowbom
-description: How Glowbom fits into the broader workflow and where it connects with Glowby OSS.
+description: A sketch-to-software system for building native apps from drawings.
 ---
 
-## What Glowbom is
+Glowbom turns drawings into native applications. You sketch what you want, get a working prototype, and coding agents make it production ready.
 
-Glowbom is the broader product and workflow layer around building production-ready software with coding agents.
+You own everything. All code lives on your machine. Cloud services are optional.
 
-## How it fits with Glowby OSS
+## How it works
 
-Glowby OSS can be used independently, but it becomes much easier to understand when it is documented alongside Glowbom:
+1. **Sketch your idea** on the canvas at [glowbom.com](https://glowbom.com).
+2. **Get a working prototype** you can try right in your browser.
+3. **Pick a platform** and translate it into code for iOS, Android, or web.
+4. **Make it production ready** with [Glowby OSS](./glowby-oss) running on your own computer. One of the coolest things is that the agent can update all codebases for iOS, Android, and web at the same time when you make follow-up changes.
 
-- Glowbom explains the product context.
-- Glowby OSS explains the local open source workflow.
-- Shared docs reduce duplication and keep concepts aligned.
+See the [Quickstart](./quickstart) for a full walkthrough with screenshots.
 
-## What should live here
+## What you can build
 
-- Product concepts
-- Setup decisions
-- Recommended workflows
-- How Glowbom and Glowby OSS connect
+- Websites (Next.js)
+- Mobile apps (SwiftUI, Jetpack Compose)
+- Simple games
+- Prototypes and MVPs
+
+## Models and providers
+
+Glowby OSS is powered by OpenCode and works with a wide variety of agents and models. Use free models, log in with your ChatGPT account to access frontier models like GPT-5.4, bring your own API keys, or run local models with Ollama. Support for Codex App Server is planned.
+
+You pick what works best for your project. There are many options and the quality is high across the board.
+
+## Glowby OSS
+
+[Glowby OSS](./glowby-oss) is the free, open source tool that takes your project and makes it ready to ship. It runs on your computer and supports many AI providers (OpenAI, Anthropic, Google, xAI, Ollama, and more).
+
+## Starter project
+
+The repo includes a ready-to-use project template in `project/` with folders for each platform:
+
+- `project/apple/`: iOS app
+- `project/android/`: Android app
+- `project/web/`: web app
+- `project/prototype/`: design and assets
+
+Remove any platform folder you do not need.

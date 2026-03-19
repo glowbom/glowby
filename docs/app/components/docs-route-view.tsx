@@ -22,7 +22,7 @@ export function DocsRouteView({ loaderData }: { loaderData: LoadedDocPage }) {
     <DocsSearchProvider records={loaderData.searchRecords}>
       <DocsLayout
         tree={tree}
-        nav={{ title: <BrandTitle />, url: "/", children: <NavActions /> }}
+        nav={{ title: <BrandTitle />, children: <NavActions /> }}
         searchToggle={{
           enabled: true,
           components: {

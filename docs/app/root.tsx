@@ -11,11 +11,9 @@ import { RootProvider } from "fumadocs-ui/provider/react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
 
-const docsBasePath =
-  import.meta.env.VITE_DOCS_BASE_PATH ?? (import.meta.env.PROD ? "/docs" : "");
-
 function withBasePath(path: string) {
-  return docsBasePath ? `${docsBasePath}${path}` : path;
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return base ? `${base}${path}` : path;
 }
 
 export const links: Route.LinksFunction = () => [
