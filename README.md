@@ -1,5 +1,7 @@
 # Glowby OSS
 
+> We just launched Glowby OSS! [See the announcement](https://x.com/jacobilin/status/2035059308463833292)
+
 **Build anything locally.**
 
 Glowby helps you build production-ready software with coding agents. It is an open source coding agent workflow for real projects. It is built primarily for Glowbom projects, but the workflow can also work with other project structures.

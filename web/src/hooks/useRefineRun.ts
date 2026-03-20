@@ -26,6 +26,7 @@ export interface StartRefineInput {
   openaiRefreshToken?: string;
   openaiExpiresAt?: number;
   providerKeys: ProviderKeyState;
+  imageSource?: string;
 }
 
 export interface SubmitQuestionInput {
@@ -666,6 +667,11 @@ export function useRefineRun() {
       }
       if (xaiKey) {
         payload.xaiKey = xaiKey;
+      }
+
+      const imageSource = input.imageSource?.trim() || '';
+      if (imageSource) {
+        payload.imageSource = imageSource;
       }
 
       if (input.openaiAuthMode === 'codex-jwt' && openaiKey) {

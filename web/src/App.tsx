@@ -464,6 +464,7 @@ export default function App() {
   const [openingIDE, setOpeningIDE] = useState<OpenCodeIDE | null>(null);
 
   const [providerKeys, setProviderKeys] = useState<ProviderKeyState>(DEFAULT_PROVIDER_KEYS);
+  const [imageSource, setImageSource] = useState('');
   const [credentialMode, setCredentialMode] = useState<CredentialMode>('opencode-config');
   const [authProvider, setAuthProvider] = useState<AuthProviderID>('chatgpt');
   const [isUpdatingAuthConnection, setIsUpdatingAuthConnection] = useState(false);
@@ -997,6 +998,16 @@ export default function App() {
       ...previous,
       [field]: value,
     }));
+
+    // Clear image source if the key it depends on was removed.
+    if (!value.trim()) {
+      setImageSource((previous) => {
+        if (field === 'openaiKey' && previous.includes('gpt-image')) return '';
+        if (field === 'geminiKey' && previous.includes('Nano Banana')) return '';
+        if (field === 'xaiKey' && previous.includes('Grok')) return '';
+        return previous;
+      });
+    }
   };
 
   const toggleProjectPicker = () => {
@@ -1496,6 +1507,7 @@ export default function App() {
       model: modelValue || undefined,
       openaiAuthMode: effectiveOpenAIAuthMode,
       providerKeys,
+      imageSource: imageSource || undefined,
     });
   };
 
@@ -2214,6 +2226,34 @@ export default function App() {
                   </div>
                 ) : null}
               </div>
+
+              {isApiKeyMode ? (
+                <div className="field-grid">
+                  <div>
+                    <label className="field-label" htmlFor="imageSource">
+                      Glowby Images
+                    </label>
+                    <select
+                      className="input"
+                      disabled={refine.isRunning}
+                      id="imageSource"
+                      onChange={(event) => setImageSource(event.target.value)}
+                      value={imageSource}
+                    >
+                      <option value="">None</option>
+                      {providerKeys.openaiKey.trim() ? (
+                        <option value="Glowby Images (gpt-image-1.5)">GPT Image 1.5</option>
+                      ) : null}
+                      {providerKeys.geminiKey.trim() ? (
+                        <option value="Glowby Images (Nano Banana 2)">Nano Banana 2</option>
+                      ) : null}
+                      {providerKeys.xaiKey.trim() ? (
+                        <option value="Glowby Images (Grok Imagine Image Pro)">Grok Imagine Image Pro</option>
+                      ) : null}
+                    </select>
+                  </div>
+                </div>
+              ) : null}
 
               {isAuthMode ? (
                 <div className={`auth-connection-card ${authProviderConnected ? 'connected' : 'disconnected'}`}>

@@ -210,6 +210,7 @@ export interface OpenCodeAgentRequest {
   openrouterKey?: string;
   opencodeZenKey?: string;
   xaiKey?: string;
+  imageSource?: string;
 }
 
 export interface OpenCodeQuestionOption {

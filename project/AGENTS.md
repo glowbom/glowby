@@ -91,6 +91,62 @@ iOS (SwiftUI), Android (Jetpack Compose), Web (Next.js)
 - App Icon: `project/icon.png`
 - Project Manifest: `project/glowbom.json`
 
+### Handling Files Downloaded from Glowbom.com
+
+Users can build a prototype on the Glowbom desktop app and then download files to feed into this project. They may attach some or all of the following when running a build:
+
+#### File Types the User May Attach
+
+| File pattern | What it is |
+|---|---|
+| `*.zip` | Glowbom default project template (this boilerplate) as an archive |
+| `AiExtensions.swift` | iOS/SwiftUI AI extension — generated UI code for `apple/Custom/AiExtensions.swift` |
+| `AiExtensions.kt` | Android/Kotlin AI extension — generated UI code for `android/app/src/main/java/com/glowbom/custom/AiExtensions.kt` |
+| `AiExtensions.tsx` | Web/Next.js AI extension — generated UI code for `web/src/app/components/AiExtensions.tsx` |
+| Larger `.html` file (contains `data:image/...;base64,`) | HTML prototype with images embedded as base64 |
+| Smaller `.html` file (no base64 images) | HTML prototype with image prompts in `alt`/`title` attributes but no image data |
+| `*.html` with `preview` in name | Preview variant of the prototype (typically the one with base64 images) |
+
+Not all file types will be present every time. The user may attach just one file or several. Handle whatever is provided.
+
+#### What To Do When Attachments Are Present
+
+1. **Check what this project already has.** The Glowbom project structure (`glowbom.json`, `prototype/`, `apple/`, `android/`, `web/`) may already be in place. If so, work with what exists. If the project folder is empty or missing the structure and a `.zip` template is attached, unarchive it first.
+
+2. **Place AI extension files** into their correct locations:
+   - `AiExtensions.swift` → `apple/Custom/AiExtensions.swift`
+   - `AiExtensions.kt` → `android/app/src/main/java/com/glowbom/custom/AiExtensions.kt`
+   - `AiExtensions.tsx` → `web/src/app/components/AiExtensions.tsx`
+   - Set `enabled = true` and update `title` if not already set
+   - Only update platforms for which an extension file was attached
+
+3. **Extract images from the HTML prototype.** If an attached HTML file contains base64-encoded images (`data:image/(png|jpeg|jpg|gif|webp);base64,...`):
+   - Decode each base64 image and save it to `prototype/assets/image-NNN.png` (numbered sequentially: `image-001.png`, `image-002.png`, etc.)
+   - Replace the data URIs in the HTML with relative paths (`assets/image-NNN.png`)
+   - Save the cleaned HTML as `prototype/index.html`
+
+4. **Extract image prompts.** If a second smaller HTML file is attached (without base64 images), or if the HTML has `alt` or `title` attributes describing images:
+   - Collect the image descriptions and create or update `prototype/assets.json`:
+     ```json
+     {
+       "assets": [
+         { "filename": "image-001.png", "prompt": "description from the HTML", "sourceService": "Glowby Images" }
+       ],
+       "exportedAt": "<current ISO timestamp>",
+       "version": "1.0"
+     }
+     ```
+   - If only one HTML file is attached and it has no base64 images, it is still the prototype — save it as `prototype/index.html`
+
+5. **Copy extracted assets to platform directories** following the rules in "Copy Images from Prototype" above, then proceed with the default tasks (production readiness, icon setup, build verification).
+
+#### Tips
+
+- The user may provide no instructions at all — the attachments themselves are the instructions
+- If the HTML references images but none are embedded, check whether they already exist in `prototype/assets/`
+- Merge attachments into the existing project rather than overwriting existing work
+- Be resourceful: figure out what the user intends from the combination of files they attached
+
 ### Notes
 
 - If the user gives different instructions, follow those instead of the defaults above
