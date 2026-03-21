@@ -7411,6 +7411,7 @@ func (d *OpenCodeDriver) respondToQuestion(ctx context.Context, sessionID, quest
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
+		applyOpenCodeServerAuthorization(req)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -7550,6 +7551,7 @@ func (d *OpenCodeDriver) respondToPermission(ctx context.Context, sessionID, per
 		req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 		if err == nil {
 			req.Header.Set("Content-Type", "application/json")
+			applyOpenCodeServerAuthorization(req)
 			resp, err := http.DefaultClient.Do(req)
 			if err == nil {
 				defer resp.Body.Close()
