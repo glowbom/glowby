@@ -59,7 +59,115 @@ const DEFAULT_PROVIDER_KEYS: ProviderKeyState = {
   openrouterKey: '',
   opencodeZenKey: '',
   xaiKey: '',
+  elevenLabsKey: '',
 };
+
+const PROVIDER_KEYS_STORAGE_KEY = 'glowby_oss_provider_keys';
+
+function loadProviderKeys(): ProviderKeyState {
+  try {
+    const raw = localStorage.getItem(PROVIDER_KEYS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULT_PROVIDER_KEYS, ...parsed };
+    }
+  } catch {
+    // ignore corrupt data
+  }
+  return { ...DEFAULT_PROVIDER_KEYS };
+}
+
+function saveProviderKeys(keys: ProviderKeyState): void {
+  try {
+    localStorage.setItem(PROVIDER_KEYS_STORAGE_KEY, JSON.stringify(keys));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+const IMAGE_SOURCE_STORAGE_KEY = 'glowby_oss_image_source';
+
+function loadImageSource(): string {
+  try {
+    return localStorage.getItem(IMAGE_SOURCE_STORAGE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveImageSource(value: string): void {
+  try {
+    localStorage.setItem(IMAGE_SOURCE_STORAGE_KEY, value);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+const CREDENTIAL_MODE_STORAGE_KEY = 'glowby_oss_credential_mode';
+const VALID_CREDENTIAL_MODES: CredentialMode[] = ['auth', 'api-key', 'opencode-config'];
+
+function loadCredentialMode(): CredentialMode {
+  try {
+    const raw = localStorage.getItem(CREDENTIAL_MODE_STORAGE_KEY);
+    if (raw && VALID_CREDENTIAL_MODES.includes(raw as CredentialMode)) {
+      return raw as CredentialMode;
+    }
+  } catch {
+    // ignore
+  }
+  return 'opencode-config';
+}
+
+function saveCredentialMode(mode: CredentialMode): void {
+  try {
+    localStorage.setItem(CREDENTIAL_MODE_STORAGE_KEY, mode);
+  } catch {
+    // ignore
+  }
+}
+
+const TARGET_SELECTION_STORAGE_KEY = 'glowby_oss_selected_targets';
+
+const BUILD_TARGETS = [
+  { id: 'prototype', label: 'Prototype', dir: 'prototype' },
+  { id: 'apple', label: 'Apple', dir: 'apple' },
+  { id: 'android', label: 'Android', dir: 'android' },
+  { id: 'web', label: 'Web', dir: 'web' },
+] as const;
+
+const ALL_TARGET_IDS: string[] = BUILD_TARGETS.map((t) => t.id);
+
+function loadSelectedTargets(): string[] {
+  try {
+    const raw = localStorage.getItem(TARGET_SELECTION_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const valid = parsed.filter((id: string) => ALL_TARGET_IDS.includes(id));
+        return valid.length > 0 ? valid : [...ALL_TARGET_IDS];
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return [...ALL_TARGET_IDS];
+}
+
+function saveSelectedTargets(ids: string[]): void {
+  try {
+    localStorage.setItem(TARGET_SELECTION_STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    // ignore
+  }
+}
+
+function validateImageSource(source: string, keys: ProviderKeyState): string {
+  if (!source) return '';
+  if (source.includes('gpt-image') && !keys.openaiKey.trim()) return '';
+  if (source.includes('Nano Banana') && !keys.geminiKey.trim()) return '';
+  if (source.includes('Grok') && !keys.xaiKey.trim()) return '';
+  return source;
+}
 
 interface ProjectHistoryEntry {
   path: string;
@@ -462,10 +570,24 @@ export default function App() {
   const [ideOpenInfo, setIdeOpenInfo] = useState<string | null>(null);
   const [ideOpenError, setIdeOpenError] = useState<string | null>(null);
   const [openingIDE, setOpeningIDE] = useState<OpenCodeIDE | null>(null);
+  const [isRenamingProject, setIsRenamingProject] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
 
-  const [providerKeys, setProviderKeys] = useState<ProviderKeyState>(DEFAULT_PROVIDER_KEYS);
-  const [imageSource, setImageSource] = useState('');
-  const [credentialMode, setCredentialMode] = useState<CredentialMode>('opencode-config');
+  const [providerKeys, setProviderKeys] = useState<ProviderKeyState>(loadProviderKeys);
+  const [imageSource, setImageSourceRaw] = useState(() => validateImageSource(loadImageSource(), loadProviderKeys()));
+  const setImageSource = (value: string | ((prev: string) => string)) => {
+    setImageSourceRaw((prev) => {
+      const next = typeof value === 'function' ? value(prev) : value;
+      saveImageSource(next);
+      return next;
+    });
+  };
+  const [credentialMode, setCredentialModeRaw] = useState<CredentialMode>(loadCredentialMode);
+  const setCredentialMode = (mode: CredentialMode) => {
+    setCredentialModeRaw(mode);
+    saveCredentialMode(mode);
+  };
   const [authProvider, setAuthProvider] = useState<AuthProviderID>('chatgpt');
   const [isUpdatingAuthConnection, setIsUpdatingAuthConnection] = useState(false);
   const [authConnectionInfo, setAuthConnectionInfo] = useState<string | null>(null);
@@ -505,6 +627,7 @@ export default function App() {
 
   const activeProject = projectEnvelope?.project ?? null;
   const targetRows = useMemo(() => targetSummary(activeProject), [activeProject]);
+  const [selectedTargets, setSelectedTargets] = useState<string[]>(loadSelectedTargets);
   const modelGroups = useMemo(() => modelCatalogGroups(dynamicOpenAIModels), [dynamicOpenAIModels]);
   const isAuthMode = credentialMode === 'auth';
   const isApiKeyMode = credentialMode === 'api-key';
@@ -959,6 +1082,17 @@ export default function App() {
     }
   }, [isOpenCodeConfigMode, openCodeConfigProviders, selectedOpenCodeModel]);
 
+  const toggleTarget = useCallback((targetId: string) => {
+    setSelectedTargets((prev) => {
+      if (prev.includes(targetId) && prev.length === 1) return prev;
+      const next = prev.includes(targetId)
+        ? prev.filter((id) => id !== targetId)
+        : [...prev, targetId];
+      saveSelectedTargets(next);
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (!isProjectPickerOpen || refine.isRunning || !activeProject || !selectedProjectPath) {
       return;
@@ -994,10 +1128,11 @@ export default function App() {
   }, [refine.status, refine.summary, refreshProjectHistory, selectedProjectPath]);
 
   const updateProviderKey = (field: keyof ProviderKeyState, value: string) => {
-    setProviderKeys((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
+    setProviderKeys((previous) => {
+      const next = { ...previous, [field]: value };
+      saveProviderKeys(next);
+      return next;
+    });
 
     // Clear image source if the key it depends on was removed.
     if (!value.trim()) {
@@ -1242,6 +1377,38 @@ export default function App() {
     }
   };
 
+  const handleRenameProject = async (newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      setRenameError('Name cannot be empty.');
+      return;
+    }
+    const trimmedPath = projectPath.trim();
+    if (!trimmedPath) return;
+
+    setRenameError(null);
+    try {
+      const result = await openCodeApi.renameProject(trimmedPath, trimmed);
+      if (result.success && result.project) {
+        setProjectEnvelope((prev) =>
+          prev ? { ...prev, project: result.project } : prev
+        );
+        // Update project history entry name
+        setProjectHistory((prev) =>
+          prev.map((entry) =>
+            entry.path === trimmedPath ? { ...entry, name: trimmed } : entry
+          )
+        );
+      } else {
+        setRenameError(result.error || 'Failed to rename project.');
+      }
+    } catch (error) {
+      setRenameError(toErrorMessage(error, 'Failed to rename project.'));
+    } finally {
+      setIsRenamingProject(false);
+    }
+  };
+
   const openProjectInIDE = async (ide: OpenCodeIDE) => {
     const trimmedPath = projectPath.trim();
     if (!trimmedPath) {
@@ -1397,6 +1564,24 @@ export default function App() {
 
     const finalInstructions = instructions.trim() || DEFAULT_BUILD_INSTRUCTIONS;
 
+    let targetGuidance = '';
+    const isAllSelected = selectedTargets.length === ALL_TARGET_IDS.length;
+
+    if (!isAllSelected && selectedTargets.length > 0) {
+      const selected = BUILD_TARGETS.filter((t) => selectedTargets.includes(t.id));
+      const deselected = BUILD_TARGETS.filter((t) => !selectedTargets.includes(t.id));
+      const selectedLabels = selected.map((t) => `${t.label} (${t.dir}/)`).join(', ');
+      const deselectedDirs = deselected.map((t) => `${t.dir}/`).join(', ');
+
+      if (selected.length === 1) {
+        targetGuidance = `\n\nIMPORTANT: Please only work on ${selectedLabels}. Do not modify any other directories (${deselectedDirs}).`;
+      } else {
+        targetGuidance = `\n\nIMPORTANT: Please only work on ${selectedLabels}. Do not modify other directories (${deselectedDirs}).`;
+      }
+    }
+
+    const finalInstructionsWithTargets = finalInstructions + targetGuidance;
+
     if (healthError || health?.healthy === false) {
       setFormError('Glowby cannot reach the local backend right now. Open Settings, refresh the checks, and try again.');
       setIsSettingsOpen(true);
@@ -1501,7 +1686,7 @@ export default function App() {
 
     void refine.startRefine({
       projectPath: selectedProjectPath,
-      instructions: finalInstructions,
+      instructions: finalInstructionsWithTargets,
       persistCurrentInstructionsToHistory: true,
       instructionAttachmentPaths,
       model: modelValue || undefined,
@@ -1893,22 +2078,67 @@ export default function App() {
                 <div className="project-summary compact-project-summary">
                   <div className="project-summary-header">
                     <div className="project-heading">
-                      <strong>{activeProject.name}</strong>
+                      {isRenamingProject ? (
+                        <div className="project-rename-row">
+                          <input
+                            className="project-rename-input"
+                            type="text"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') void handleRenameProject(renameValue);
+                              if (e.key === 'Escape') { setIsRenamingProject(false); setRenameError(null); }
+                            }}
+                            autoFocus
+                          />
+                          <button
+                            className="button secondary tiny"
+                            onClick={() => void handleRenameProject(renameValue)}
+                            type="button"
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="button secondary tiny"
+                            onClick={() => { setIsRenamingProject(false); setRenameError(null); }}
+                            type="button"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="project-name-row">
+                          <strong>{activeProject.name}</strong>
+                          <button
+                            className="button secondary tiny"
+                            onClick={() => { setRenameValue(activeProject.name); setIsRenamingProject(true); setRenameError(null); }}
+                            type="button"
+                            title="Rename project"
+                          >
+                            Rename
+                          </button>
+                        </div>
+                      )}
+                      {renameError ? <p className="error-inline">{renameError}</p> : null}
                       <span className="meta">
                         v{activeProject.version} · {targetRows.length} target{targetRows.length === 1 ? '' : 's'}
                       </span>
                     </div>
                   </div>
                   <p className="meta project-path-meta">{selectedProjectPath}</p>
-                  {targetRows.length > 0 ? (
-                    <div className="chip-list">
-                      {targetRows.map((target) => (
-                        <span className="chip" key={target.id}>
-                          {target.id}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
+                  <div className="chip-list">
+                    {BUILD_TARGETS.map((target) => (
+                      <label className={`chip chip-selectable ${selectedTargets.includes(target.id) ? '' : 'chip-deselected'}`} key={target.id}>
+                        <input
+                          type="checkbox"
+                          checked={selectedTargets.includes(target.id)}
+                          onChange={() => toggleTarget(target.id)}
+                          disabled={refine.isRunning}
+                        />
+                        {target.label}
+                      </label>
+                    ))}
+                  </div>
 
                   <details className="project-tools-disclosure">
                     <summary>Tools</summary>
@@ -2330,6 +2560,17 @@ export default function App() {
                         </label>
                       );
                     })}
+                    <label className="provider-key-item">
+                      <span className="field-label">ElevenLabs API Key</span>
+                      <input
+                        className="input"
+                        disabled={refine.isRunning}
+                        onChange={(event) => updateProviderKey('elevenLabsKey', event.target.value)}
+                        placeholder="ElevenLabs key"
+                        type="password"
+                        value={providerKeys.elevenLabsKey}
+                      />
+                    </label>
                   </div>
                 </details>
               ) : null}

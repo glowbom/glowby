@@ -45,6 +45,7 @@ func main() {
 	mux.HandleFunc("/opencode/instructions/files/pick", openCodePickInstructionFilesHandler)
 	mux.HandleFunc("/opencode/project/ide/status", openCodeProjectIDEStatusHandler)
 	mux.HandleFunc("/opencode/project/open", openCodeProjectOpenHandler)
+	mux.HandleFunc("/opencode/project/rename", openCodeRenameProjectHandler)
 	mux.HandleFunc("/opencode/models/available", openCodeAvailableModelsHandler)
 	mux.HandleFunc("/providers/openai/models", openAIModelsHandler)
 	mux.HandleFunc("/opencode/refine", openCodeRefineHandler)

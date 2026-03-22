@@ -577,6 +577,30 @@ textarea.input {
   gap: 2px;
 }
 
+.project-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-rename-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.project-rename-input {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  min-width: 0;
+  flex: 1;
+}
+
 .project-path-meta {
   word-break: break-word;
 }
@@ -594,6 +618,49 @@ textarea.input {
   padding: 4px 9px;
   color: #4a4a4a;
   font-size: 0.8rem;
+}
+
+.chip-selectable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.chip-selectable input[type="checkbox"] {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #aaa;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chip-selectable input[type="checkbox"]:checked {
+  border-color: #4a4a4a;
+  background: #fff;
+}
+
+.chip-selectable input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -1px;
+  left: 1px;
+  font-size: 11px;
+  color: #4a4a4a;
+  font-weight: bold;
+}
+
+.chip-deselected {
+  opacity: 0.45;
+  border-color: #e0e0e0;
 }
 
 .project-ide-tools {

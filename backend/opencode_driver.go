@@ -2860,6 +2860,53 @@ func openCodeGetProjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// openCodeRenameProjectHandler renames a project by updating its manifest
+func openCodeRenameProjectHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Path string `json:"path"`
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+	if req.Path == "" || req.Name == "" {
+		http.Error(w, "path and name are required", http.StatusBadRequest)
+		return
+	}
+
+	paths := GetProjectPaths(req.Path)
+	project, err := LoadProject(paths.Manifest)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	project.Name = strings.TrimSpace(req.Name)
+	if err := SaveProject(paths.Manifest, project); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"project": project,
+	})
+}
+
 type openCodeOpenAIOAuthCredential struct {
 	AccessToken               string
 	RefreshToken              string

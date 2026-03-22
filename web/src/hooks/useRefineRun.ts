@@ -646,6 +646,7 @@ export function useRefineRun() {
       const openrouterKey = trimmedValue(input.providerKeys.openrouterKey);
       const opencodeZenKey = trimmedValue(input.providerKeys.opencodeZenKey);
       const xaiKey = trimmedValue(input.providerKeys.xaiKey);
+      const elevenLabsKey = trimmedValue(input.providerKeys.elevenLabsKey);
 
       if (openaiKey) {
         payload.openaiKey = openaiKey;
@@ -667,6 +668,9 @@ export function useRefineRun() {
       }
       if (xaiKey) {
         payload.xaiKey = xaiKey;
+      }
+      if (elevenLabsKey) {
+        payload.elevenLabsKey = elevenLabsKey;
       }
 
       const imageSource = input.imageSource?.trim() || '';

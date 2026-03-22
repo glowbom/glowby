@@ -125,6 +125,14 @@ export const openCodeApi = {
     });
   },
 
+  async renameProject(path: string, name: string): Promise<{ success: boolean; project?: OpenCodeProjectEnvelope['project']; error?: string }> {
+    return requestJson(`${API_PREFIX}/opencode/project/rename`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, name }),
+    });
+  },
+
   async openProject(payload: OpenCodeProjectOpenRequest): Promise<OpenCodeProjectOpenResponse> {
     return requestJson<OpenCodeProjectOpenResponse>(`${API_PREFIX}/opencode/project/open`, {
       method: 'POST',

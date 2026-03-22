@@ -18,7 +18,8 @@ export type ProviderKeyField =
   | 'fireworksKey'
   | 'openrouterKey'
   | 'opencodeZenKey'
-  | 'xaiKey';
+  | 'xaiKey'
+  | 'elevenLabsKey';
 
 export interface ProviderKeyState {
   openaiKey: string;
@@ -28,6 +29,7 @@ export interface ProviderKeyState {
   openrouterKey: string;
   opencodeZenKey: string;
   xaiKey: string;
+  elevenLabsKey: string;
 }
 
 export interface OpenCodeHealthResponse {
@@ -210,6 +212,7 @@ export interface OpenCodeAgentRequest {
   openrouterKey?: string;
   opencodeZenKey?: string;
   xaiKey?: string;
+  elevenLabsKey?: string;
   imageSource?: string;
 }
 
