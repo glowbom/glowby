@@ -169,6 +169,19 @@ function validateImageSource(source: string, keys: ProviderKeyState): string {
   return source;
 }
 
+function suggestBundleID(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '.')
+    .replace(/\.{2,}/g, '.')
+    .replace(/^\.+|\.+$/g, '')
+    .split('.')
+    .filter(Boolean)
+    .map((part) => (/^\d/.test(part) ? `app${part}` : part))
+    .join('.');
+  return `app.glowbom.${slug || 'myapp'}`;
+}
+
 interface ProjectHistoryEntry {
   path: string;
   name: string;
@@ -573,6 +586,20 @@ export default function App() {
   const [isRenamingProject, setIsRenamingProject] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [renameError, setRenameError] = useState<string | null>(null);
+
+  const [settingsBundleID, setSettingsBundleID] = useState('');
+  const [settingsDisplayName, setSettingsDisplayName] = useState('');
+  const [settingsBuildNumber, setSettingsBuildNumber] = useState('');
+  const [settingsVersion, setSettingsVersion] = useState('');
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsInfo, setSettingsInfo] = useState<string | null>(null);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [iconPrompt, setIconPrompt] = useState('');
+  const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [iconInfo, setIconInfo] = useState<string | null>(null);
+  const [iconError, setIconError] = useState<string | null>(null);
+  const [iconReferenceImage, setIconReferenceImage] = useState<string | null>(null);
 
   const [providerKeys, setProviderKeys] = useState<ProviderKeyState>(loadProviderKeys);
   const [imageSource, setImageSourceRaw] = useState(() => validateImageSource(loadImageSource(), loadProviderKeys()));
@@ -1082,6 +1109,32 @@ export default function App() {
     }
   }, [isOpenCodeConfigMode, openCodeConfigProviders, selectedOpenCodeModel]);
 
+  useEffect(() => {
+    if (!activeProject) return;
+    const name = activeProject.name || '';
+    setSettingsBundleID(activeProject.bundleID || suggestBundleID(name));
+    setSettingsDisplayName(activeProject.displayName || name);
+    setSettingsBuildNumber(activeProject.buildNumber || '1');
+    setSettingsVersion(activeProject.version || '1.0');
+    setSettingsInfo(null);
+    setSettingsError(null);
+    setIconInfo(null);
+    setIconError(null);
+    setIconReferenceImage(null);
+
+    // Load existing icon
+    const trimmedPath = projectPath.trim();
+    if (trimmedPath) {
+      openCodeApi.getProjectIcon(trimmedPath).then((result) => {
+        setIconPreview(result.exists && result.image ? result.image : null);
+      }).catch(() => {
+        setIconPreview(null);
+      });
+    } else {
+      setIconPreview(null);
+    }
+  }, [activeProject, projectPath]);
+
   const toggleTarget = useCallback((targetId: string) => {
     setSelectedTargets((prev) => {
       if (prev.includes(targetId) && prev.length === 1) return prev;
@@ -1399,6 +1452,9 @@ export default function App() {
             entry.path === trimmedPath ? { ...entry, name: trimmed } : entry
           )
         );
+        // Auto-suggest display name and bundle ID when project name changes
+        setSettingsDisplayName((prev) => prev ? prev : trimmed);
+        setSettingsBundleID((prev) => prev ? prev : suggestBundleID(trimmed));
       } else {
         setRenameError(result.error || 'Failed to rename project.');
       }
@@ -1406,6 +1462,73 @@ export default function App() {
       setRenameError(toErrorMessage(error, 'Failed to rename project.'));
     } finally {
       setIsRenamingProject(false);
+    }
+  };
+
+  const handleSaveProjectSettings = async () => {
+    const trimmedPath = projectPath.trim();
+    if (!trimmedPath) return;
+
+    setIsSavingSettings(true);
+    setSettingsInfo(null);
+    setSettingsError(null);
+
+    try {
+      const result = await openCodeApi.updateProjectSettings({
+        path: trimmedPath,
+        bundleID: settingsBundleID,
+        displayName: settingsDisplayName,
+        buildNumber: settingsBuildNumber,
+        version: settingsVersion,
+      });
+      if (result.success && result.project) {
+        setProjectEnvelope((prev) =>
+          prev ? { ...prev, project: result.project } : prev
+        );
+        setSettingsInfo('Settings saved.');
+      } else {
+        setSettingsError(result.error || 'Failed to save settings.');
+      }
+    } catch (error) {
+      setSettingsError(toErrorMessage(error, 'Failed to save settings.'));
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleGenerateIcon = async () => {
+    const trimmedPath = projectPath.trim();
+    const trimmedPrompt = iconPrompt.trim();
+    if (!trimmedPath || !trimmedPrompt) {
+      setIconError('Enter an icon prompt.');
+      return;
+    }
+
+    setIsGeneratingIcon(true);
+    setIconInfo(null);
+    setIconError(null);
+    setIconPreview(null);
+
+    try {
+      const result = await openCodeApi.generateIcon({
+        path: trimmedPath,
+        prompt: trimmedPrompt,
+        imageSource: imageSource || undefined,
+        openaiKey: providerKeys.openaiKey.trim() || undefined,
+        geminiKey: providerKeys.geminiKey.trim() || undefined,
+        xaiKey: providerKeys.xaiKey.trim() || undefined,
+        referenceImage: iconReferenceImage || undefined,
+      });
+      if (result.success) {
+        setIconPreview(result.image || null);
+        setIconInfo(`Icon generated${result.sourceService ? ` via ${result.sourceService}` : ''}.`);
+      } else {
+        setIconError(result.error || 'Failed to generate icon.');
+      }
+    } catch (error) {
+      setIconError(toErrorMessage(error, 'Failed to generate icon.'));
+    } finally {
+      setIsGeneratingIcon(false);
     }
   };
 
@@ -2201,6 +2324,136 @@ export default function App() {
                       {ideStatusError ? <p className="error-inline">{ideStatusError}</p> : null}
                       {ideOpenInfo ? <p className="meta ok">{ideOpenInfo}</p> : null}
                       {ideOpenError ? <p className="error-inline">{ideOpenError}</p> : null}
+                    </div>
+                  </details>
+
+                  <details className="project-tools-disclosure">
+                    <summary>Project Settings</summary>
+                    <div className="project-settings-grid">
+                      <label className="field-label-inline">
+                        <span>Display Name</span>
+                        <input
+                          className="input"
+                          disabled={refine.isRunning || isSavingSettings}
+                          onChange={(e) => setSettingsDisplayName(e.target.value)}
+                          placeholder="My App"
+                          value={settingsDisplayName}
+                        />
+                      </label>
+                      <label className="field-label-inline">
+                        <span>Bundle ID</span>
+                        <input
+                          className="input"
+                          disabled={refine.isRunning || isSavingSettings}
+                          onChange={(e) => setSettingsBundleID(e.target.value)}
+                          placeholder="app.glowbom.myapp"
+                          value={settingsBundleID}
+                        />
+                      </label>
+                      <label className="field-label-inline">
+                        <span>Version</span>
+                        <input
+                          className="input"
+                          disabled={refine.isRunning || isSavingSettings}
+                          onChange={(e) => setSettingsVersion(e.target.value)}
+                          placeholder="1.0"
+                          value={settingsVersion}
+                        />
+                      </label>
+                      <label className="field-label-inline">
+                        <span>Build Number</span>
+                        <input
+                          className="input"
+                          disabled={refine.isRunning || isSavingSettings}
+                          onChange={(e) => setSettingsBuildNumber(e.target.value)}
+                          placeholder="1"
+                          value={settingsBuildNumber}
+                        />
+                      </label>
+                      <div className="row">
+                        <button
+                          className="button"
+                          disabled={refine.isRunning || isSavingSettings}
+                          onClick={() => void handleSaveProjectSettings()}
+                          type="button"
+                        >
+                          {isSavingSettings ? 'Saving...' : 'Save Settings'}
+                        </button>
+                      </div>
+                      {settingsInfo ? <p className="meta ok">{settingsInfo}</p> : null}
+                      {settingsError ? <p className="error-inline">{settingsError}</p> : null}
+
+                      <div className="icon-section">
+                        <strong>App Icon</strong>
+                        <div className="icon-row">
+                          {iconPreview ? (
+                            <img className="icon-preview" src={iconPreview} alt="App icon" />
+                          ) : (
+                            <div className="icon-preview icon-placeholder">No icon</div>
+                          )}
+                          {iconReferenceImage ? (
+                            <div className="icon-ref-wrapper">
+                              <img className="icon-ref-preview" src={iconReferenceImage} alt="Reference" />
+                              <button
+                                className="icon-ref-clear"
+                                onClick={() => setIconReferenceImage(null)}
+                                type="button"
+                                title="Remove reference image"
+                              >
+                                &times;
+                              </button>
+                              <span className="meta">Reference</span>
+                            </div>
+                          ) : null}
+                        </div>
+                        {isGeneratingIcon ? (
+                          <div className="icon-progress">
+                            <div className="icon-progress-bar" />
+                            <span className="meta">Generating icon...</span>
+                          </div>
+                        ) : null}
+                        <input
+                          className="input"
+                          disabled={refine.isRunning || isGeneratingIcon}
+                          onChange={(e) => setIconPrompt(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void handleGenerateIcon();
+                          }}
+                          placeholder="Describe your app icon..."
+                          value={iconPrompt}
+                        />
+                        <div className="row">
+                          <button
+                            className="button"
+                            disabled={refine.isRunning || isGeneratingIcon || !iconPrompt.trim()}
+                            onClick={() => void handleGenerateIcon()}
+                            type="button"
+                          >
+                            {isGeneratingIcon ? 'Generating...' : 'Generate Icon'}
+                          </button>
+                          <label className="button secondary" style={{ cursor: refine.isRunning || isGeneratingIcon ? 'not-allowed' : 'pointer' }}>
+                            {iconReferenceImage ? 'Change Ref' : 'Add Reference'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              disabled={refine.isRunning || isGeneratingIcon}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  setIconReferenceImage(reader.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        </div>
+                        {iconInfo ? <p className="meta ok">{iconInfo}</p> : null}
+                        {iconError ? <p className="error-inline">{iconError}</p> : null}
+                      </div>
                     </div>
                   </details>
 

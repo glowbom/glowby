@@ -83,6 +83,7 @@ func callGeminiImageGeneration(prompt string, aspectRatio string, outputFormat s
 		Candidates []struct {
 			Content struct {
 				Parts []struct {
+					Text       string `json:"text,omitempty"`
 					InlineData struct {
 						MimeType string `json:"mimeType"`
 						Data     string `json:"data"`
@@ -101,9 +102,9 @@ func callGeminiImageGeneration(prompt string, aspectRatio string, outputFormat s
 	}
 
 	// Find the image data in parts
+	var textFallback string
 	for _, part := range result.Candidates[0].Content.Parts {
 		if part.InlineData.Data != "" {
-			// Determine mime type prefix
 			mimePrefix := "image/png"
 			if part.InlineData.MimeType != "" {
 				mimePrefix = part.InlineData.MimeType
@@ -111,8 +112,14 @@ func callGeminiImageGeneration(prompt string, aspectRatio string, outputFormat s
 			dataURI := fmt.Sprintf("data:%s;base64,%s", mimePrefix, part.InlineData.Data)
 			return dataURI, nil
 		}
+		if part.Text != "" && textFallback == "" {
+			textFallback = part.Text
+		}
 	}
 
+	if textFallback != "" {
+		return "", fmt.Errorf("no image generated — model responded with text: %s", textFallback)
+	}
 	return "", fmt.Errorf("no image data in response")
 }
 
@@ -211,6 +218,7 @@ func callGeminiImageGenerationWithReference(prompt string, referenceImageBase64 
 		Candidates []struct {
 			Content struct {
 				Parts []struct {
+					Text       string `json:"text,omitempty"`
 					InlineData struct {
 						MimeType string `json:"mimeType"`
 						Data     string `json:"data"`
@@ -229,6 +237,7 @@ func callGeminiImageGenerationWithReference(prompt string, referenceImageBase64 
 	}
 
 	// Find the image data in parts
+	var textFallback string
 	for _, part := range result.Candidates[0].Content.Parts {
 		if part.InlineData.Data != "" {
 			mimePrefix := "image/png"
@@ -238,7 +247,13 @@ func callGeminiImageGenerationWithReference(prompt string, referenceImageBase64 
 			dataURI := fmt.Sprintf("data:%s;base64,%s", mimePrefix, part.InlineData.Data)
 			return dataURI, nil
 		}
+		if part.Text != "" && textFallback == "" {
+			textFallback = part.Text
+		}
 	}
 
+	if textFallback != "" {
+		return "", fmt.Errorf("no image generated — model responded with text: %s", textFallback)
+	}
 	return "", fmt.Errorf("no image data in response")
 }

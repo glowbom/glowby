@@ -165,6 +165,9 @@ type GlowbomProject struct {
 	Name        string            `json:"name"`
 	Version     string            `json:"version"`
 	Description string            `json:"description,omitempty"`
+	BundleID    string            `json:"bundleID,omitempty"`
+	DisplayName string            `json:"displayName,omitempty"`
+	BuildNumber string            `json:"buildNumber,omitempty"`
 	Targets     map[string]Target `json:"targets"` // "ios", "android", "web", "godot"
 	CreatedAt   string            `json:"createdAt"`
 	UpdatedAt   string            `json:"updatedAt"`
@@ -2907,6 +2910,185 @@ func openCodeRenameProjectHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// openCodeUpdateProjectSettingsHandler updates project metadata (bundleID, displayName, buildNumber, version)
+func openCodeUpdateProjectSettingsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Path        string  `json:"path"`
+		BundleID    *string `json:"bundleID"`
+		DisplayName *string `json:"displayName"`
+		BuildNumber *string `json:"buildNumber"`
+		Version     *string `json:"version"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+	if req.Path == "" {
+		http.Error(w, "path is required", http.StatusBadRequest)
+		return
+	}
+
+	paths := GetProjectPaths(req.Path)
+	project, err := LoadProject(paths.Manifest)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	if req.BundleID != nil {
+		project.BundleID = strings.TrimSpace(*req.BundleID)
+	}
+	if req.DisplayName != nil {
+		project.DisplayName = strings.TrimSpace(*req.DisplayName)
+	}
+	if req.BuildNumber != nil {
+		project.BuildNumber = strings.TrimSpace(*req.BuildNumber)
+	}
+	if req.Version != nil {
+		project.Version = strings.TrimSpace(*req.Version)
+	}
+
+	if err := SaveProject(paths.Manifest, project); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"project": project,
+	})
+}
+
+// openCodeGenerateIconHandler generates an app icon and saves it to the project root
+func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Path           string  `json:"path"`
+		Prompt         string  `json:"prompt"`
+		ImageSource    string  `json:"imageSource,omitempty"`
+		OpenAIKey      string  `json:"openaiKey,omitempty"`
+		GeminiKey      string  `json:"geminiKey,omitempty"`
+		XaiKey         string  `json:"xaiKey,omitempty"`
+		ReferenceImage *string `json:"referenceImage,omitempty"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+	if req.Path == "" || req.Prompt == "" {
+		http.Error(w, "path and prompt are required", http.StatusBadRequest)
+		return
+	}
+
+	// Build a post-pass style request to reuse generateImageForPostPass
+	postPassReq := OpenCodeMediaPostPassRequest{
+		ProjectPath: req.Path,
+		ImageSource: req.ImageSource,
+		OpenAIKey:   req.OpenAIKey,
+		GeminiKey:   req.GeminiKey,
+		XaiKey:      req.XaiKey,
+	}
+
+	refImage := ""
+	if req.ReferenceImage != nil {
+		refImage = *req.ReferenceImage
+		// Strip data URI prefix — Gemini API expects raw base64
+		if idx := strings.Index(refImage, ";base64,"); idx >= 0 {
+			refImage = refImage[idx+len(";base64,"):]
+		}
+	}
+
+	// Enhance prompt for app icon generation
+	iconPrompt := fmt.Sprintf("Generate a square app icon (1024x1024) for: %s. The icon should be simple, modern, and look great at small sizes. No text on the icon.", req.Prompt)
+
+	dataURI, sourceService, err := generateImageForPostPass(postPassReq, iconPrompt, refImage)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   fmt.Sprintf("icon generation failed: %v", err),
+		})
+		return
+	}
+
+	// Decode data URI to bytes
+	imageBytes, _, err := decodeBase64Payload(dataURI, "image/png")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   fmt.Sprintf("failed to decode generated image: %v", err),
+		})
+		return
+	}
+
+	// Write icon.png to project root
+	iconPath := filepath.Join(req.Path, "icon.png")
+	if err := os.WriteFile(iconPath, imageBytes, 0644); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   fmt.Sprintf("failed to save icon: %v", err),
+		})
+		return
+	}
+
+	fmt.Printf("[ICON] Generated icon for project %s using %s\n", req.Path, sourceService)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":       true,
+		"iconPath":      iconPath,
+		"sourceService": sourceService,
+		"image":         dataURI,
+	})
+}
+
+// openCodeProjectIconHandler serves the current icon.png as a base64 data URI
+func openCodeProjectIconHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	path := r.URL.Query().Get("path")
+	if path == "" {
+		http.Error(w, "path query parameter required", http.StatusBadRequest)
+		return
+	}
+
+	iconPath := filepath.Join(path, "icon.png")
+	data, err := os.ReadFile(iconPath)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"exists":  false,
+		})
+		return
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(data)
+	dataURI := fmt.Sprintf("data:image/png;base64,%s", encoded)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"exists":  true,
+		"image":   dataURI,
+	})
+}
+
 type openCodeOpenAIOAuthCredential struct {
 	AccessToken               string
 	RefreshToken              string
@@ -5151,6 +5333,31 @@ IMPORTANT:
    - For voiceover/background music/sound effects requests, add glowbyaudio placeholders wherever those assets are needed so post-pass can generate and attach them.
    - If the request is personalization (for example "make this person the main character"), you MUST add/update at least one glowbyimage placeholder that explicitly describes that person so backend post-pass can generate personalized assets.
 7. Report progress after each major step (e.g., "Analyzed ios/ code", "Fixed error handling", "Build successful")`, projectRoot)
+
+	// Inject project metadata so the agent knows the app identity
+	manifestPath := filepath.Join(projectRoot, "glowbom.json")
+	if project, err := LoadProject(manifestPath); err == nil {
+		var metaParts []string
+		if project.DisplayName != "" {
+			metaParts = append(metaParts, fmt.Sprintf("- Display Name: %s", project.DisplayName))
+		}
+		if project.BundleID != "" {
+			metaParts = append(metaParts, fmt.Sprintf("- Bundle ID: %s", project.BundleID))
+		}
+		if project.Version != "" {
+			metaParts = append(metaParts, fmt.Sprintf("- Version: %s", project.Version))
+		}
+		if project.BuildNumber != "" {
+			metaParts = append(metaParts, fmt.Sprintf("- Build Number: %s", project.BuildNumber))
+		}
+		if len(metaParts) > 0 {
+			basePrompt += fmt.Sprintf(`
+
+## Project Identity (from glowbom.json)
+Use these values when configuring platform targets (Info.plist, build.gradle, package.json, etc.):
+%s`, strings.Join(metaParts, "\n"))
+		}
+	}
 
 	agentContent, agentFile := loadAgentInstructions(projectRoot)
 	if agentContent != "" {

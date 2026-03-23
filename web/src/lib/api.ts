@@ -20,6 +20,10 @@ import type {
   OpenCodeProjectOpenRequest,
   OpenCodeProjectOpenResponse,
   OpenCodeQuestionRespondRequest,
+  OpenCodeProjectSettingsRequest,
+  OpenCodeProjectSettingsResponse,
+  OpenCodeGenerateIconRequest,
+  OpenCodeGenerateIconResponse,
 } from '../types/opencode';
 import { withServerAuthHeaders } from './server-auth';
 
@@ -131,6 +135,26 @@ export const openCodeApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path, name }),
     });
+  },
+
+  async updateProjectSettings(payload: OpenCodeProjectSettingsRequest): Promise<OpenCodeProjectSettingsResponse> {
+    return requestJson<OpenCodeProjectSettingsResponse>(`${API_PREFIX}/opencode/project/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async generateIcon(payload: OpenCodeGenerateIconRequest): Promise<OpenCodeGenerateIconResponse> {
+    return requestJson<OpenCodeGenerateIconResponse>(`${API_PREFIX}/opencode/project/icon/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getProjectIcon(path: string): Promise<{ success: boolean; exists: boolean; image?: string }> {
+    return requestJson(`${API_PREFIX}/opencode/project/icon?path=${encodeURIComponent(path)}`);
   },
 
   async openProject(payload: OpenCodeProjectOpenRequest): Promise<OpenCodeProjectOpenResponse> {

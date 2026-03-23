@@ -671,6 +671,106 @@ textarea.input {
   gap: 8px;
 }
 
+.project-settings-grid {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.field-label-inline {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #4a4a4a;
+}
+
+.icon-section {
+  margin-top: 8px;
+  border-top: 1px dashed #cde8da;
+  padding-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.icon-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.icon-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  border: 1px solid #d7ebe0;
+  object-fit: cover;
+}
+
+.icon-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 0.75rem;
+}
+
+.icon-ref-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.icon-ref-preview {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  border: 1px solid #d7ebe0;
+  object-fit: cover;
+}
+
+.icon-ref-clear {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #666;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.icon-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.icon-progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #d7ebe0 0%, #4caf50 50%, #d7ebe0 100%);
+  background-size: 200% 100%;
+  animation: icon-progress-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes icon-progress-slide {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .project-tools-disclosure {
   border-top: 1px dashed #cde8da;
   padding-top: 10px;

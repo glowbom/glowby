@@ -103,9 +103,44 @@ export interface OpenCodeProject {
   name: string;
   version: string;
   description?: string;
+  bundleID?: string;
+  displayName?: string;
+  buildNumber?: string;
   targets: Record<string, GlowbomTarget>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface OpenCodeProjectSettingsRequest {
+  path: string;
+  bundleID?: string;
+  displayName?: string;
+  buildNumber?: string;
+  version?: string;
+}
+
+export interface OpenCodeProjectSettingsResponse {
+  success: boolean;
+  project?: OpenCodeProject;
+  error?: string;
+}
+
+export interface OpenCodeGenerateIconRequest {
+  path: string;
+  prompt: string;
+  imageSource?: string;
+  openaiKey?: string;
+  geminiKey?: string;
+  xaiKey?: string;
+  referenceImage?: string;
+}
+
+export interface OpenCodeGenerateIconResponse {
+  success: boolean;
+  iconPath?: string;
+  sourceService?: string;
+  image?: string;
+  error?: string;
 }
 
 export interface OpenCodeProjectEnvelope {
