@@ -15,6 +15,7 @@ stay on your computer.
 | **Glowbom Live** | A separate, closed-source 3D office for your Buzz channel. [Download the app from GitHub release assets](https://github.com/glowbom/glowbom-oss/releases/tag/v4.1.0). |
 | **Glowbom Desktop** | The full Mac app, available through early access. [Sign up at glowbom.com/desktop](https://glowbom.com/desktop). |
 | **Glowbom Mobile** | The companion for iPhone, iPad, and Apple Vision Pro. [Get early access](https://glowbom.com/mobile/). Requires Glowbom Desktop. |
+| **Glowbom Web** | Sketch an idea and try a prototype in your browser. [Start on the web](https://glowbom.com/draw/). |
 
 Desktop and Live use the open backend. Their app source is not included in
 this repository. Live's downloadable apps are hosted here as release assets.
