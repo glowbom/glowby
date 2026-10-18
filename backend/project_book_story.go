@@ -250,15 +250,6 @@ func writeProjectBookStory(ctx context.Context, projectPath, entryID string, opt
 		return book, false, bookGenerationError(ctx, err, model.ID, "writing its story")
 	}
 
-	if option.Preview {
-		for i := range book.Entries {
-			if book.Entries[i].ID == target.ID {
-				book.Entries[i].Title, book.Entries[i].Body = story.Title, story.Body
-				setBookStoryGeneration(&book.Entries[i], model.ID, target.ContentVersion)
-			}
-		}
-		return book, false, nil
-	}
 	projectBookMu.Lock()
 	defer projectBookMu.Unlock()
 	root, name, err = openProjectBookProject(projectPath)
@@ -275,11 +266,15 @@ func writeProjectBookStory(ctx context.Context, projectPath, entryID string, opt
 		if entry.ID != target.ID {
 			continue
 		}
-		if entry.ContentVersion != target.ContentVersion || !bookAutoStoryEligible(entry) {
+		if entry.ContentVersion != target.ContentVersion || (!option.Preview && !bookAutoStoryEligible(entry)) {
 			return book, false, errProjectBookConflict
 		}
 		entry.Title, entry.Body = story.Title, story.Body
 		setBookStoryGeneration(&entry, model.ID, target.ContentVersion)
+		if option.Preview {
+			book.Entries[i] = entry
+			return book, false, nil
+		}
 		entry.AutoStoryHash = ""
 		entry.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
 		if err := saveBookEntry(root, entry); err != nil {

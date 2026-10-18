@@ -66,36 +66,67 @@ func validateCompanionStudioReference(id, inline string) error {
 	return nil
 }
 
-func (s *companionSession) startStudioVideo(w http.ResponseWriter, r *http.Request) {
-	var request struct {
-		Prompt          string `json:"prompt"`
-		SourceID        string `json:"sourceId"`
-		ModelID         string `json:"modelId"`
-		Resolution      string `json:"resolution"`
-		AspectRatio     string `json:"aspectRatio"`
-		DurationSeconds int    `json:"durationSeconds"`
-		ReferenceID     string `json:"referenceId,omitempty"`
-		ReferenceImage  string `json:"referenceImage,omitempty"`
+// Companion video requests carry only saved Desktop references and explicit review.
+type companionVideoRequest struct {
+	studioVideoOptions
+	Prompt         string `json:"prompt"`
+	ReferenceID    string `json:"referenceId,omitempty"`
+	ReferenceImage string `json:"referenceImage,omitempty"`
+	QuoteID        string `json:"quoteId,omitempty"`
+	RequestID      string `json:"requestId,omitempty"`
+	Confirmed      bool   `json:"confirmed,omitempty"`
+}
+
+func normalizeCompanionVideo(request companionVideoRequest) (companionVideoRequest, error) {
+	request.Prompt = strings.TrimSpace(request.Prompt)
+	request.SpokenText = strings.TrimSpace(request.SpokenText)
+	if (request.Prompt == "" && request.SpokenText == "") || len(request.Prompt) > 4000 || request.SourceID == "" {
+		return request, errors.New("Choose a Desktop video source and enter a description or words to say.")
 	}
+	if err := validateCompanionStudioReference(request.ReferenceID, request.ReferenceImage); err != nil {
+		return request, err
+	}
+	for _, id := range []*string{&request.ReferenceID, &request.MotionVideoID, &request.VoiceAudioID} {
+		if *id != "" {
+			*id = normalizedStudioUUID(*id)
+			if *id == "" {
+				return request, errors.New("Choose a saved Studio reference.")
+			}
+		}
+	}
+	options, err := normalizeStudioVideoOptions(request.studioVideoOptions)
+	if err != nil {
+		return request, err
+	}
+	request.studioVideoOptions = options
+	return request, nil
+}
+
+func (request companionVideoRequest) payload() map[string]any {
+	return map[string]any{"prompt": request.Prompt, "sourceId": request.SourceID, "modelId": request.ModelID,
+		"resolution": request.Resolution, "aspectRatio": request.AspectRatio, "durationSeconds": request.DurationSeconds,
+		"referenceId": request.ReferenceID, "referenceImage": request.ReferenceImage, "useSavedKey": true,
+		"motionVideoId": request.MotionVideoID, "voiceAudioId": request.VoiceAudioID,
+		"higgsfieldVoiceId": request.HiggsfieldVoiceID, "spokenText": request.SpokenText}
+}
+
+func (s *companionSession) startStudioVideo(w http.ResponseWriter, r *http.Request) {
+	var request companionVideoRequest
 	if !companionDecode(w, r, &request, 3<<20) {
 		return
 	}
-	if strings.TrimSpace(request.Prompt) == "" || len(request.Prompt) > 4000 || request.SourceID == "" {
-		http.Error(w, "Choose a Desktop video source and enter a description up to 4,000 characters.", http.StatusBadRequest)
-		return
-	}
-	if err := validateCompanionStudioReference(request.ReferenceID, request.ReferenceImage); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	options, err := normalizeStudioVideoOptions(studioVideoOptions{SourceID: request.SourceID, ModelID: request.ModelID, Resolution: request.Resolution, AspectRatio: request.AspectRatio, DurationSeconds: request.DurationSeconds})
+	request, err := normalizeCompanionVideo(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	// Credentials stay on Desktop. Only the selected provider's saved key is used.
-	payload := map[string]any{"prompt": request.Prompt, "sourceId": options.SourceID, "modelId": options.ModelID,
-		"resolution": options.Resolution, "aspectRatio": options.AspectRatio, "durationSeconds": options.DurationSeconds,
-		"referenceId": request.ReferenceID, "referenceImage": request.ReferenceImage, "useSavedKey": true}
-	s.startJob(w, r, "video", companionProject{}, "/studio/videos/generate", payload)
+	if request.SourceID == higgsfieldSourceID {
+		s.startQuotedStudioVideo(w, r, request)
+		return
+	}
+	if err := validateHiggsfieldVideoReferences(request.studioVideoOptions); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	s.startJob(w, r, "video", companionProject{}, "/studio/videos/generate", request.payload())
 }

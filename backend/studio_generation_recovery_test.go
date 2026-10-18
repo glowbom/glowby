@@ -365,7 +365,7 @@ func TestStudioGenerationRecoveryFindsSavedAssetBeforeFinalCheckpoint(t *testing
 	id := "fixture-crash-after-asset-save"
 	checkpoint := studioGenerationCheckpoint{State: studioProgressState{
 		Found: true, ID: id, Kind: "video", Stage: "saving", Prompt: "Keep this completed performance",
-		AspectRatio: "16:9", DurationSeconds: 8, CanResume: true,
+		AspectRatio: "16:9", DurationSeconds: 8, CanResume: true, FailureCategory: "transport_or_provider_error",
 	}, OperationID: studioRecoveryOperation, VideoURL: studioRecoveryURL}
 	if err := saveStudioGenerationCheckpoint(checkpoint); err != nil {
 		t.Fatal(err)
@@ -389,7 +389,7 @@ func TestStudioGenerationRecoveryFindsSavedAssetBeforeFinalCheckpoint(t *testing
 		return nil, errors.New("completed asset recovery must not call a provider or media host")
 	})
 	state, public := readStudioRecoveryStatus(t, id)
-	if state.Stage != "complete" || state.CanResume || state.Asset == nil || state.Asset.ID != record.ID {
+	if state.Stage != "complete" || state.CanResume || state.Asset == nil || state.Asset.ID != record.ID || state.FailureCategory != "" {
 		t.Fatal("restart did not find the asset saved before its completion checkpoint")
 	}
 	assertStudioRecoveryPublicJSON(t, public)

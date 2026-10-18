@@ -881,11 +881,13 @@ var generatePostPassAudio = generateElevenLabsAudioForPostPass
 func postPassImageSourceID(req OpenCodeMediaPostPassRequest) string {
 	source := strings.TrimSpace(req.ImageSource)
 	switch source {
-	case "openai-subscription", "glowbom-api", "openai-api", "gemini-api", "xai-api", "xai-subscription":
+	case "openai-subscription", "glowbom-api", "openai-api", "gemini-api", "xai-api", "xai-subscription", higgsfieldSourceID:
 		return source
 	}
 	lower := strings.ToLower(source)
 	switch {
+	case strings.Contains(lower, "higgsfield"):
+		return higgsfieldSourceID
 	case strings.Contains(lower, "codex"), strings.Contains(lower, "chatgpt"):
 		return "openai-subscription"
 	case strings.Contains(lower, "flux"):
@@ -924,11 +926,11 @@ func postPassUsesImageSubscription(req OpenCodeMediaPostPassRequest) bool {
 		return mediaApprovalUsesImageSubscription(req.Items)
 	}
 	source := postPassImageSourceID(req)
-	return source == "xai-subscription" || source == "openai-subscription"
+	return source == "xai-subscription" || source == "openai-subscription" || source == higgsfieldSourceID
 }
 
 func resolvePostPassImageKey(ctx context.Context, req OpenCodeMediaPostPassRequest, source string) (string, error) {
-	if source == "xai-subscription" || source == "openai-subscription" {
+	if source == "xai-subscription" || source == "openai-subscription" || source == higgsfieldSourceID {
 		if !req.imageSubscriptionAuthorized {
 			return "", fmt.Errorf("Local authentication is required to use a connected image subscription.")
 		}
@@ -994,6 +996,9 @@ func generateImageForPostPass(req OpenCodeMediaPostPassRequest, prompt, referenc
 		generationPrompt = previousImageContinuityPrompt(prompt)
 	}
 	if req.imageOptions != nil {
+		if source == higgsfieldSourceID {
+			return generateHiggsfieldProjectImage(ctx, *req.imageOptions, generationPrompt, reference)
+		}
 		return generatePostPassSelectedImageWithOptions(ctx, *req.imageOptions, key, generationPrompt, reference)
 	}
 	return generatePostPassSelectedImage(ctx, source, key, generationPrompt, reference, req.imageAspectRatio)
@@ -2342,7 +2347,10 @@ func materializeApprovedMedia(ctx context.Context, req OpenCodeMediaPostPassRequ
 			default:
 			}
 			itemReq := req
-			serializedSettings, _ := json.Marshal(item)
+			identityItem := item
+			// Changing the approved price does not request another copy of the image.
+			identityItem.HiggsfieldMaxCredits = nil
+			serializedSettings, _ := json.Marshal(identityItem)
 			settingsHash := sha256.Sum256(serializedSettings)
 			itemReq.assetIdentity = fmt.Sprintf("%s-%x", item.ID, settingsHash[:8])
 			itemReq.approvedImage = true
@@ -2351,6 +2359,11 @@ func materializeApprovedMedia(ctx context.Context, req OpenCodeMediaPostPassRequ
 			if mediaType == "image" {
 				imageReq := itemReq
 				imageReq.ImageSource, imageReq.imageAspectRatio = item.SourceID, item.AspectRatio
+				if item.SourceID == higgsfieldSourceID {
+					imageReq.imageContext, _ = withHiggsfieldImageAllowance(ctx, item.HiggsfieldMaxCredits)
+					options := higgsfieldProjectImageOptions(item.AspectRatio)
+					imageReq.imageOptions = &options
+				}
 				if mediaApprovalHasImageOptions(item) {
 					imageReq.imageOptions = &studioImageOptions{SourceID: item.SourceID, ModelID: item.ModelID, AspectRatio: item.AspectRatio, Resolution: item.Resolution, Quality: item.Quality}
 				}

@@ -46,6 +46,7 @@ var studioCatalogCache struct {
 }
 
 type studioImageSummary struct {
+	IsFavorite               bool              `json:"isFavorite"`
 	SourceID                 string            `json:"sourceId,omitempty"`
 	ModelID                  string            `json:"modelId,omitempty"`
 	Resolution               string            `json:"resolution,omitempty"`
@@ -65,6 +66,7 @@ type studioImageSummary struct {
 }
 
 type studioAssetMetadata struct {
+	IsFavorite               bool              `json:"isFavorite"`
 	SourceID                 string            `json:"sourceId,omitempty"`
 	Resolution               string            `json:"resolution,omitempty"`
 	Quality                  string            `json:"quality,omitempty"`
@@ -488,6 +490,14 @@ func studioImagesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func studioAssetsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPatch {
+		studioAssetFavoriteHandler(w, r)
+		return
+	}
+	if r.Method == http.MethodDelete {
+		deleteStudioAssetHandler(w, r)
+		return
+	}
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -503,7 +513,7 @@ func studioAssetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	images, videos, hasMoreImages, hasMoreVideos, err := listStudioProjectCatalogPage(
-		projectID, imageOffset, imageLimit, videoOffset, videoLimit,
+		projectID, imageOffset, imageLimit, videoOffset, videoLimit, query.Get("favoritesOnly") == "true",
 	)
 	if err != nil {
 		http.Error(w, "Could not load Studio.", http.StatusInternalServerError)
@@ -511,7 +521,7 @@ func studioAssetsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, map[string]any{
 		"images": images, "videos": videos,
-		"hasMoreImages": hasMoreImages, "hasMoreVideos": hasMoreVideos, "projectsSupported": true,
+		"hasMoreImages": hasMoreImages, "hasMoreVideos": hasMoreVideos, "projectsSupported": true, "favoritesSupported": true,
 	})
 }
 
@@ -556,14 +566,12 @@ func listStudioCatalogPage(imageOffset, imageLimit, videoOffset, videoLimit int)
 	studioCatalogCache.Lock()
 	defer studioCatalogCache.Unlock()
 
+	// The Mac app rewrites records in place, which does not change the folder's modification time,
+	// so the page is rebuilt on every request. Each file's metadata comes from the per-file cache
+	// (studio_metadata_cache.go), so only new or changed records are read again.
 	info, statErr := os.Stat(dir)
-	cacheCurrent := statErr == nil && studioCatalogCache.ready &&
-		studioCatalogCache.directory == dir &&
-		studioCatalogCache.modTime.Equal(info.ModTime())
-	if !cacheCurrent {
-		if err := resetStudioCatalogCache(dir, info, statErr); err != nil {
-			return nil, nil, false, false, err
-		}
+	if err := resetStudioCatalogCache(dir, info, statErr); err != nil {
+		return nil, nil, false, false, err
 	}
 
 	imageTarget := imageOffset + imageLimit
@@ -579,7 +587,7 @@ func listStudioCatalogPage(imageOffset, imageLimit, videoOffset, videoLimit int)
 		(len(studioCatalogCache.images) < imageTarget || len(studioCatalogCache.videos) < videoTarget) {
 		name := studioCatalogCache.files[studioCatalogCache.nextFile]
 		studioCatalogCache.nextFile++
-		record, err := readStudioAssetMetadata(filepath.Join(dir, name))
+		record, err := cachedStudioAssetMetadata(filepath.Join(dir, name))
 		if err != nil || record.ID == "" {
 			studioCatalogCache.complete = studioCatalogCache.nextFile >= len(studioCatalogCache.files)
 			continue
@@ -808,6 +816,7 @@ func studioImageGenerateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
+	markStudioGenerationNotSubmitted(w, request.GenerationID)
 	request.Prompt = strings.TrimSpace(request.Prompt)
 	request.SourceID = strings.TrimSpace(request.SourceID)
 	if request.Prompt == "" || len(request.Prompt) > 4000 {
@@ -841,7 +850,16 @@ func studioImageGenerateHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		if studioVideoKeyAccount(studioProviderKeyStoreSource(sourceID)) != "" {
+		if sourceID == higgsfieldSourceID {
+			// The connected Higgsfield account pays; generating spends its credits, so require the local app token.
+			if !authorizeStudioGeneration(w, r, http.MethodPost) {
+				return
+			}
+			if !higgsfieldConnected() {
+				http.Error(w, "Connect your Higgsfield account in Settings → Agents to generate this image.", http.StatusBadRequest)
+				return
+			}
+		} else if studioVideoKeyAccount(studioProviderKeyStoreSource(sourceID)) != "" {
 			key, err = resolveStudioProviderKey(r.Context(), sourceID, request.APIKey, request.UseSavedKey)
 		} else {
 			_, key, err = resolveProjectIconSource(projectIconRequest{SourceID: sourceID, APIKey: request.APIKey}, r.Context())
@@ -893,6 +911,7 @@ func studioImageGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	dataURI, sourceLabel := "", xAIImageSourceLabel
 	if sourceID == "" {
 		progress.stage("generating")
+		w.Header().Del(studioGenerationNotSubmittedHeader)
 		dataURI, err = withXAIBearerContext(ctx, func(bearer string) (string, error) {
 			if reference != "" {
 				return callGrokImageGenerationWithReference(request.Prompt, reference, bearer, request.AspectRatio, ctx)
@@ -914,6 +933,7 @@ func studioImageGenerateHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		progress.stage("generating")
+		w.Header().Del(studioGenerationNotSubmittedHeader)
 		dataURI, sourceLabel, err = generateStudioSelectedImageWithOptions(ctx, options, key, request.Prompt, reference)
 	}
 	if err != nil {
@@ -1124,7 +1144,8 @@ func studioDimensionsFor(mediaType, aspectRatio string) *studioDimensions {
 
 func summarizeStudioMetadata(record studioAssetMetadata) studioImageSummary {
 	return studioImageSummary{
-		SourceID: record.SourceID, ModelID: studioVideoSummaryModel(record.MediaType, record.Model), Resolution: record.Resolution, Quality: record.Quality, RequestedDurationSeconds: record.RequestedDurationSeconds,
+		IsFavorite: record.IsFavorite,
+		SourceID:   record.SourceID, ModelID: studioVideoSummaryModel(record.MediaType, record.Model), Resolution: record.Resolution, Quality: record.Quality, RequestedDurationSeconds: record.RequestedDurationSeconds,
 		ID: record.ID, Timestamp: record.Timestamp, Prompt: record.Prompt, SourceService: record.SourceService,
 		AssetType: record.AssetType, Dimensions: record.Dimensions, Duration: record.Duration,
 		SourceType: record.SourceType, SourceAssetID: record.SourceAssetID,
@@ -1134,7 +1155,8 @@ func summarizeStudioMetadata(record studioAssetMetadata) studioImageSummary {
 
 func summarizeStudioRecord(record studioImageRecord) studioImageSummary {
 	return studioImageSummary{
-		SourceID: record.SourceID, ModelID: studioVideoSummaryModel(record.MediaType, record.Model), Resolution: record.Resolution, Quality: record.Quality, RequestedDurationSeconds: record.RequestedDurationSeconds,
+		IsFavorite: record.IsFavorite,
+		SourceID:   record.SourceID, ModelID: studioVideoSummaryModel(record.MediaType, record.Model), Resolution: record.Resolution, Quality: record.Quality, RequestedDurationSeconds: record.RequestedDurationSeconds,
 		ID: record.ID, Timestamp: record.Timestamp, Prompt: record.Prompt, SourceService: record.SourceService,
 		AssetType: record.AssetType, Dimensions: record.Dimensions, Duration: record.Duration,
 		SourceType: record.SourceType, SourceAssetID: record.SourceAssetID,

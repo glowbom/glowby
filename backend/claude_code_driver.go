@@ -46,16 +46,19 @@ func claudeCodeAuthenticated(ctx context.Context, binary string) (bool, error) {
 	cmd.Stdout, cmd.Stderr = &output, io.Discard
 	cmd.WaitDelay = time.Second
 	configureCursorCancellation(cmd)
-	if err := cmd.Run(); err != nil {
+	runErr := cmd.Run()
+	// Signed out is reported as JSON with exit code 1, so read that answer before treating the exit as a
+	// failure. "Signed in" counts only from a run that succeeded.
+	var status struct {
+		LoggedIn *bool `json:"loggedIn"`
+	}
+	if err := json.Unmarshal(output.Bytes(), &status); err == nil && status.LoggedIn != nil && (!*status.LoggedIn || runErr == nil) {
+		return *status.LoggedIn, nil
+	}
+	if runErr != nil {
 		return false, errors.New("Claude Code login check failed. Run claude auth login and claude auth status, then refresh.")
 	}
-	var status struct {
-		LoggedIn bool `json:"loggedIn"`
-	}
-	if err := json.Unmarshal(output.Bytes(), &status); err != nil {
-		return false, errors.New("Could not read Claude Code login status. Update Claude Code and refresh.")
-	}
-	return status.LoggedIn, nil
+	return false, errors.New("Could not read Claude Code login status. Update Claude Code and refresh.")
 }
 
 func claudeCodeHealthHandler(w http.ResponseWriter, r *http.Request) {

@@ -34,7 +34,7 @@ your saved chat speech voice.
 
 ## Choose a model and writing voice
 
-Open **Settings > Project Book > Model**. This model generates stories and
+Open **Account > Settings > Project Book > Model**. This model generates stories and
 drawings independently of Build and Chat. **Automatic** tries an eligible build
 model, then your Chat model. Compatible connected OpenCode and Codex models are
 available; build-only agents such as Cursor use a separate eligible Book model.
@@ -74,6 +74,57 @@ project-book/
 is current. The overview notes are owner starting points; `PROJECT_BRIEF.md`
 initially points to them. Keep the project's original `history/` and
 `.glowbom/prototypes/` records when moving it.
+
+## Optional carousel records
+
+Prototype requests to `POST /chat/stream` can include a `carousel` object with
+`version: 1` and up to ten `cards`. Each card has a stable `id`, a `role`, a
+`title`, and optional `instructions`. Roles are `sketch`, `person`, or
+`reference`, and each carousel needs at least one sketch. Titles allow 200
+Unicode characters, and instructions allow 32,000.
+All cards contribute to the same prototype. A personalized image can appear
+inside a layout described by another card.
+
+An optional `attachmentPath` refers to an image from the existing upload API.
+A sketch can include an `inputSketch` drawing object. A sketch with
+`personalization: true` uses only its own image as a generation reference.
+This requires an image and excludes `personIds`. Without personalization or
+selected people, a sketch receives no person reference from other cards or
+previous images. Requests without `carousel` keep the existing single-image
+behavior.
+
+The saved prototype version contains `input-carousel.json` beside
+`request.json`. The request records `inputCarouselPath: "input-carousel.json"`.
+The saved card replaces upload paths with relative paths inside `inputs/`.
+Drawing objects are separate JSON files named by `inputSketchPath`:
+
+```json
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": "scene-1",
+      "role": "sketch",
+      "title": "First scene",
+      "instructions": "Show the supplied subject beside the sea.",
+      "attachmentPath": "inputs/card-scene-1.png",
+      "inputSketchPath": "inputs/card-scene-1-sketch.json",
+      "personalization": true
+    }
+  ]
+}
+```
+
+The API also supports selected groups through sketch `personIds` and photo
+cards with matching `personId` labels. Labels match exactly after trimming
+outer spaces. Multiple photo cards can share a label. The generator receives
+a numbered sheet containing only the selected photos. Person-card photos stay
+out of the prototype planning request. Original inputs remain in the saved
+version and are not copied into public prototype assets.
+
+Generated image descriptions use `glowbomimages:[card:scene-1] description` to
+identify their sketch. Missing or invalid card tags skip that image. The
+existing four-image maximum and approved credit limit still apply.
 
 ## Current limits
 

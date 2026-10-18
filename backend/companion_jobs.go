@@ -17,49 +17,56 @@ import (
 )
 
 type companionJob struct {
-	mu                   sync.Mutex
-	responseMu           sync.Mutex
-	id                   string
-	projectID            string
-	projectPath          string
-	kind                 string
-	status               string
-	output               []string
-	errorText            string
-	startedAt            string
-	finishedAt           string
-	image                json.RawMessage
-	imagePrompt          string
-	imageSourceID        string
-	video                json.RawMessage
-	pendingPermission    json.RawMessage
-	pendingQuestion      json.RawMessage
-	ctx                  context.Context
-	cancel               context.CancelFunc
-	responded            map[string]bool
-	instructions         string
-	model                string
-	reasoningEffort      string
-	agentDriver          string
-	agentName            string
-	buildTargets         []string
-	attachments          []companionImageAttachment
-	runID                string
-	resultText           string
-	source               string
-	agentSessionID       string
-	resolvedDecisions    []companionDecision
-	pendingMediaApproval json.RawMessage
-	buildStatus          json.RawMessage
-	liveStatuses         []json.RawMessage
-	partialLine          string
-	changedFiles         []string
-	save                 func()
-	saveMu               sync.Mutex
-	savedAt              time.Time
-	savedStatus          string
-	savedFinishedAt      string
-	permissionPolicy     *buildPermissionPolicy
+	mu                    sync.Mutex
+	responseMu            sync.Mutex
+	id                    string
+	projectID             string
+	projectPath           string
+	kind                  string
+	status                string
+	output                []string
+	errorText             string
+	startedAt             string
+	finishedAt            string
+	image                 json.RawMessage
+	imagePrompt           string
+	imageSourceID         string
+	video                 json.RawMessage
+	voice                 json.RawMessage
+	media                 *companionMediaDetails
+	pendingPermission     json.RawMessage
+	pendingQuestion       json.RawMessage
+	ctx                   context.Context
+	cancel                context.CancelFunc
+	responded             map[string]bool
+	instructions          string
+	model                 string
+	reasoningEffort       string
+	agentDriver           string
+	agentName             string
+	buildTargets          []string
+	attachments           []companionImageAttachment
+	runID                 string
+	resultText            string
+	source                string
+	agentSessionID        string
+	resolvedDecisions     []companionDecision
+	pendingMediaApproval  json.RawMessage
+	buildStatus           json.RawMessage
+	liveStatuses          []json.RawMessage
+	partialLine           string
+	changedFiles          []string
+	save                  func()
+	saveMu                sync.Mutex
+	savedAt               time.Time
+	savedStatus           string
+	savedFinishedAt       string
+	permissionPolicy      *buildPermissionPolicy
+	workflow              string
+	resultStatus          string
+	resultError           string
+	uncertainMediaFailure bool
+	afterFinish           func()
 }
 
 type companionImageRequest struct {
@@ -268,6 +275,28 @@ func (j *companionJob) snapshot(local bool) map[string]any {
 	defer j.mu.Unlock()
 	result := map[string]any{"id": j.id, "projectId": j.projectID, "kind": j.kind, "status": j.status,
 		"output": append([]string{}, j.output...), "startedAt": j.startedAt}
+	if j.media != nil {
+		media := *j.media
+		if !local {
+			media.ReferenceID = ""
+		}
+		result["media"], result["source"] = media, j.source
+	}
+	if len(j.voice) > 0 {
+		result["voice"] = append(json.RawMessage{}, j.voice...)
+	}
+	if j.workflow != "" {
+		result["workflow"] = j.workflow
+	}
+	if j.resultStatus != "" {
+		result["resultStatus"] = j.resultStatus
+	}
+	if j.resultError != "" {
+		result["resultError"] = j.resultError
+	}
+	if j.uncertainMediaFailure && (j.status == "failed" || j.status == "canceled") {
+		result["outcomeUncertain"] = true
+	}
 	if j.kind == "image" {
 		if j.imagePrompt != "" {
 			result["prompt"] = j.imagePrompt
@@ -349,7 +378,7 @@ func (j *companionJob) snapshot(local bool) map[string]any {
 			result["pendingQuestion"] = pending
 		}
 	}
-	return result
+	return studioLibraryResultSnapshot(result)
 }
 
 // Caller holds the job mutex; expose only request IDs needed to reconcile a
@@ -598,6 +627,9 @@ func (s *companionSession) route(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	parts := strings.Split(strings.TrimPrefix(path, "/"), "/")
+	if s.routeTasks(w, r, path) {
+		return
+	}
 	if s.routeBook(w, r, parts) {
 		return
 	}
@@ -611,6 +643,9 @@ func (s *companionSession) route(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.routeAudioLibrary(w, r, path, parts) {
+		return
+	}
+	if s.routeHiggsfield(w, r, path) || s.routeProjectVideo(w, r, parts) {
 		return
 	}
 	switch {
@@ -801,7 +836,7 @@ func (s *companionSession) route(w http.ResponseWriter, r *http.Request) {
 	case len(parts) == 3 && parts[0] == "videos" && parts[1] == "generations":
 		s.jobHandler(w, r, parts[2], "video")
 	case path == "/images/sources" && r.Method == http.MethodGet:
-		s.api.ServeHTTP(w, s.internalRequest(r.Context(), http.MethodGet, "/opencode/project/icon/sources", nil))
+		s.api.ServeHTTP(w, s.internalRequest(r.Context(), http.MethodGet, "/opencode/project/icon/sources?legacyCompanion=1", nil))
 	case len(parts) == 3 && parts[0] == "images" && parts[2] == "content" && r.Method == http.MethodGet:
 		id := normalizedStudioUUID(parts[1])
 		if id == "" {
@@ -831,7 +866,7 @@ func (s *companionSession) route(w http.ResponseWriter, r *http.Request) {
 		}
 		allowed := false
 		for _, source := range projectIconSources(r.Context()) {
-			allowed = allowed || source.ID == request.SourceID
+			allowed = allowed || source.ID == request.SourceID && source.ID != higgsfieldSourceID
 		}
 		if !allowed {
 			http.Error(w, "Choose a Desktop image source.", http.StatusBadRequest)
@@ -914,6 +949,11 @@ func (s *companionSession) history(w http.ResponseWriter, r *http.Request, proje
 }
 
 func (s *companionSession) startJob(w http.ResponseWriter, r *http.Request, kind string, project companionProject, path string, payload any, attachments ...[]companionImageAttachment) {
+	s.startJobWithSetup(w, r, kind, project, path, payload, nil, attachments...)
+}
+
+// Setup persists phone workflow identity before the agent can start.
+func (s *companionSession) startJobWithSetup(w http.ResponseWriter, r *http.Request, kind string, project companionProject, path string, payload any, setup func(*companionJob) error, attachments ...[]companionImageAttachment) {
 	if kind == "build" && s.manager != nil {
 		build, _ := payload.(OpenCodeAgentRequest)
 		s.manager.runMu.Lock()
@@ -967,6 +1007,13 @@ func (s *companionSession) startJob(w http.ResponseWriter, r *http.Request, kind
 	}
 	job := &companionJob{id: strings.ToLower(randomUUIDString()), projectID: project.ID, projectPath: project.path, kind: kind, status: "running", output: []string{}, startedAt: s.now().UTC().Format(time.RFC3339Nano), ctx: ctx, cancel: cancel}
 	job.source = "phone"
+	if kind == "image" || kind == "video" {
+		job.media = &companionMediaDetails{Stage: "preparing"}
+		data, _ := json.Marshal(payload)
+		_ = json.Unmarshal(data, job.media)
+		job.ctx = context.WithValue(job.ctx, companionMediaProgressKey{}, job)
+		ctx = job.ctx
+	}
 	if image, ok := payload.(companionImageRequest); ok && kind == "image" {
 		job.imagePrompt, job.imageSourceID = image.Prompt, image.SourceID
 	}
@@ -986,6 +1033,15 @@ func (s *companionSession) startJob(w http.ResponseWriter, r *http.Request, kind
 			job.model = job.agentDriver + "/" + build.Model
 		}
 	}
+	if setup != nil {
+		if err := setup(job); err != nil {
+			s.mu.Unlock()
+			cancel()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		ctx = job.ctx
+	}
 	if kind == "build" && s.manager != nil {
 		job.ctx = context.WithValue(ctx, companionRunContextKey{}, job.id)
 		ctx = job.ctx
@@ -993,6 +1049,9 @@ func (s *companionSession) startJob(w http.ResponseWriter, r *http.Request, kind
 	}
 	s.jobs[job.id] = job
 	s.mu.Unlock()
+	if kind != "build" && s.manager != nil {
+		s.manager.registerRun(job)
+	}
 	if kind == "build" && s.manager != nil {
 		s.manager.registerRun(job)
 		s.manager.saveRun(job)
@@ -1017,6 +1076,9 @@ func (s *companionSession) startJob(w http.ResponseWriter, r *http.Request, kind
 			job.mu.Unlock()
 			if job.save != nil {
 				job.save()
+			}
+			if job.afterFinish != nil {
+				job.afterFinish()
 			}
 		}()
 		if job.status != "canceled" {

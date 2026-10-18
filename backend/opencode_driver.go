@@ -4261,6 +4261,7 @@ func openCodeAvailableModelsHandler(w http.ResponseWriter, r *http.Request) {
 
 // OpenCodeAgentRequest represents a request for agent operations (refine/verify)
 type OpenCodeAgentRequest struct {
+	BookLaunchVideoRequestID            string            `json:"bookLaunchVideoRequestId,omitempty"`
 	UseJev                              bool              `json:"useJev,omitempty"`
 	AgentDriver                         string            `json:"agentDriver,omitempty"`
 	PermissionMode                      string            `json:"permissionMode,omitempty"`

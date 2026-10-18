@@ -57,6 +57,8 @@ func (s *companionSession) routeBook(w http.ResponseWriter, r *http.Request, par
 		return true
 	}
 	book.ProjectName = companionPublicText(project.Name, 160)
+	// The companion exposes active stories only and has no restoration flow.
+	book.DeletedEntries = nil
 	if len(book.Entries) > 80 {
 		book.Entries = book.Entries[:80]
 		book.Warnings = append(book.Warnings, "The phone shows the 80 most recent entries. Open Desktop to read older entries.")

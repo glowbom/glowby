@@ -10,6 +10,7 @@ import (
 	"errors"
 	"image"
 	_ "image/gif"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -43,20 +44,22 @@ type companionPrototypeImport struct {
 }
 
 type companionMediaImport struct {
-	RequestID  string `json:"requestId"`
-	Filename   string `json:"filename,omitempty"`
-	DataBase64 string `json:"dataBase64"`
-	MimeType   string `json:"mimeType,omitempty"`
-	Prompt     string `json:"prompt,omitempty"`
+	RequestID       string  `json:"requestId"`
+	Filename        string  `json:"filename,omitempty"`
+	DataBase64      string  `json:"dataBase64"`
+	MimeType        string  `json:"mimeType,omitempty"`
+	Prompt          string  `json:"prompt,omitempty"`
+	DurationSeconds float64 `json:"durationSeconds,omitempty"`
 }
 
 type companionMediaImported struct {
-	ID        string `json:"id"`
-	MediaType string `json:"mediaType"`
-	ProjectID string `json:"projectId,omitempty"`
-	Filename  string `json:"filename"`
-	MimeType  string `json:"mimeType"`
-	ByteCount int64  `json:"byteCount"`
+	ID              string  `json:"id"`
+	MediaType       string  `json:"mediaType"`
+	ProjectID       string  `json:"projectId,omitempty"`
+	Filename        string  `json:"filename"`
+	MimeType        string  `json:"mimeType"`
+	ByteCount       int64   `json:"byteCount"`
+	DurationSeconds float64 `json:"durationSeconds,omitempty"`
 }
 
 type companionTransferRecord struct {
@@ -534,7 +537,7 @@ func extractCompanionEmbeddedImages(html string) (string, map[string][]byte, err
 }
 
 func companionMediaExtension(mime string) string {
-	return map[string]string{"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif", "video/mp4": ".mp4", "video/quicktime": ".mov"}[mime]
+	return map[string]string{"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif", "video/mp4": ".mp4", "video/quicktime": ".mov", "audio/wav": ".wav", "audio/mpeg": ".mp3"}[mime]
 }
 
 func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, project companionProject) {
@@ -553,7 +556,7 @@ func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, p
 	}
 	id := normalizedStudioUUID(request.RequestID)
 	if id == "" || len(request.Filename) > 160 || len(request.Prompt) > 8000 || len(request.DataBase64) > base64.StdEncoding.EncodedLen(companionImportVideoBytes) {
-		http.Error(w, "Choose a supported image or video with a short filename and a transfer ID.", 400)
+		http.Error(w, "Choose supported media with a short filename and a transfer ID.", 400)
 		return
 	}
 	data, err := base64.StdEncoding.DecodeString(request.DataBase64)
@@ -561,7 +564,25 @@ func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, p
 		http.Error(w, "This media could not be read.", 400)
 		return
 	}
-	mime, media, dimensions, err := companionImportMediaType(data)
+	var mime, media string
+	var dimensions *studioDimensions
+	duration := request.DurationSeconds
+	if math.IsNaN(duration) || math.IsInf(duration, 0) || duration < 0 || duration > 86400 {
+		http.Error(w, "Choose media with a valid duration.", http.StatusBadRequest)
+		return
+	}
+	if companionIsAudioHeader(data) {
+		var measured float64
+		mime, measured, err = companionAudioInfo(data)
+		media = "audio"
+		if err == nil && duration > 0 && math.Abs(duration-measured) > math.Max(0.5, measured*0.02) {
+			http.Error(w, "The recording duration does not match its audio. Import the recording again.", http.StatusBadRequest)
+			return
+		}
+		duration = measured
+	} else {
+		mime, media, dimensions, err = companionImportMediaType(data)
+	}
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -579,6 +600,10 @@ func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, p
 		return
 	}
 	request.RequestID, request.Filename, request.MimeType = id, filename, mime
+	// Preserve the normalized legacy request hash when no duration was supplied.
+	if request.DurationSeconds != 0 {
+		request.DurationSeconds = duration
+	}
 	encoded, _ := json.Marshal(struct {
 		Request   companionMediaImport
 		ProjectID string
@@ -624,7 +649,7 @@ func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, p
 			return
 		}
 	} else {
-		asset, err = saveStudioAsset(studioSaveOptions{GenerationID: id, Prompt: request.Prompt, DataURI: "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data), MediaType: media, MimeType: mime, Source: "Glowbom iPhone", AssetType: "reference", SourceType: "uploaded", SourceProjectID: registered.ID, UsedInProjects: []string{registered.ID}, Dimensions: dimensions})
+		asset, err = saveStudioAsset(studioSaveOptions{GenerationID: id, Prompt: request.Prompt, DataURI: "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data), MediaType: media, MimeType: mime, Source: "Glowbom iPhone", AssetType: "reference", SourceType: "uploaded", SourceProjectID: registered.ID, UsedInProjects: []string{registered.ID}, Dimensions: dimensions, Duration: duration, AudioType: map[string]string{"audio": "voice"}[media]})
 		if err != nil {
 			http.Error(w, "Desktop could not save this media. Your phone copy is still available.", 500)
 			return
@@ -636,7 +661,7 @@ func (s *companionSession) importMedia(w http.ResponseWriter, r *http.Request, p
 			return
 		}
 	}
-	result := companionMediaImported{ID: asset.ID, MediaType: media, ProjectID: project.ID, Filename: filename, MimeType: mime, ByteCount: int64(len(data))}
+	result := companionMediaImported{ID: asset.ID, MediaType: media, ProjectID: project.ID, Filename: filename, MimeType: mime, ByteCount: int64(len(data)), DurationSeconds: duration}
 	record.Media = &result
 	if err = writeCompanionTransfer(directory, id, record); err != nil {
 		http.Error(w, "The media is saved. Retry with the same transfer ID to recover it.", 500)

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html"
@@ -59,22 +60,36 @@ func lockChatImageProject(ctx context.Context, root string) (func(), error) {
 }
 
 type chatImageOptions struct {
-	SourceID        string `json:"sourceId"`
-	APIKey          string `json:"apiKey,omitempty"`
-	Personalization bool   `json:"personalization,omitempty"`
-	ReferencePath   string `json:"referencePath,omitempty"`
-	referencePNG    string
-	previousImages  *prototypeImageReferenceSnapshot
+	SourceID             string   `json:"sourceId"`
+	ModelID              string   `json:"modelId,omitempty"`
+	AspectRatio          string   `json:"aspectRatio,omitempty"`
+	Resolution           string   `json:"resolution,omitempty"`
+	Quality              string   `json:"quality,omitempty"`
+	APIKey               string   `json:"apiKey,omitempty"`
+	Personalization      bool     `json:"personalization,omitempty"`
+	ReferencePath        string   `json:"referencePath,omitempty"`
+	HiggsfieldMaxCredits *float64 `json:"higgsfieldMaxCredits,omitempty"`
+	referencePNG         string
+	previousImages       *prototypeImageReferenceSnapshot
+	carousel             *preparedChatCarousel
 }
 
 func validateChatImageOptions(options chatImageOptions) error {
+	if options.SourceID == higgsfieldSourceID {
+		if err := validateHiggsfieldImageAllowance(options.HiggsfieldMaxCredits); err != nil {
+			return err
+		}
+		if _, err := options.higgsfieldOptions(); err != nil {
+			return err
+		}
+	}
 	if options.SourceID == "xai-subscription" {
 		if err := requireGrokSubscriptionMedia(); err != nil {
 			return err
 		}
 	}
 	switch options.SourceID {
-	case "picsum", "glowbom-api", "openai-api", "openai-subscription", "gemini-api", "xai-api", "xai-subscription":
+	case "picsum", "glowbom-api", "openai-api", "openai-subscription", "gemini-api", "xai-api", "xai-subscription", higgsfieldSourceID:
 	default:
 		return errors.New("Choose a supported prototype image source.")
 	}
@@ -95,7 +110,14 @@ func validateChatImageOptions(options chatImageOptions) error {
 	return nil
 }
 
+func (options chatImageOptions) higgsfieldOptions() (studioImageOptions, error) {
+	return normalizeHiggsfieldProjectImageOptions(studioImageOptions{SourceID: options.SourceID, ModelID: options.ModelID, AspectRatio: options.AspectRatio, Resolution: options.Resolution, Quality: options.Quality}, false)
+}
+
 func chatImageInstructions(options chatImageOptions) string {
+	if options.carousel != nil {
+		return " Create at most four distinct images in total. Every generated image needs a quoted URL placeholder such as src=\"glowbomimages:[card:SKETCH_ID] scene description\" or url('glowbomimages:[card:SKETCH_ID] scene description'), with its exact sketch card ID. Reuse the identical tagged placeholder for repeated images. A sketch with personalization=true uses only its own attached image as a reference. Otherwise only that sketch's selected person photos can be used as references, and an empty selection must stay unpersonalized. Keep unrelated existing page features and local asset URLs. Never substitute an uploaded person photo for a generated scene. Do not invent remote image URLs or embed image data."
+	}
 	description := "Glowbom will generate images using the selected image source after saving the HTML."
 	if options.SourceID == "picsum" {
 		description = "Glowbom will add placeholder photos from Lorem Picsum after saving the HTML. These are sample photos, not exact matches to the description."
@@ -150,11 +172,17 @@ func chatImagePlaceholders(document string) []chatImagePlaceholder {
 }
 
 // Only the explicitly selected image source is contacted. Failed requests are never retried.
-func generateChatImage(ctx context.Context, source, key, prompt, reference string) (string, string, error) {
+func generateChatImage(ctx context.Context, source, key, prompt, reference string, selected ...studioImageOptions) (string, string, error) {
 	if reference != "" {
 		prompt += " Use the supplied reference photo or sketch as the visual reference for the requested person or object. Keep the subject recognizable and preserve its distinctive appearance."
 	}
 	switch source {
+	case higgsfieldSourceID:
+		options := higgsfieldProjectImageOptions("16:9")
+		if len(selected) > 0 {
+			options = selected[0]
+		}
+		return generateHiggsfieldProjectImage(ctx, options, prompt, reference)
 	case "openai-subscription":
 		value, err := callCodexImageGeneration(ctx, prompt, reference, "16:9")
 		return value, codexImageSourceLabel, err
@@ -243,7 +271,7 @@ func readChatImage(root, filename string) ([]byte, error) {
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
-	if err != nil || !info.Mode().IsRegular() || info.Size() > projectIconMaxBytes {
+	if err != nil || !info.Mode().IsRegular() || info.Size() > studioGeneratedImageMaxBytes {
 		return nil, errors.New("Image asset is not a regular bounded file")
 	}
 	file, err := handle.Open(relative)
@@ -251,11 +279,11 @@ func readChatImage(root, filename string) ([]byte, error) {
 		return nil, err
 	}
 	defer file.Close()
-	data, err := io.ReadAll(io.LimitReader(file, projectIconMaxBytes+1))
+	data, err := io.ReadAll(io.LimitReader(file, studioGeneratedImageMaxBytes+1))
 	if err != nil {
 		return nil, err
 	}
-	return normalizeProjectIcon(data)
+	return normalizeStudioGeneratedImage(data)
 }
 
 // Check the saved HTML before spending another request or replacing its assets.
@@ -397,6 +425,18 @@ func materializeChatImages(parent context.Context, root, record, document string
 	if err := validateChatImageOptions(options); err != nil {
 		return document, warnings, err
 	}
+	var selectedImage studioImageOptions
+	imageSourceIdentity := options.SourceID
+	imageMaxBytes := projectIconMaxBytes
+	if options.SourceID == higgsfieldSourceID {
+		selectedImage, _ = options.higgsfieldOptions()
+		imageMaxBytes = studioGeneratedImageMaxBytes
+		// Keep old default images reusable; every other setting gets its own cache.
+		if selectedImage != higgsfieldProjectImageOptions("16:9") {
+			settings, _ := json.Marshal(selectedImage)
+			imageSourceIdentity += "\x00" + string(settings)
+		}
+	}
 	reference := ""
 	if options.Personalization {
 		reference = options.referencePNG
@@ -419,6 +459,17 @@ func materializeChatImages(parent context.Context, root, record, document string
 	}
 	warn := func(message string) { warnings = append(warnings, message); emit(map[string]any{"warning": message}) }
 	placeholders := chatImagePlaceholders(document)
+	if options.carousel != nil {
+		valid := []chatImagePlaceholder{}
+		for _, placeholder := range placeholders {
+			if _, _, err := options.carousel.imageScene(placeholder.prompt); err != nil {
+				warn(err.Error())
+				continue
+			}
+			valid = append(valid, placeholder)
+		}
+		placeholders = valid
+	}
 	personalized := []chatImagePlaceholder{}
 	if options.Personalization {
 		for _, placeholder := range placeholders {
@@ -447,18 +498,17 @@ func materializeChatImages(parent context.Context, root, record, document string
 		}
 		placeholders = placeholders[:maxChatImages]
 	}
-	timeout := 5 * time.Minute
-	if options.SourceID == "openai-subscription" {
-		timeout = codexImageTimeout * time.Duration(len(placeholders))
-	}
+	timeout, imageTimeout := chatImageGenerationTimeouts(options.SourceID, len(placeholders))
 	if options.SourceID == "glowbom-api" {
 		if err := validateGlowbomImageReference(reference); err != nil {
 			return document, warnings, err
 		}
-		timeout = glowbomImageTimeout
 	}
 	ctx, cancel := context.WithTimeout(parent, timeout)
 	defer cancel()
+	if options.SourceID == higgsfieldSourceID {
+		ctx, _ = withHiggsfieldImageAllowance(ctx, options.HiggsfieldMaxCredits)
+	}
 	unlock, err := lockChatImageProject(ctx, root)
 	if err != nil {
 		return document, warnings, errors.New("Prototype saved. Image generation stopped before it could start.")
@@ -476,6 +526,13 @@ func materializeChatImages(parent context.Context, root, record, document string
 	}
 	storage := 0
 	for index, placeholder := range placeholders {
+		imageStarted := time.Now()
+		debugID := prototypeImageDebugID(record, index+1)
+		debugImage := func(stage string, err error) {
+			if options.SourceID == higgsfieldSourceID {
+				writeGlowbomDebugEvent("prototype_image", glowbomDebugMetadata{RequestID: debugID, Kind: "image", Stage: stage, Provider: options.SourceID, Model: selectedImage.ModelID, ErrorCategory: studioDebugErrorCategory(err), ElapsedMS: time.Since(imageStarted).Milliseconds()})
+			}
+		}
 		if err := checkRoot(); err != nil {
 			return document, warnings, err
 		}
@@ -486,9 +543,21 @@ func materializeChatImages(parent context.Context, root, record, document string
 			warn(fmt.Sprintf("Image %d was skipped because its description is too long.", index+1))
 			continue
 		}
-		previous, matchedPrevious, previousErr := previousChatImageReference(options, document, placeholder)
+		var previous prototypeImageReferenceMatch
+		var matchedPrevious bool
+		var previousErr error
+		if options.carousel == nil {
+			previous, matchedPrevious, previousErr = previousChatImageReference(options, document, placeholder)
+		}
+		generationPrompt := placeholder.prompt
 		imageReference := ""
-		if isPersonalizedChatImage(placeholder.prompt) {
+		if options.carousel != nil {
+			generationPrompt, imageReference, err = options.carousel.imageScene(placeholder.prompt)
+			if err != nil {
+				warn(err.Error())
+				continue
+			}
+		} else if isPersonalizedChatImage(placeholder.prompt) {
 			imageReference = reference
 		}
 		if imageReference == "" && matchedPrevious {
@@ -511,7 +580,11 @@ func materializeChatImages(parent context.Context, root, record, document string
 				"personalized": imageReference != "",
 			},
 		})
-		filename := chatImageFilename(options.SourceID, placeholder.prompt, imageReference)
+		cachePrompt := placeholder.prompt
+		if options.carousel != nil {
+			cachePrompt += "\x00" + generationPrompt
+		}
+		filename := chatImageFilename(imageSourceIdentity, cachePrompt, imageReference)
 		data, err := readChatImage(root, filename)
 		if err != nil {
 			warn(fmt.Sprintf("Image %d could not be saved safely. Its placeholder was kept.", index+1))
@@ -521,6 +594,8 @@ func materializeChatImages(parent context.Context, root, record, document string
 		newGeneration := generated
 		source := openAIImageSourceLabel
 		switch options.SourceID {
+		case higgsfieldSourceID:
+			source = higgsfieldImageSourceLabel
 		case "openai-subscription":
 			source = codexImageSourceLabel
 		case "glowbom-api":
@@ -546,7 +621,7 @@ func materializeChatImages(parent context.Context, root, record, document string
 			continue
 		}
 		if generated && newGeneration {
-			if storage+projectIconMaxBytes > maxChatImageStorage {
+			if storage+imageMaxBytes > maxChatImageStorage {
 				warn("The prototype was saved. The image size limit was reached; remaining placeholders were kept.")
 				break
 			}
@@ -555,14 +630,10 @@ func materializeChatImages(parent context.Context, root, record, document string
 				warn("The prototype was saved, but its image folder is unavailable.")
 				break
 			}
-			imageTimeout := 2 * time.Minute
-			if options.SourceID == "openai-subscription" {
-				imageTimeout = codexImageTimeout
-			}
-			if options.SourceID == "glowbom-api" {
-				imageTimeout = glowbomImageTimeout
-			}
 			imageCtx, stop := context.WithTimeout(ctx, imageTimeout)
+			if options.SourceID == higgsfieldSourceID {
+				imageCtx = context.WithValue(imageCtx, studioDebugRequestKey{}, debugID)
+			}
 			select {
 			case chatImageSlots <- struct{}{}:
 			case <-imageCtx.Done():
@@ -580,17 +651,39 @@ func materializeChatImages(parent context.Context, root, record, document string
 				return document, warnings, err
 			}
 			var value string
-			value, source, err = generateChatImage(imageCtx, options.SourceID, key, placeholder.prompt, imageReference)
+			debugImage("generating", nil)
+			value, source, err = generateChatImage(imageCtx, options.SourceID, key, generationPrompt, imageReference, selectedImage)
 			<-chatImageSlots
 			stop()
+			if err != nil {
+				stage := "failed"
+				if category := studioDebugErrorCategory(err); category == "timeout" || category == "cancelled" {
+					stage = "stopped_waiting"
+				}
+				debugImage(stage, err)
+			}
 			if ctx.Err() != nil {
+				if options.SourceID == higgsfieldSourceID {
+					return document, warnings, fmt.Errorf("Prototype saved. %s", higgsfieldPrototypeImageFailure(ctx.Err()))
+				}
 				return document, warnings, errors.New("Prototype saved. Image generation stopped or timed out. Images already added were kept.")
+			}
+			providerCompleted := err == nil
+			if providerCompleted {
+				debugImage("preparing_output", nil)
 			}
 			if err == nil {
 				data, _, err = decodeBase64Payload(value, "image/png")
 			}
 			if err == nil {
-				data, err = normalizeProjectIcon(data)
+				if options.SourceID == higgsfieldSourceID {
+					data, err = normalizeStudioGeneratedImage(data)
+				} else {
+					data, err = normalizeProjectIcon(data)
+				}
+			}
+			if providerCompleted && err != nil {
+				debugImage("output_invalid", err)
 			}
 			if err != nil {
 				if matchedPrevious && previousErr == nil {
@@ -603,10 +696,15 @@ func materializeChatImages(parent context.Context, root, record, document string
 				if err != nil {
 					var failure *glowbomImageFailure
 					var codexFailure *codexImageFailure
+					var creditFailure *higgsfieldImageBudgetError
 					if errors.As(err, &failure) {
 						warn(fmt.Sprintf("Image %d: %s Its placeholder was kept.", index+1, failure.Error()))
 					} else if errors.As(err, &codexFailure) {
 						warn(fmt.Sprintf("Image %d: %s Its placeholder was kept.", index+1, codexFailure.Error()))
+					} else if errors.As(err, &creditFailure) {
+						warn(fmt.Sprintf("Image %d: %s Its placeholder was kept.", index+1, creditFailure.Error()))
+					} else if options.SourceID == higgsfieldSourceID {
+						warn(fmt.Sprintf("Image %d: %s Its placeholder was kept; no retry was made.", index+1, higgsfieldPrototypeImageFailure(err)))
 					} else {
 						warn(fmt.Sprintf("Image %d could not be created with the selected source. Its placeholder was kept; no retry was made.", index+1))
 					}
@@ -636,10 +734,17 @@ func materializeChatImages(parent context.Context, root, record, document string
 		if err := commitChatImage(ctx, root, record, document, next, filename, data, generated); err != nil {
 			return document, warnings, err
 		}
+		debugImage("saved", nil)
 		document = next
 		emit(map[string]any{"text": document})
 		config, _, _ := image.DecodeConfig(bytes.NewReader(data))
-		asset, err := linkStudioProjectImage(root, "prototype/assets/"+filename, data, studioSaveOptions{Prompt: placeholder.prompt, DataURI: "data:image/png;base64," + base64.StdEncoding.EncodeToString(data), MediaType: "image", Source: source, NewGeneration: newGeneration, Dimensions: &studioDimensions{Width: config.Width, Height: config.Height}})
+		studioOptions := studioSaveOptions{Prompt: placeholder.prompt, DataURI: "data:image/png;base64," + base64.StdEncoding.EncodeToString(data), MediaType: "image", Source: source, NewGeneration: newGeneration, Dimensions: &studioDimensions{Width: config.Width, Height: config.Height}}
+		if options.SourceID == higgsfieldSourceID && source == higgsfieldImageSourceLabel {
+			studioOptions.SourceID, studioOptions.Model = higgsfieldSourceID, selectedImage.ModelID
+			studioOptions.Resolution, studioOptions.Quality = selectedImage.Resolution, selectedImage.Quality
+			studioOptions.AspectRatio = selectedImage.AspectRatio
+		}
+		asset, err := linkStudioProjectImage(root, "prototype/assets/"+filename, data, studioOptions)
 		if err != nil {
 			warn(fmt.Sprintf("Image %d could not be added to Studio. Its project copy was saved.", index+1))
 		} else {

@@ -103,6 +103,7 @@ type companionSession struct {
 	prototypeJobs         map[string]*companionDesktopPrototypeJob
 	iconJobs              map[string]*companionProjectIconJob
 	pairingBridge         *companionPairingBridge
+	tasksScopeSalt        []byte
 }
 
 func newCompanionManager(api http.Handler) *companionManager {

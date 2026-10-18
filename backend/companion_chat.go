@@ -30,6 +30,7 @@ type companionChatData struct {
 	images                   []map[string]any
 	prototype                bool
 	personalizationReference map[string]any
+	carousel                 *preparedChatCarousel
 }
 
 type companionChatContextKey struct{}

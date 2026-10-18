@@ -81,6 +81,7 @@ type bookEntry struct {
 	Body            string               `json:"body"`
 	CreatedAt       string               `json:"createdAt"`
 	UpdatedAt       string               `json:"updatedAt"`
+	DeletedAt       string               `json:"deletedAt,omitempty"`
 	Kind            string               `json:"kind"`
 	Status          string               `json:"status"`
 	Request         string               `json:"request"`
@@ -93,18 +94,21 @@ type bookEntry struct {
 	ContentVersion  string               `json:"contentVersion,omitempty"`
 	ChangedFiles    []string             `json:"changedFiles"`
 	Images          []bookImage          `json:"images"`
+	Videos          []bookVideo          `json:"videos,omitempty"`
 	Sketch          bookSketch           `json:"sketch"`
 	Reviewed        bool                 `json:"reviewed,omitempty"`
 	AutoStoryHash   string               `json:"autoStoryHash,omitempty"`
 	CanWriteStory   bool                 `json:"canWriteStory,omitempty"`
+	extraFields     map[string]json.RawMessage
 }
 type projectBook struct {
-	Version     int         `json:"version"`
-	ProjectName string      `json:"projectName"`
-	UpdatedAt   string      `json:"updatedAt"`
-	Entries     []bookEntry `json:"entries"`
-	Warnings    []string    `json:"warnings,omitempty"`
-	skippedIDs  []string
+	Version        int         `json:"version"`
+	ProjectName    string      `json:"projectName"`
+	UpdatedAt      string      `json:"updatedAt"`
+	Entries        []bookEntry `json:"entries"`
+	DeletedEntries []bookEntry `json:"deletedEntries,omitempty"`
+	Warnings       []string    `json:"warnings,omitempty"`
+	skippedIDs     []string
 }
 type projectBookRequest struct {
 	ProjectPath            string               `json:"projectPath"`
@@ -119,6 +123,10 @@ type projectBookRequest struct {
 	DataURL                string               `json:"dataURL"`
 	Caption                string               `json:"caption"`
 	ImageID                string               `json:"imageId"`
+	AssetID                string               `json:"assetId"`
+	VideoID                string               `json:"videoId"`
+	GenerationID           string               `json:"generationId"`
+	ReplaceExistingVideo   bool                 `json:"replaceExistingVideo,omitempty"`
 	ExpectedUpdatedAt      string               `json:"expectedUpdatedAt,omitempty"`
 	ExpectedContentVersion string               `json:"expectedContentVersion,omitempty"`
 }
@@ -142,10 +150,13 @@ func projectBookHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Send one Project Book request.", 400)
 			return
 		}
-		if req.Action != "sync" && req.Action != "update-entry" && req.Action != "add-image" && req.Action != "remove-image" {
+		if req.Action != "sync" && req.Action != "update-entry" && req.Action != "add-image" && req.Action != "remove-image" && req.Action != "add-video" && req.Action != "replace-video" && req.Action != "remove-video" && req.Action != "bind-video-generation" && req.Action != "delete-entry" && req.Action != "restore-entry" {
 			http.Error(w, "Unknown Project Book action.", 400)
 			return
 		}
+	}
+	if r.Method == http.MethodGet || req.Action == "sync" {
+		reconcileBookLaunchVideos(req.ProjectPath)
 	}
 	projectBookMu.Lock()
 	defer projectBookMu.Unlock()
@@ -170,6 +181,10 @@ func projectBookHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if !exists {
 			err = errors.New("Create the Project Book before editing it.")
+		} else if req.Action == "bind-video-generation" {
+			err = bindBookVideoGeneration(root, &book, req)
+		} else if req.Action == "delete-entry" || req.Action == "restore-entry" {
+			err = setProjectBookEntryDeleted(root, &book, req)
 		} else {
 			err = editProjectBook(root, &book, req)
 		}
@@ -181,6 +196,9 @@ func projectBookHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), status)
 			return
 		}
+	}
+	if exists || req.Action == "sync" {
+		reconcileBookVideoGenerations(root, &book)
 	}
 	setBookStoryEligibility(&book)
 	writeJSON(w, book)
@@ -320,12 +338,12 @@ func initializeProjectBook(root *os.Root) error {
 		}
 	}
 	files := map[string]string{
-		"README.md":         "# Project Book\n\nThis Book tells the story of each saved change in words a person can read. A story describes what the recorded work shows, how it was made, and why it matters when the evidence supports that. The original request and result stay linked beside it.\n\nEach entry lives in history. Its readable story is in entry.md, recorded source details are in source.json, and drawings are in sketch.json. Each edit creates a revision. The latest revision with a ready file is current. You can edit its Markdown directly. Sync adds newly recorded work and preserves existing entries.\n\nAn automatically written story or visual sketch is an interpretation of saved work, not a verified claim that every feature was tested. The run outline describes recorded work. Model or contributor details may be absent in older records.\n",
+		"README.md":         "# Project Book\n\nThis Book tells the story of each saved change in words a person can read. A story describes what the recorded work shows, how it was made, and why it matters when the evidence supports that. The original request and result stay linked beside it.\n\nEach entry lives in history. Its readable story is in entry.md, recorded source details are in source.json, and drawings are in sketch.json. Each edit creates a revision. The latest revision with a ready file is current. If its source.json has a nonempty deletedAt, the story is deleted: exclude it from active summaries and briefs while keeping all history. You can edit its Markdown directly. Sync adds newly recorded work and preserves existing entries.\n\nAn automatically written story or visual sketch is an interpretation of saved work, not a verified claim that every feature was tested. The run outline describes recorded work. Model or contributor details may be absent in older records.\n",
 		"intent.md":         "# Intent\n\nDescribe who this project is for and what it should help them do.\n",
-		"current-result.md": "# Current result\n\nThe dated entries in history describe recorded results. A completed run does not by itself confirm that every feature was tested.\n",
+		"current-result.md": "# Current result\n\nThe active dated entries in history describe recorded results. Skip an entry when its latest ready revision has a nonempty source.json deletedAt. A completed run does not by itself confirm that every feature was tested.\n",
 		"decisions.md":      "# Decisions\n\nRecord important choices and their reasons here.\n",
 		"next.md":           "# Next\n\nRecord the next change you want here.\n",
-		"PROJECT_BRIEF.md":  "# Project Brief\n\nRead README.md, intent.md, current-result.md, decisions.md, next.md, and the latest committed Markdown entries in history. This initial brief points to the Book; it is not a separate account of the project.\n",
+		"PROJECT_BRIEF.md":  "# Project Brief\n\nRead README.md, intent.md, current-result.md, decisions.md, next.md, and the latest committed Markdown entries in history. First check each latest ready revision: skip the entry if source.json has a nonempty deletedAt. This initial brief points to the Book; it is not a separate account of the project.\n",
 		"book.json":         "{\"format\":\"glowbom-project-book\",\"version\":1}\n",
 	}
 	for _, name := range []string{"README.md", "intent.md", "current-result.md", "decisions.md", "next.md", "PROJECT_BRIEF.md", "book.json"} {
@@ -374,7 +392,11 @@ func readProjectBook(root *os.Root, name string) (projectBook, bool, error) {
 			book.Warnings = append(book.Warnings, "An unfinished Book entry was skipped.")
 			continue
 		}
-		book.Entries = append(book.Entries, entry)
+		if entry.DeletedAt != "" {
+			book.DeletedEntries = append(book.DeletedEntries, entry)
+		} else {
+			book.Entries = append(book.Entries, entry)
+		}
 	}
 	orderProjectBook(&book)
 	return book, true, nil
@@ -445,8 +467,16 @@ func parseBookMarkdown(text string) (string, string, error) {
 	return strings.TrimSpace(first[2:]), strings.TrimSpace(body), nil
 }
 func validateBookEntry(entry bookEntry) error {
+	if entry.DeletedAt != "" {
+		if _, err := time.Parse(time.RFC3339Nano, entry.DeletedAt); err != nil || len(entry.DeletedAt) > 64 {
+			return errors.New("Invalid Project Book deletion record.")
+		}
+	}
 	if !projectBookID.MatchString(entry.ID) || len(entry.Title) > 240 || strings.ContainsAny(entry.Title, "\r\n\x00") || strings.TrimSpace(entry.Title) == "" || len(entry.Body) > 240<<10 || len(entry.Request) > 128<<10 || len(entry.Source) > 2048 || len(entry.Images) > 32 || len(entry.ChangedFiles) > 2000 || (entry.Kind != "build" && entry.Kind != "prototype") {
 		return errors.New("This Project Book entry is invalid or too large.")
+	}
+	if err := validateBookVideos(entry.Videos); err != nil {
+		return err
 	}
 	if !validBookModelID(entry.StoryModel) {
 		return errors.New("Invalid Project Book story model.")
@@ -522,6 +552,17 @@ func orderProjectBook(book *projectBook) {
 			book.UpdatedAt = entry.UpdatedAt
 		}
 	}
+	sort.Slice(book.DeletedEntries, func(i, j int) bool {
+		if book.DeletedEntries[i].DeletedAt == book.DeletedEntries[j].DeletedAt {
+			return book.DeletedEntries[i].ID > book.DeletedEntries[j].ID
+		}
+		return bookDateAfter(book.DeletedEntries[i].DeletedAt, book.DeletedEntries[j].DeletedAt)
+	})
+	for _, entry := range book.DeletedEntries {
+		if bookDateAfter(entry.UpdatedAt, book.UpdatedAt) {
+			book.UpdatedAt = entry.UpdatedAt
+		}
+	}
 }
 
 func bookDateAfter(left, right string) bool {
@@ -539,9 +580,24 @@ func editProjectBook(root *os.Root, book *projectBook, req projectBookRequest) e
 		}
 	}
 	if index < 0 {
+		if bookDeletedEntryIndex(book, req.EntryID) >= 0 {
+			return errProjectBookConflict
+		}
 		return errors.New("That Project Book entry was not found.")
 	}
 	entry := book.Entries[index]
+	// A retry of an already saved reference does not create a new revision.
+	if req.Action == "add-video" && hasBookVideo(entry, normalizedStudioUUID(req.AssetID)) {
+		return nil
+	}
+	if req.Action == "replace-video" {
+		if req.ExpectedContentVersion == "" {
+			return errors.New("Open the current story before replacing its video.")
+		}
+		if len(entry.Videos) == 1 && hasBookVideo(entry, normalizedStudioUUID(req.AssetID)) {
+			return nil
+		}
+	}
 	if req.ExpectedUpdatedAt != "" && req.ExpectedUpdatedAt != entry.UpdatedAt {
 		return errProjectBookConflict
 	}
@@ -549,6 +605,7 @@ func editProjectBook(root *os.Root, book *projectBook, req projectBookRequest) e
 		return errProjectBookConflict
 	}
 	entry.Images = append([]bookImage{}, entry.Images...)
+	entry.Videos = append([]bookVideo(nil), entry.Videos...)
 	switch req.Action {
 	case "update-entry":
 		entry.Title, entry.Body = strings.TrimSpace(req.Title), strings.TrimSpace(req.Body)
@@ -613,10 +670,42 @@ func editProjectBook(root *os.Root, book *projectBook, req projectBookRequest) e
 			return errors.New("That image was not found in the entry.")
 		}
 		entry.Images = images
+	case "add-video":
+		if err := appendBookVideo(&entry, req.AssetID, req.Title, req.Caption); err != nil {
+			return err
+		}
+	case "replace-video":
+		if err := replaceBookVideo(root, &entry, req.AssetID, req.Title, req.Caption); err != nil {
+			return err
+		}
+	case "remove-video":
+		videos := make([]bookVideo, 0, len(entry.Videos))
+		found := false
+		for _, video := range entry.Videos {
+			if video.ID == req.VideoID {
+				if err := finalizeBookVideoBindingsForUnlink(root, entry.ID, video); err != nil {
+					return err
+				}
+				found = true
+			} else {
+				videos = append(videos, video)
+			}
+		}
+		if !found {
+			return errors.New("That video was not found in the entry.")
+		}
+		entry.Videos = videos
 	}
-	entry.Reviewed = true
-	entry.AutoStoryHash = ""
-	entry.CanWriteStory = false
+	if !bookVideoReferencesMatch(entry, bookVideoReferenceIDs(book.Entries[index])) {
+		if err := supersedeBookVideoBindingsForEdit(root, entry.ID); err != nil {
+			return err
+		}
+	}
+	if req.Action != "add-video" && req.Action != "replace-video" && req.Action != "remove-video" {
+		entry.Reviewed = true
+		entry.AutoStoryHash = ""
+		entry.CanWriteStory = false
+	}
 	entry.UpdatedAt = time.Now().UTC().Format(time.RFC3339Nano)
 	if err := saveBookEntry(root, entry); err != nil {
 		return err

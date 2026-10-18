@@ -26,6 +26,9 @@ func syncProjectBook(root *os.Root, book *projectBook) error {
 	for _, id := range book.skippedIDs {
 		known[id] = -1
 	}
+	for _, entry := range book.DeletedEntries {
+		known[entry.ID] = -1
+	}
 	imports, warnings := collectBookImports(root)
 	book.Warnings = append(book.Warnings, warnings...)
 	for _, item := range imports {
@@ -54,7 +57,7 @@ func syncProjectBook(root *os.Root, book *projectBook) error {
 			}
 			continue
 		}
-		if len(book.Entries) >= projectBookEntryLimit {
+		if len(known) >= projectBookEntryLimit {
 			return errors.New("This Project Book has reached its limit of 1000 entries.")
 		}
 		for _, input := range item.images {

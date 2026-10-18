@@ -142,7 +142,7 @@ func studioImageModels() []studioImageSourceCapability {
 		}
 		sources = append(sources, studioImageSourceCapability{ID: "xai-subscription", Name: "Grok subscription", Provider: "SpaceXAI", Notice: "Media access and limits depend on your Grok account. Account allowance or purchased credits may apply.", Models: []studioImageModelCapability{latest, older}})
 	}
-	return sources
+	return append(sources, higgsfieldImageSource())
 }
 
 func studioImageCapabilities(ctx context.Context) studioImageCatalogue {
@@ -179,6 +179,10 @@ func studioImageCapabilitiesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func normalizeStudioImageOptions(o studioImageOptions) (studioImageOptions, error) {
+	return normalizeStudioImageOptionsInCatalogue(o, studioImageModels())
+}
+
+func normalizeStudioImageOptionsInCatalogue(o studioImageOptions, sources []studioImageSourceCapability) (studioImageOptions, error) {
 	o.SourceID = strings.TrimSpace(o.SourceID)
 	o.ModelID = strings.TrimSpace(o.ModelID)
 	o.AspectRatio = strings.TrimSpace(o.AspectRatio)
@@ -190,11 +194,11 @@ func normalizeStudioImageOptions(o studioImageOptions) (studioImageOptions, erro
 	if o.SourceID == "xai-subscription" && !grokSubscriptionMediaEnabled() {
 		return o, errGrokSubscriptionMediaDisabled
 	}
-	for _, s := range studioImageModels() {
+	for _, s := range sources {
 		if s.ID != o.SourceID {
 			continue
 		}
-		if o.ModelID == "" {
+		if o.ModelID == "" && len(s.Models) > 0 {
 			o.ModelID = s.Models[0].ID
 		}
 		for _, m := range s.Models {
@@ -225,7 +229,7 @@ func normalizeStudioImageOptions(o studioImageOptions) (studioImageOptions, erro
 			if o.SourceID == "gemini-api" {
 				o.Resolution = strings.ToUpper(o.Resolution)
 			}
-			if o.SourceID == "xai-api" || o.SourceID == "xai-subscription" {
+			if o.SourceID == "xai-api" || o.SourceID == "xai-subscription" || o.SourceID == higgsfieldSourceID {
 				o.Resolution = strings.ToLower(o.Resolution)
 			}
 			if o.Resolution != "" && !studioImageContains(m.Resolutions, o.Resolution) {
@@ -254,6 +258,17 @@ func studioImageContains(values []string, value string) bool {
 	return false
 }
 
+func studioImageGenerationTimeout(sourceID string) time.Duration {
+	switch sourceID {
+	case "openai-subscription":
+		return codexImageTimeout
+	case "glowbom-api":
+		return glowbomImageTimeout
+	default:
+		return 3 * time.Minute
+	}
+}
+
 func generateStudioSelectedImageWithOptions(ctx context.Context, o studioImageOptions, key, prompt, reference string) (string, string, error) {
 	o, err := normalizeStudioImageOptions(o)
 	if err != nil {
@@ -262,17 +277,16 @@ func generateStudioSelectedImageWithOptions(ctx context.Context, o studioImageOp
 	if err = ctx.Err(); err != nil {
 		return "", "", err
 	}
-	timeout := 3 * time.Minute
-	if o.SourceID == "openai-subscription" {
-		timeout = codexImageTimeout
-	}
-	if o.SourceID == "glowbom-api" {
-		timeout = glowbomImageTimeout
-	}
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, studioImageGenerationTimeout(o.SourceID))
 	defer cancel()
 	label := fmt.Sprintf("Glowbom Images (%s)", o.ModelID)
 	switch o.SourceID {
+	case higgsfieldSourceID:
+		value, e := generateHiggsfieldImage(ctx, o, prompt, reference)
+		if errors.Is(e, errHiggsfieldSignedOut) {
+			e = errors.New("Connect your Higgsfield account in Settings → Agents, then try again.")
+		}
+		return value, "Higgsfield", e
 	case "openai-subscription":
 		value, e := callCodexImageGeneration(ctx, prompt, reference, o.AspectRatio)
 		return value, codexImageSourceLabel, e

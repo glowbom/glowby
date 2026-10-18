@@ -36,15 +36,20 @@ type projectIconSource struct {
 }
 
 type projectIconRequest struct {
-	Path           string `json:"path"`
-	Prompt         string `json:"prompt"`
-	SourceID       string `json:"sourceId,omitempty"`
-	APIKey         string `json:"apiKey,omitempty"`
-	ImageSource    string `json:"imageSource,omitempty"`
-	OpenAIKey      string `json:"openaiKey,omitempty"`
-	GeminiKey      string `json:"geminiKey,omitempty"`
-	XaiKey         string `json:"xaiKey,omitempty"`
-	ReferenceImage string `json:"referenceImage,omitempty"`
+	Path                 string   `json:"path"`
+	Prompt               string   `json:"prompt"`
+	SourceID             string   `json:"sourceId,omitempty"`
+	ModelID              string   `json:"modelId,omitempty"`
+	AspectRatio          string   `json:"aspectRatio,omitempty"`
+	Resolution           string   `json:"resolution,omitempty"`
+	Quality              string   `json:"quality,omitempty"`
+	APIKey               string   `json:"apiKey,omitempty"`
+	ImageSource          string   `json:"imageSource,omitempty"`
+	OpenAIKey            string   `json:"openaiKey,omitempty"`
+	GeminiKey            string   `json:"geminiKey,omitempty"`
+	XaiKey               string   `json:"xaiKey,omitempty"`
+	ReferenceImage       string   `json:"referenceImage,omitempty"`
+	HiggsfieldMaxCredits *float64 `json:"higgsfieldMaxCredits,omitempty"`
 }
 
 // Existing callers keep their default behavior; interactive icon requests can cancel I/O.
@@ -118,6 +123,7 @@ func projectIconSources(contexts ...context.Context) []projectIconSource {
 	sources := []projectIconSource{
 		{ID: "openai-subscription", Label: "ChatGPT", Model: openAIImageModelID, AuthType: "subscription", Available: chatGPTConnected, AvailabilityCode: chatGPTCode},
 		{ID: "glowbom-api", Label: "Glowbom account", Model: "Flux", AuthType: "account", AvailabilityCode: "backend_auth_required"},
+		{ID: higgsfieldSourceID, Label: higgsfieldImageSourceLabel, Model: higgsfieldProjectImageModel, AuthType: "subscription", Available: higgsfieldConnected()},
 		{ID: "openai-api", Label: "OpenAI", Model: openAIImageModelID, AuthType: "api-key", Available: projectIconAPIKey("openai-api") != ""},
 		{ID: "gemini-api", Label: "Google Gemini", Model: nanoBanana2ModelID, AuthType: "api-key", Available: projectIconAPIKey("gemini-api") != ""},
 		{ID: "xai-api", Label: "xAI", Model: xAIImageModel, AuthType: "api-key", Available: projectIconAPIKey("xai-api") != ""},
@@ -135,6 +141,16 @@ func openCodeIconSourcesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sources := projectIconSources(r.Context())
+	if r.URL.Query().Get("legacyCompanion") == "1" {
+		// Older companion clients cannot review a Higgsfield image credit limit.
+		filtered := sources[:0]
+		for _, source := range sources {
+			if source.ID != higgsfieldSourceID {
+				filtered = append(filtered, source)
+			}
+		}
+		sources = filtered
+	}
 	if bridge := glowbomImageAccount; bridge != nil && bridge.token != "" && hasValidGlowbomServerToken(r, bridge.token) {
 		for i := range sources {
 			if sources[i].ID == "glowbom-api" {
@@ -159,6 +175,8 @@ func resolveProjectIconSource(req projectIconRequest, contexts ...context.Contex
 	if id == "" {
 		source := strings.ToLower(req.ImageSource)
 		switch {
+		case strings.Contains(source, "higgsfield"):
+			id = higgsfieldSourceID
 		case isOpenAIImageSource(source):
 			id = "openai-api"
 		case strings.Contains(source, "nano banana"):
@@ -182,6 +200,11 @@ func resolveProjectIconSource(req projectIconRequest, contexts ...context.Contex
 	}
 	key := strings.TrimSpace(req.APIKey)
 	switch id {
+	case higgsfieldSourceID:
+		if !higgsfieldConnected() {
+			return "", "", errors.New("Connect your Higgsfield account in Settings → Agents, then try again.")
+		}
+		return id, "", nil
 	case "glowbom-api":
 		if glowbomImageAccount == nil {
 			return "", "", glowbomImageError(errAccountCLIMissing)
@@ -230,8 +253,14 @@ func resolveProjectIconSource(req projectIconRequest, contexts ...context.Contex
 	return id, key, nil
 }
 
-func generateProjectIcon(ctx context.Context, sourceID, key, prompt, reference string) (string, string, error) {
+func generateProjectIcon(ctx context.Context, sourceID, key, prompt, reference string, selected ...studioImageOptions) (string, string, error) {
 	switch sourceID {
+	case higgsfieldSourceID:
+		options := higgsfieldProjectImageOptions("1:1")
+		if len(selected) > 0 {
+			options = selected[0]
+		}
+		return generateHiggsfieldProjectImage(ctx, options, prompt, reference)
 	case "openai-subscription":
 		value, err := callCodexImageGeneration(ctx, prompt, reference, "1:1")
 		return value, codexImageSourceLabel, err
@@ -325,16 +354,16 @@ func readProjectIcon(root *os.Root) ([]byte, error) {
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
-	if err != nil || !info.Mode().IsRegular() || info.Size() > projectIconMaxBytes {
-		return nil, errors.New("The project icon must be an image file smaller than 12 MB.")
+	if err != nil || !info.Mode().IsRegular() || info.Size() > studioGeneratedImageMaxBytes {
+		return nil, errors.New("The project icon must be an image file smaller than 24 MB.")
 	}
 	file, err := root.Open("icon.png")
 	if err != nil {
 		return nil, errors.New("Could not open the project icon.")
 	}
 	defer file.Close()
-	data, err := io.ReadAll(io.LimitReader(file, projectIconMaxBytes+1))
-	if err != nil || len(data) > projectIconMaxBytes {
+	data, err := io.ReadAll(io.LimitReader(file, studioGeneratedImageMaxBytes+1))
+	if err != nil || len(data) > studioGeneratedImageMaxBytes {
 		return nil, errors.New("Could not read the project icon.")
 	}
 	return data, nil
@@ -468,6 +497,21 @@ func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
 	if sourceID == "glowbom-api" && !authorizeGlowbomImage(w, r) {
 		return
 	}
+	var selectedImage studioImageOptions
+	if sourceID == higgsfieldSourceID {
+		if !authorizeVoiceKey(w, r) {
+			return
+		}
+		if err := validateHiggsfieldImageAllowance(req.HiggsfieldMaxCredits); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		selectedImage, err = normalizeHiggsfieldProjectImageOptions(studioImageOptions{SourceID: sourceID, ModelID: req.ModelID, AspectRatio: req.AspectRatio, Resolution: req.Resolution, Quality: req.Quality}, true)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
 	reference := ""
 	if req.ReferenceImage != "" {
 		reference, err = normalizeProjectIconReference(req.ReferenceImage)
@@ -489,11 +533,17 @@ func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), timeout)
 	defer cancel()
+	if sourceID == higgsfieldSourceID {
+		ctx, _ = withHiggsfieldImageAllowance(ctx, req.HiggsfieldMaxCredits)
+	}
 	prompt := fmt.Sprintf("Generate a square app icon (1024x1024) for: %s. The icon should be simple, modern, and look great at small sizes. No text on the icon.", req.Prompt)
+	if sourceID == higgsfieldSourceID {
+		prompt = fmt.Sprintf("Generate a square app icon for: %s. The icon should be simple, modern, and look great at small sizes. No text on the icon.", req.Prompt)
+	}
 	if reference != "" {
 		prompt += " Use the supplied photo as the visual reference for the person or object. Keep the subject recognizable while simplifying it into an app icon."
 	}
-	dataURI, sourceService, err := generateProjectIcon(ctx, sourceID, key, prompt, reference)
+	dataURI, sourceService, err := generateProjectIcon(ctx, sourceID, key, prompt, reference, selectedImage)
 	if err != nil {
 		// Provider errors can contain keys, request URLs, and personal data.
 		message := "The image source could not generate an icon. Check its connection or API key and try again."
@@ -515,6 +565,10 @@ func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
 		if errors.As(err, &glowbomFailure) {
 			message = glowbomFailure.Error()
 		}
+		var creditFailure *higgsfieldImageBudgetError
+		if errors.As(err, &creditFailure) {
+			message = creditFailure.Error()
+		}
 		if ctx.Err() != nil && sourceID != "glowbom-api" {
 			message = "Icon generation stopped or timed out. Your previous icon was kept."
 		}
@@ -523,7 +577,11 @@ func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data, _, err := decodeBase64Payload(dataURI, "image/png")
 	if err == nil {
-		data, err = normalizeProjectIcon(data)
+		if sourceID == higgsfieldSourceID {
+			data, err = normalizeStudioGeneratedImage(data)
+		} else {
+			data, err = normalizeProjectIcon(data)
+		}
 	}
 	if err == nil {
 		err = validateGeneratedImageAspect(data, "1:1")
@@ -548,10 +606,15 @@ func openCodeGenerateIconHandler(w http.ResponseWriter, r *http.Request) {
 	iconImage := "data:image/png;base64," + base64.StdEncoding.EncodeToString(data)
 	result := map[string]any{"success": true, "iconPath": filepath.Join(root.Name(), "icon.png"), "sourceService": sourceService, "image": iconImage}
 	size, _, _ := image.DecodeConfig(bytes.NewReader(data))
-	asset, err := saveProjectIconStudioAsset(root, data, studioSaveOptions{
+	studioOptions := studioSaveOptions{
 		NewGeneration: true, Prompt: "App icon: " + req.Prompt, DataURI: iconImage, MediaType: "image", Source: sourceService,
 		AspectRatio: "1:1", Dimensions: &studioDimensions{Width: size.Width, Height: size.Height},
-	})
+	}
+	if sourceID == higgsfieldSourceID {
+		studioOptions.SourceID, studioOptions.Model = sourceID, selectedImage.ModelID
+		studioOptions.Resolution, studioOptions.Quality = selectedImage.Resolution, selectedImage.Quality
+	}
+	asset, err := saveProjectIconStudioAsset(root, data, studioOptions)
 	if err != nil {
 		result["warning"] = "Your project icon was saved, but it could not be added to Studio. Check that Glowbom can write to its Studio folder."
 	} else {

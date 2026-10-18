@@ -18,6 +18,12 @@ type studioVideoOptions struct {
 	DurationSeconds int    `json:"durationSeconds"`
 	Resolution      string `json:"resolution"`
 	AspectRatio     string `json:"aspectRatio"`
+	// Higgsfield Seedance 2.5 only: Studio assets that guide the motion and the voice, and the words to say.
+	MotionVideoID string `json:"motionVideoId,omitempty"`
+	VoiceAudioID  string `json:"voiceAudioId,omitempty"`
+	// A Higgsfield voice (a clone or a preset) whose sample serves as the voice reference.
+	HiggsfieldVoiceID string `json:"higgsfieldVoiceId,omitempty"`
+	SpokenText        string `json:"spokenText,omitempty"`
 }
 
 type studioVideoModelCapability struct {
@@ -84,6 +90,7 @@ func studioVideoCapabilities() studioVideoCatalogue {
 		{ID: "xai-api", Name: "SpaceXAI API", Provider: "SpaceXAI", RequiresAPIKey: true, Connected: studioVideoEnvironmentKey("xai-api") != "", Models: []studioVideoModelCapability{latest, older}},
 		{ID: "veo-api", Name: "Google API", Provider: "Google", RequiresAPIKey: true, Connected: studioVideoEnvironmentKey("veo-api") != "", Models: []studioVideoModelCapability{veo("veo-3.1-lite-generate-preview", "Veo 3.1 Lite", .05, .08), veo("veo-3.1-fast-generate-preview", "Veo 3.1 Fast", .10, .12), veo("veo-3.1-generate-preview", "Veo 3.1 Standard", .40, .40)}},
 		{ID: "xai-subscription", Name: "Grok subscription", Provider: "SpaceXAI", Connected: subscriptionConnected, Notice: "Video access and limits depend on your Grok account. Account allowance or purchased credits may apply.", Models: []studioVideoModelCapability{subscriptionModel(older), subscriptionModel(latest)}},
+		higgsfieldVideoSource(),
 	}}
 }
 
@@ -161,7 +168,7 @@ func studioVideoStringIn(value string, values []string) bool {
 	return false
 }
 func estimateStudioVideoCost(options studioVideoOptions, hasImage bool) float64 {
-	if options.SourceID == "xai-subscription" {
+	if options.SourceID == "xai-subscription" || options.SourceID == higgsfieldSourceID {
 		return 0
 	}
 	for _, s := range studioVideoCapabilities().Sources {
@@ -221,7 +228,8 @@ func generateStudioSelectedVideo(ctx context.Context, options studioVideoOptions
 	if err = ctx.Err(); err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(prompt) == "" || len(prompt) > 4000 {
+	// A Seedance talking video may come from its words alone (see higgsfieldReferencePrompt).
+	if (strings.TrimSpace(prompt) == "" && options.SpokenText == "") || len(prompt) > 4000 {
 		return nil, errors.New("Enter a video prompt up to 4,000 characters.")
 	}
 	if len(images) > 1 {
@@ -238,6 +246,10 @@ func generateStudioSelectedVideo(ctx context.Context, options studioVideoOptions
 			image.Data = parts[1]
 		}
 		normalizedImages = append(normalizedImages, image)
+	}
+	if options.SourceID == higgsfieldSourceID {
+		result, err := startHiggsfieldVideo(ctx, options, prompt, normalizedImages)
+		return result, studioHiggsfieldVideoError(err)
 	}
 	request := VeoGenerationRequest{Prompt: prompt, Images: normalizedImages, ModelID: options.ModelID, DurationSeconds: options.DurationSeconds, Resolution: options.Resolution, AspectRatio: options.AspectRatio}
 	if options.SourceID == "veo-api" {
@@ -264,6 +276,10 @@ func pollStudioSelectedVideo(ctx context.Context, options studioVideoOptions, ke
 	if options.SourceID == "veo-api" {
 		return pollVeoOperation(operationID, key, ctx)
 	}
+	if options.SourceID == higgsfieldSourceID {
+		result, err := pollHiggsfieldVideo(ctx, operationID)
+		return result, studioHiggsfieldVideoError(err)
+	}
 	if options.SourceID == "xai-subscription" {
 		var err error
 		key, err = resolveStudioVideoSubscription(ctx)
@@ -289,6 +305,8 @@ func downloadStudioSelectedVideo(ctx context.Context, options studioVideoOptions
 	var err error
 	if options.SourceID == "veo-api" {
 		body, mimeType, err = downloadStudioVeoVideo(ctx, videoURL, key)
+	} else if options.SourceID == higgsfieldSourceID {
+		body, mimeType, err = downloadHiggsfieldVideo(ctx, videoURL)
 	} else {
 		if options.SourceID == "xai-subscription" {
 			key, err = resolveStudioVideoSubscription(ctx)
@@ -303,6 +321,26 @@ func downloadStudioSelectedVideo(ctx context.Context, options studioVideoOptions
 	}
 	return fmt.Sprintf("data:%s;base64,%s", mimeType, base64.StdEncoding.EncodeToString(body)), nil
 }
+
+// Higgsfield errors are already plain sentences (sign-in expired, credits, moderation); keep them.
+func studioHiggsfieldVideoError(err error) error {
+	if err == nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+	if errors.Is(err, errHiggsfieldSignedOut) {
+		return &studioVideoFailure{message: "Connect your Higgsfield account in Settings → Agents, then check this saved request again.", category: "authentication"}
+	}
+	var failure *studioVideoFailure
+	if errors.As(err, &failure) {
+		return err
+	}
+	var notStarted *higgsfieldNotStartedError
+	if errors.As(err, &notStarted) {
+		return err // studioVideoGenerateHandler reports why, and that no credits were used
+	}
+	return &studioVideoFailure{message: sanitizeProviderError(errors.New(studioProviderURL.ReplaceAllString(err.Error(), "[private URL]"))), category: studioDebugErrorCategory(err)}
+}
+
 func studioSelectedVideoError(err error, provider string) error {
 	if err == nil {
 		return nil

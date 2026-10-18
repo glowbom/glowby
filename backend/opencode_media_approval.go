@@ -17,27 +17,28 @@ import (
 const mediaApprovalTimeout = 10 * time.Minute
 
 type OpenCodeMediaApprovalItem struct {
-	ID                string   `json:"id"`
-	Placeholder       string   `json:"placeholder,omitempty"`
-	MediaType         string   `json:"mediaType"`
-	Prompt            string   `json:"prompt"`
-	Provider          string   `json:"provider"`
-	SourceID          string   `json:"sourceId"`
-	Excluded          bool     `json:"excluded,omitempty"`
-	ReferenceImages   []string `json:"referenceImages,omitempty"`
-	ReferenceOrigin   string   `json:"referenceOrigin,omitempty"`
-	AspectRatio       string   `json:"aspectRatio,omitempty"`
-	FromKey           string   `json:"fromKey,omitempty"`
-	AudioType         string   `json:"audioType,omitempty"`
-	VoiceID           string   `json:"voiceID,omitempty"`
-	ModelID           string   `json:"modelID,omitempty"`
-	DurationSeconds   float64  `json:"durationSeconds,omitempty"`
-	Resolution        string   `json:"resolution,omitempty"`
-	Quality           string   `json:"quality,omitempty"`
-	PromptInfluence   *float64 `json:"promptInfluence,omitempty"`
-	Loop              bool     `json:"loop,omitempty"`
-	ForceInstrumental bool     `json:"forceInstrumental,omitempty"`
-	UsagePrompt       string   `json:"usagePrompt,omitempty"`
+	ID                   string   `json:"id"`
+	Placeholder          string   `json:"placeholder,omitempty"`
+	MediaType            string   `json:"mediaType"`
+	Prompt               string   `json:"prompt"`
+	Provider             string   `json:"provider"`
+	SourceID             string   `json:"sourceId"`
+	Excluded             bool     `json:"excluded,omitempty"`
+	ReferenceImages      []string `json:"referenceImages,omitempty"`
+	ReferenceOrigin      string   `json:"referenceOrigin,omitempty"`
+	AspectRatio          string   `json:"aspectRatio,omitempty"`
+	FromKey              string   `json:"fromKey,omitempty"`
+	AudioType            string   `json:"audioType,omitempty"`
+	VoiceID              string   `json:"voiceID,omitempty"`
+	ModelID              string   `json:"modelID,omitempty"`
+	DurationSeconds      float64  `json:"durationSeconds,omitempty"`
+	Resolution           string   `json:"resolution,omitempty"`
+	Quality              string   `json:"quality,omitempty"`
+	PromptInfluence      *float64 `json:"promptInfluence,omitempty"`
+	Loop                 bool     `json:"loop,omitempty"`
+	ForceInstrumental    bool     `json:"forceInstrumental,omitempty"`
+	UsagePrompt          string   `json:"usagePrompt,omitempty"`
+	HiggsfieldMaxCredits *float64 `json:"higgsfieldMaxCredits,omitempty"`
 }
 
 type OpenCodeMediaApproval struct {
@@ -344,7 +345,7 @@ func mediaApprovalUsesVideoSubscription(items []OpenCodeMediaApprovalItem) bool 
 
 func mediaApprovalUsesImageSubscription(items []OpenCodeMediaApprovalItem) bool {
 	for _, item := range items {
-		if !item.Excluded && item.MediaType == "image" && (item.SourceID == "xai-subscription" || item.SourceID == "openai-subscription") {
+		if !item.Excluded && item.MediaType == "image" && (item.SourceID == "xai-subscription" || item.SourceID == "openai-subscription" || item.SourceID == higgsfieldSourceID) {
 			return true
 		}
 	}
@@ -494,11 +495,16 @@ func validateMediaApprovalItem(item OpenCodeMediaApprovalItem) error {
 	}
 	switch item.MediaType {
 	case "image":
+		if item.SourceID == higgsfieldSourceID {
+			if err := validateHiggsfieldImageAllowance(item.HiggsfieldMaxCredits); err != nil {
+				return err
+			}
+		}
 		if item.SourceID == "glowbom-api" && item.AspectRatio != "" && !mediaApprovalHasImageOptions(item) {
 			return fmt.Errorf("Glowbom chooses the image size. Clear the aspect ratio for this source.")
 		}
 		switch item.SourceID {
-		case "openai-subscription", "glowbom-api", "openai-api", "gemini-api", "xai-api", "xai-subscription":
+		case "openai-subscription", "glowbom-api", "openai-api", "gemini-api", "xai-api", "xai-subscription", higgsfieldSourceID:
 		default:
 			return fmt.Errorf("Choose a supported image source.")
 		}

@@ -48,7 +48,7 @@ func desktopHandler(api http.Handler) (http.Handler, error) {
 			http.Error(w, "Method not allowed", 405)
 			return
 		}
-		// The workspace is a single-page app. No directory listings or hidden files.
+		// Serve packaged pages without directory listings or hidden files.
 		clean := filepath.Clean("/" + r.URL.Path)
 		for _, part := range strings.Split(clean, "/") {
 			if strings.HasPrefix(part, ".") {
@@ -64,7 +64,7 @@ func desktopHandler(api http.Handler) (http.Handler, error) {
 			http.NotFound(w, r)
 			return
 		}
-		if clean == "/" || clean == "/index.html" {
+		if clean == "/" || strings.EqualFold(filepath.Ext(clean), ".html") {
 			w.Header().Set("Cache-Control", "no-store")
 			w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:; img-src 'self' data: blob: https:; media-src 'self' blob: data: https:; connect-src 'self' ipc: http://ipc.localhost https:; frame-src 'self' blob: https: http://127.0.0.1:*; object-src 'none'; base-uri 'self'; frame-ancestors 'none'")
 			http.ServeFile(w, r, path)

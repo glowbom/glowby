@@ -330,6 +330,9 @@ func (s *companionSession) setProjectIcon(w http.ResponseWriter, r *http.Request
 }
 
 func (s *companionSession) projectIconSourceAvailable(ctx context.Context, id string) bool {
+	if id == higgsfieldSourceID {
+		return false
+	}
 	writer := &companionProjectSettingsWriter{header: make(http.Header)}
 	s.api.ServeHTTP(writer, s.internalRequest(ctx, http.MethodGet, "/opencode/project/icon/sources", nil))
 	var catalog struct {

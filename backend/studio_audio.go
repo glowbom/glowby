@@ -60,7 +60,8 @@ func summarizeStudioAudio(record studioImageRecord) studioAudioSummary {
 	}
 }
 
-func listStudioAudioPage(projectID string, offset, limit int) ([]studioAudioSummary, bool, error) {
+func listStudioAudioPage(projectID string, offset, limit int, favoriteFilter ...bool) ([]studioAudioSummary, bool, error) {
+	favoritesOnly := len(favoriteFilter) > 0 && favoriteFilter[0]
 	dir, err := studioAssetsDirectory()
 	if err != nil {
 		return nil, false, err
@@ -72,27 +73,25 @@ func listStudioAudioPage(projectID string, offset, limit int) ([]studioAudioSumm
 	if err != nil {
 		return nil, false, err
 	}
+	present := make(map[string]bool, len(entries))
 	items := []studioAudioSummary{}
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".json") {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(strings.ToLower(name), ".json") {
 			continue
 		}
-		// The bounded streaming reader skips large media strings while listing.
-		metadata, err := readStudioAssetMetadata(filepath.Join(dir, entry.Name()))
-		if err != nil || metadata.MediaType != "audio" || normalizedStudioUUID(metadata.ID) == "" {
+		path := filepath.Join(dir, name)
+		present[path] = true
+		// Cached per file, so only new or changed records are read (see studio_metadata_cache.go).
+		summary := readStudioAudioSummary(path)
+		if summary == nil || (favoritesOnly && !summary.IsFavorite) {
 			continue
-		}
-		summary := studioAudioSummary{
-			studioImageSummary: summarizeStudioMetadata(metadata), MediaType: "audio",
-			AudioType: studioAudioType(metadata.AudioType, metadata.SourceService), MimeType: metadata.MimeType,
-			Model: metadata.Model, VoiceID: metadata.VoiceID, OutputFormat: metadata.OutputFormat,
-			RequestedDurationSeconds: metadata.RequestedDurationSeconds,
-			PromptInfluence:          metadata.PromptInfluence, Loop: metadata.Loop, ForceInstrumental: metadata.ForceInstrumental,
 		}
 		if projectID == "" || studioHasProject(studioAssetProjectIDs(summary.studioImageSummary), projectID) {
-			items = append(items, summary)
+			items = append(items, *summary)
 		}
 	}
+	pruneStudioMetadataCache(dir, present)
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].Timestamp != items[j].Timestamp {
 			return items[i].Timestamp > items[j].Timestamp
@@ -102,6 +101,21 @@ func listStudioAudioPage(projectID string, offset, limit int) ([]studioAudioSumm
 	start := min(offset, len(items))
 	end := start + min(limit, len(items)-start)
 	return items[start:end], end < len(items), nil
+}
+
+func readStudioAudioSummary(path string) *studioAudioSummary {
+	// The bounded streaming reader skips large media strings while listing.
+	metadata, err := cachedStudioAssetMetadata(path)
+	if err != nil || metadata.MediaType != "audio" || normalizedStudioUUID(metadata.ID) == "" {
+		return nil
+	}
+	return &studioAudioSummary{
+		studioImageSummary: summarizeStudioMetadata(metadata), MediaType: "audio",
+		AudioType: studioAudioType(metadata.AudioType, metadata.SourceService), MimeType: metadata.MimeType,
+		Model: metadata.Model, VoiceID: metadata.VoiceID, OutputFormat: metadata.OutputFormat,
+		RequestedDurationSeconds: metadata.RequestedDurationSeconds,
+		PromptInfluence:          metadata.PromptInfluence, Loop: metadata.Loop, ForceInstrumental: metadata.ForceInstrumental,
+	}
 }
 
 func studioAudioHandler(w http.ResponseWriter, r *http.Request) {
@@ -121,12 +135,12 @@ func studioAudioHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	offset := studioPageParameter(query.Get("offset"), 0, int(^uint(0)>>1))
 	limit := studioPageParameter(query.Get("limit"), studioAudioLimit, 48)
-	items, more, err := listStudioAudioPage(projectID, offset, limit)
+	items, more, err := listStudioAudioPage(projectID, offset, limit, query.Get("favoritesOnly") == "true")
 	if err != nil {
 		http.Error(w, "Could not load Studio audio.", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, map[string]any{"audio": items, "hasMore": more})
+	writeJSON(w, map[string]any{"audio": items, "hasMore": more, "favoritesSupported": true})
 }
 
 func readStudioAudio(id string) (string, studioImageRecord, []byte, error) {
@@ -197,10 +211,24 @@ func studioAudioGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var request struct {
 		ElevenLabsAudioRequest
-		ProjectPath string `json:"projectPath,omitempty"`
+		ProjectPath     string `json:"projectPath,omitempty"`
+		SourceID        string `json:"sourceId,omitempty"`
+		HiggsfieldVoice string `json:"higgsfieldVoiceType,omitempty"`
+		SpeechRate      int    `json:"speechRate,omitempty"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<10)).Decode(&request); err != nil {
 		http.Error(w, "Invalid audio request", http.StatusBadRequest)
+		return
+	}
+	if request.SourceID == higgsfieldSourceID {
+		if !authorizeStudioGeneration(w, r, http.MethodPost) {
+			return
+		}
+		if request.AudioType != "voice" {
+			http.Error(w, "Higgsfield creates voice audio only.", http.StatusBadRequest)
+			return
+		}
+		studioHiggsfieldSpeechHandler(w, r, higgsfieldSpeechRequest{Prompt: request.Prompt, VoiceID: request.VoiceID, VoiceType: request.HiggsfieldVoice, SpeechRate: request.SpeechRate}, request.ProjectPath)
 		return
 	}
 	req, err := normalizeElevenLabsAudioRequest(request.ElevenLabsAudioRequest)
@@ -318,7 +346,7 @@ func useStudioAudio(id, projectPath string) (studioImageRecord, studioProjectSum
 	if err != nil {
 		return asset, project, "", err
 	}
-	project, err = registerStudioProjectLocked(projectPath)
+	project, err = registerStudioProjectRestoringLocked(projectPath, true)
 	if err != nil {
 		return asset, project, "", errors.New("Open a writable Glowbom project first.")
 	}
@@ -408,21 +436,5 @@ func projectStudioAudioMatches(root, relative string, expected []byte) error {
 }
 
 func deleteStudioAudioHandler(w http.ResponseWriter, r *http.Request) {
-	studioProjectMu.Lock()
-	defer studioProjectMu.Unlock()
-	path, _, original, err := readStudioAudio(r.URL.Query().Get("id"))
-	if err != nil {
-		http.Error(w, "Audio not found", http.StatusNotFound)
-		return
-	}
-	_, current, err := readStudioJSON(path, 128<<20)
-	if err != nil || !bytes.Equal(current, original) {
-		http.Error(w, "The audio changed. Try deleting it again.", http.StatusConflict)
-		return
-	}
-	if err := os.Remove(path); err != nil {
-		http.Error(w, "Could not remove the Studio audio.", http.StatusInternalServerError)
-		return
-	}
-	writeJSON(w, map[string]bool{"success": true})
+	deleteStudioLibraryAsset(w, r, "audio")
 }

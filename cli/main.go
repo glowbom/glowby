@@ -30,6 +30,7 @@ Usage:
                               Download a clean starter project without signing in
   glowbom export [--output NEW_DIRECTORY]
                               Combine your saved generation and starter into one project
+  glowbom desktop [command]     Work with an open Glowbom Desktop task session
   glowbom version               Print version info
   glowbom help                  Show this help
 
@@ -74,6 +75,8 @@ func run(args []string) int {
 		return runTemplateCommand(args[1:])
 	case "export":
 		return runExportCommand(args[1:])
+	case "desktop":
+		return runDesktopCommand(args[1:])
 	case "start":
 		return runStart(args[1:])
 	case "code":

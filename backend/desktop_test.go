@@ -11,6 +11,7 @@ import (
 func TestDesktopPackagedInterface(t *testing.T) {
 	root := t.TempDir()
 	os.WriteFile(filepath.Join(root, "index.html"), []byte("workspace"), 0600)
+	os.WriteFile(filepath.Join(root, "secondary.html"), []byte("secondary window"), 0600)
 	os.WriteFile(filepath.Join(root, ".env"), []byte("not public"), 0600)
 	t.Setenv("GLOWBOM_DESKTOP", "1")
 	t.Setenv("GLOWBOM_WEB_DIR", root)
@@ -32,6 +33,7 @@ func TestDesktopPackagedInterface(t *testing.T) {
 		code                      int
 	}{
 		{"/", "", "", "", 200},
+		{"/secondary.html", "", "", "", 200},
 		{"/.env", "", "", "", 404},
 		{"/missing", "", "", "", 404},
 		{"/api/test", "", "", "", 401},
@@ -54,8 +56,13 @@ func TestDesktopPackagedInterface(t *testing.T) {
 		if w.Code != tt.code {
 			t.Errorf("%s got %d, want %d", tt.path, w.Code, tt.code)
 		}
-		if tt.path == "/" && tt.code == 200 && w.Header().Get("Content-Security-Policy") == "" {
-			t.Error("missing CSP")
+		if (tt.path == "/" || tt.path == "/secondary.html") && tt.code == 200 {
+			if w.Header().Get("Content-Security-Policy") == "" {
+				t.Errorf("%s missing CSP", tt.path)
+			}
+			if w.Header().Get("Cache-Control") != "no-store" {
+				t.Errorf("%s missing no-store", tt.path)
+			}
 		}
 	}
 }

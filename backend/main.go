@@ -37,6 +37,9 @@ func main() {
 	}
 	defer os.RemoveAll(chatDirectory)
 	chat := newChatService(chatDirectory, uploads)
+	control := newDesktopControlService()
+	mux.HandleFunc("/desktop/control/command", control.commandHandler)
+	mux.HandleFunc("/desktop/control/sync", control.syncHandler)
 	defer glowbomCodex.close()
 	companion := newCompanionManager(mux)
 	companion.restoreRecentRuns()
@@ -63,6 +66,12 @@ func main() {
 	for _, route := range []string{"/codex/status", "/codex/restart", "/codex/login", "/codex/login/cancel"} {
 		mux.HandleFunc(route, codexRuntimeHandler)
 	}
+	for _, route := range []string{"/settings/higgsfield/status", "/settings/higgsfield/login", "/settings/higgsfield/login/cancel", "/settings/higgsfield/logout"} {
+		mux.HandleFunc(route, higgsfieldSettingsHandler)
+	}
+	mux.HandleFunc("/studio/higgsfield/estimate", higgsfieldEstimateHandler)
+	mux.HandleFunc("/studio/higgsfield/voices", higgsfieldVoicesHandler)
+	mux.HandleFunc("/studio/higgsfield/voices/preview", higgsfieldVoicePreviewHandler)
 	mux.HandleFunc("/chat/stream", chat.streamHandler)
 	mux.HandleFunc("/chat/project-name", chat.projectNameHandler)
 	mux.HandleFunc("/chat/history", chat.historyHandler)
@@ -89,6 +98,10 @@ func main() {
 
 	mux.HandleFunc("/image", generateImageHandler)
 	mux.HandleFunc("/studio/assets", studioAssetsHandler)
+	mux.HandleFunc("/studio/assets/favorite", studioAssetFavoriteHandler)
+	mux.HandleFunc("/studio/import", studioImportHandler)
+	mux.HandleFunc("/studio/project-video", studioProjectVideoHandler)
+	mux.HandleFunc("/studio/project-video/ideas", studioProjectVideoIdeasHandler)
 	mux.HandleFunc("/studio/projects", studioProjectsHandler)
 	mux.HandleFunc("/studio/audio", studioAudioHandler)
 	mux.HandleFunc("/studio/audio/content", studioAudioContentHandler)
@@ -107,6 +120,7 @@ func main() {
 	mux.HandleFunc("/studio/generation/resume", studioGenerationResumeHandler)
 	mux.HandleFunc("/studio/videos", studioVideosHandler)
 	mux.HandleFunc("/studio/videos/content", studioVideoContentHandler)
+	mux.HandleFunc("/studio/videos/thumbnail", studioVideoThumbnailHandler)
 	mux.HandleFunc("/studio/videos/generate", studioVideoGenerateHandler)
 	mux.HandleFunc("/studio/videos/capabilities", studioVideoCapabilitiesHandler)
 	mux.HandleFunc("/studio/videos/key", studioVideoKeyHandler)
@@ -208,6 +222,7 @@ func main() {
 		defer stopDesktopProcessGroup()
 		go func() { _, _ = io.Copy(io.Discard, os.Stdin); stop() }()
 	}
+	go warmStudioMetadataCache()
 	shutdownDone := make(chan struct{})
 	go func() {
 		defer close(shutdownDone)

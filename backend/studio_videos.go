@@ -50,6 +50,10 @@ func studioVideoGenerateHandler(w http.ResponseWriter, r *http.Request) {
 		DurationSeconds int    `json:"durationSeconds"`
 		ReferenceID     string `json:"referenceId"`
 		ReferenceImage  string `json:"referenceImage"`
+		MotionVideoID   string `json:"motionVideoId"`
+		VoiceAudioID    string `json:"voiceAudioId"`
+		HiggsfieldVoice string `json:"higgsfieldVoiceId"`
+		SpokenText      string `json:"spokenText"`
 		APIKey          string `json:"apiKey"`
 		UseSavedKey     bool   `json:"useSavedKey"`
 	}
@@ -57,7 +61,14 @@ func studioVideoGenerateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
+	markStudioGenerationNotSubmitted(w, request.GenerationID)
 	request.Prompt = strings.TrimSpace(request.Prompt)
+	// A Seedance talking video can come from its words alone: Higgsfield gets a plain scene line,
+	// and Studio saves the words as the video's title.
+	generationPrompt, spoken := request.Prompt, strings.TrimSpace(request.SpokenText)
+	if request.Prompt == "" && spoken != "" && len([]rune(spoken)) <= higgsfieldSpokenTextMaxChars {
+		request.Prompt = "\u201c" + spoken + "\u201d"
+	}
 	if request.Prompt == "" || len(request.Prompt) > 4000 {
 		http.Error(w, "Enter a video prompt up to 4,000 characters.", http.StatusBadRequest)
 		return
@@ -76,11 +87,16 @@ func studioVideoGenerateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	options, err := normalizeStudioVideoOptions(studioVideoOptions{SourceID: request.SourceID, ModelID: request.ModelID, Resolution: request.Resolution, AspectRatio: request.AspectRatio, DurationSeconds: request.DurationSeconds})
+	if err == nil {
+		options.MotionVideoID, options.VoiceAudioID, options.SpokenText = strings.TrimSpace(request.MotionVideoID), strings.TrimSpace(request.VoiceAudioID), strings.TrimSpace(request.SpokenText)
+		options.HiggsfieldVoiceID = strings.TrimSpace(request.HiggsfieldVoice)
+		err = validateHiggsfieldVideoReferences(options)
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if options.SourceID == "xai-subscription" && !authorizeStudioGeneration(w, r, http.MethodPost) {
+	if (options.SourceID == "xai-subscription" || options.SourceID == higgsfieldSourceID) && !authorizeStudioGeneration(w, r, http.MethodPost) {
 		return
 	}
 	key := ""
@@ -97,6 +113,7 @@ func studioVideoGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := progress.store.edit(progress.id, func(entry *studioProgressEntry) {
 		entry.state.ModelID = options.ModelID
 		entry.state.Resolution = options.Resolution
+		entry.state.VoiceID = options.HiggsfieldVoiceID
 		entry.state.EstimatedCostUSD = estimateStudioVideoCost(options, request.ReferenceID != "" || request.ReferenceImage != "")
 		entry.videoKey = key
 	}); err != nil {
@@ -132,13 +149,24 @@ func studioVideoGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = progress.store.edit(progress.id, func(entry *studioProgressEntry) { entry.videoKey = key })
 	progress.stage("generating")
-	videoURL, err := startTrackedStudioSelectedVideo(ctx, progress, options, key, request.Prompt, images)
-	if err != nil {
-		progress.failed(ctx, "Could not finish this video. Your request is saved; check it again before generating another clip.")
-		writeStudioProviderError(w, err, "Could not finish this video. Check the saved request before generating another clip.")
+	w.Header().Del(studioGenerationNotSubmittedHeader)
+	videoURL, err := startTrackedStudioSelectedVideo(ctx, progress, options, key, generationPrompt, images)
+	var notStarted *higgsfieldNotStartedError
+	if err != nil && errors.As(err, &notStarted) {
+		// No job was created, so nothing was charged; say why instead of the generic message.
+		w.Header().Set(studioGenerationNotSubmittedHeader, "true")
+		message := sanitizeProviderError(err) + ". No credits were used."
+		_ = progress.store.edit(progress.id, func(entry *studioProgressEntry) { entry.state.CanResume = false })
+		progress.failed(ctx, message)
+		http.Error(w, message, http.StatusBadGateway)
 		return
 	}
-	state := studioProgressState{Prompt: request.Prompt, AspectRatio: options.AspectRatio, DurationSeconds: options.DurationSeconds, ReferenceID: sourceAssetID, SourceID: options.SourceID, ModelID: options.ModelID, Resolution: options.Resolution}
+	if err != nil {
+		message, status := progress.failedVideo(ctx, err, "Could not finish this video. Its provider status is unknown. Check the saved request before generating another clip.")
+		http.Error(w, message, status)
+		return
+	}
+	state := studioProgressState{Prompt: request.Prompt, AspectRatio: options.AspectRatio, DurationSeconds: options.DurationSeconds, ReferenceID: sourceAssetID, VoiceID: options.HiggsfieldVoiceID, SourceID: options.SourceID, ModelID: options.ModelID, Resolution: options.Resolution}
 	asset, err := downloadAndSaveStudioSelectedVideo(ctx, progress, videoURL, state, key)
 	if err != nil {
 		progress.failed(ctx, "Your video was created, but could not be saved here. Retry downloading this request.")
@@ -217,11 +245,25 @@ func createStudioFirstFrame(prompt, aspectRatio string, contexts ...context.Cont
 // studioVideoFailure carries a message that is safe to show in Studio.
 type studioVideoFailure struct {
 	message   string
+	category  string
 	retryable bool
 	terminal  bool
 }
 
 func (e *studioVideoFailure) Error() string { return e.message }
+
+func (p studioProgress) failedVideo(ctx context.Context, err error, fallback string) (string, int) {
+	message, status := studioProviderError(err, fallback)
+	_ = p.store.edit(p.id, func(entry *studioProgressEntry) {
+		entry.state.FailureCategory = studioDebugErrorCategory(err)
+		var failure *studioVideoFailure
+		if errors.As(err, &failure) && failure.terminal {
+			entry.state.CanResume = false
+		}
+	})
+	p.failed(ctx, message)
+	return message, status
+}
 
 func startTrackedStudioSelectedVideo(ctx context.Context, progress studioProgress, options studioVideoOptions, key, prompt string, images []VeoImageInput) (string, error) {
 	start, err := generateStudioSelectedVideo(ctx, options, key, prompt, images)
@@ -293,7 +335,7 @@ func waitForStudioSelectedVideo(parent context.Context, options studioVideoOptio
 
 func studioVideoWaitError(err error) error {
 	if errors.Is(err, context.DeadlineExceeded) {
-		return &studioVideoFailure{message: "The provider is still rendering this clip. Your request is saved; check it again to continue."}
+		return &studioVideoFailure{message: "The local wait ended before the provider returned a finished video. Your request is saved; check it again to continue.", category: "poll_timeout"}
 	}
 	return err
 }
@@ -336,7 +378,7 @@ func downloadAndSaveStudioSelectedVideo(ctx context.Context, progress studioProg
 	if progress.id != "" {
 		state.ActualDurationSeconds = progress.store.read(progress.id).ActualDurationSeconds
 	}
-	record, err := saveStudioAsset(studioSaveOptions{Prompt: state.Prompt, DataURI: dataURI, MediaType: "video", Source: studioVideoSourceLabel(options), SourceID: options.SourceID, Model: options.ModelID, Resolution: options.Resolution, RequestedDurationSeconds: float64(options.DurationSeconds), GenerationID: progress.id, AspectRatio: options.AspectRatio, Duration: state.ActualDurationSeconds, SourceAssetID: state.ReferenceID})
+	record, err := saveStudioAsset(studioSaveOptions{Prompt: state.Prompt, DataURI: dataURI, MediaType: "video", Source: studioVideoSourceLabel(options), SourceID: options.SourceID, Model: options.ModelID, VoiceID: state.VoiceID, Resolution: options.Resolution, RequestedDurationSeconds: float64(options.DurationSeconds), GenerationID: progress.id, AspectRatio: options.AspectRatio, Duration: state.ActualDurationSeconds, SourceAssetID: state.ReferenceID})
 	if err != nil {
 		return studioImageSummary{}, err
 	}
@@ -350,6 +392,9 @@ func studioVideoSourceLabel(options studioVideoOptions) string {
 	}
 	if options.SourceID == "xai-subscription" {
 		return "Grok subscription"
+	}
+	if options.SourceID == higgsfieldSourceID {
+		return "Higgsfield"
 	}
 	return xAIVideoSourceLabel
 }

@@ -166,6 +166,9 @@ func (m *companionManager) finishRun(job *companionJob, writer *companionWriter)
 	job.finishedAt = m.now().UTC().Format(time.RFC3339Nano)
 	job.mu.Unlock()
 	m.saveRun(job)
+	if job.afterFinish != nil {
+		job.afterFinish()
+	}
 }
 
 func (m *companionManager) saveRun(job *companionJob) {

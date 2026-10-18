@@ -37,6 +37,7 @@ type companionDesktopPrototypeRequest struct {
 	Model         string                           `json:"model"`
 	AttachmentID  string                           `json:"attachmentId,omitempty"`
 	Images        *companionDesktopPrototypeImages `json:"images,omitempty"`
+	Carousel      *companionDesktopCarousel        `json:"carousel,omitempty"`
 }
 
 type companionDesktopPrototypeJob struct {
@@ -137,6 +138,7 @@ func (s *companionSession) routeDesktopPrototype(w http.ResponseWriter, r *http.
 		case http.MethodGet:
 			writeJSON(w, map[string]any{"version": 1, "newDesktopProject": true, "asyncJobs": true,
 				"maxImages": maxChatImages, "personalization": true,
+				"carousel": true, "maxCarouselCards": maxCarouselCards,
 				"nameSuggestion": true, "defaultDestination": true,
 				"destinationSelection": runtime.GOOS == "darwin" || s.pickImportFolder != nil,
 				"maxNameBytes":         100, "maxPromptBytes": companionDesktopPrototypePromptBytes,
@@ -229,10 +231,13 @@ func normalizeCompanionDesktopPrototype(request *companionDesktopPrototypeReques
 			}
 		}
 	}
-	return nil
+	return normalizeCompanionDesktopCarousel(request)
 }
 
 func (s *companionSession) prototypeImageProvider(parent context.Context, id string) (string, bool) {
+	if id == higgsfieldSourceID {
+		return "", false
+	}
 	ctx, stop := context.WithTimeout(parent, 30*time.Second)
 	defer stop()
 	writer := &companionWriter{header: make(http.Header), job: &companionJob{}}
@@ -315,7 +320,7 @@ func (s *companionSession) startDesktopPrototype(w http.ResponseWriter, r *http.
 			break
 		}
 	}
-	if model == nil || request.AttachmentID != "" && !model.Images {
+	if model == nil || request.hasCanvasImages() && !model.Images {
 		preflightFailure(400, "model_unavailable", "Choose the same connected model, with photo support when attaching a drawing or photo.")
 		return
 	}
@@ -326,6 +331,13 @@ func (s *companionSession) startDesktopPrototype(w http.ResponseWriter, r *http.
 		}
 	}
 	data := companionChatData{}
+	if request.Carousel != nil {
+		data.carousel, err = s.prepareDesktopCarousel(ctx, request)
+		if err != nil {
+			preflightFailure(410, "attachment_unavailable", "A carousel image is unavailable or too large. Attach the images again. Your draft is still available.")
+			return
+		}
+	}
 	if request.AttachmentID != "" || request.Images != nil && request.Images.PersonalizationReferenceID != "" {
 		project, projectErr := s.localChatProject(ctx)
 		if projectErr != nil {
@@ -458,7 +470,7 @@ func (s *companionSession) runDesktopPrototype(job *companionDesktopPrototypeJob
 	models, err := s.chatModelOptions(job.ctx)
 	found := false
 	for _, model := range models {
-		found = found || model.ID == request.Model && (len(data.images) == 0 || model.Images)
+		found = found || model.ID == request.Model && (!request.hasCanvasImages() || model.Images)
 	}
 	if err != nil || !found {
 		s.finishDesktopPrototype(job, "model_unavailable", "The selected model is no longer connected. The saved project is still available.")
@@ -475,6 +487,9 @@ func (s *companionSession) runDesktopPrototype(job *companionDesktopPrototypeJob
 		job.mu.Unlock()
 	}
 	chat := chatRequest{ProjectPath: root, Model: request.Model, Mode: "prototype", Messages: request.Messages}
+	if data.carousel != nil {
+		chat.Carousel = &data.carousel.manifest
+	}
 	if request.Images != nil {
 		chat.Images = &chatImageOptions{SourceID: request.Images.SourceID, Personalization: data.personalizationReference != nil}
 		if chat.Images.Personalization {

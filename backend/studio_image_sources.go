@@ -8,6 +8,8 @@ import (
 // Explicit Studio source selections never fall back or replay a failed request.
 func generateStudioSelectedImage(ctx context.Context, source, key, prompt, reference, aspect string) (string, string, error) {
 	switch source {
+	case higgsfieldSourceID:
+		return generateHiggsfieldProjectImage(ctx, higgsfieldProjectImageOptions(aspect), prompt, reference)
 	case "openai-subscription":
 		value, err := callCodexImageGeneration(ctx, prompt, reference, aspect)
 		return value, codexImageSourceLabel, err

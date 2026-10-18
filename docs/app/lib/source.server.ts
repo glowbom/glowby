@@ -17,9 +17,9 @@ function groupDesktopGuides(tree: Root): Root {
     name: page("/desktop").name,
     index: page("/desktop"),
     defaultOpen: true,
-    children: [page("/connect-ai"), page("/project-book"), page("/companion"), page("/glowbom-live"), page("/glowbom-oss"), page("/cli")],
+    children: [page("/connect-ai"), page("/tasks"), page("/project-book"), page("/companion"), page("/glowbom-live"), page("/glowbom-oss"), page("/cli")],
   };
-  const grouped = new Set(["/connect-ai", "/project-book", "/companion", "/glowbom-live", "/glowbom-oss", "/cli"]);
+  const grouped = new Set(["/connect-ai", "/tasks", "/project-book", "/companion", "/glowbom-live", "/glowbom-oss", "/cli"]);
 
   // Group the guides without changing their existing public URLs.
   return {

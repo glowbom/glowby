@@ -157,6 +157,12 @@ func resolveStudioVideoKey(ctx context.Context, source, explicit string, useSave
 		}
 		return "", nil
 	}
+	if source == higgsfieldSourceID {
+		if !higgsfieldConnected() {
+			return "", errors.New("Connect your Higgsfield account in Settings → Agents to generate this video.")
+		}
+		return "", nil
+	}
 	return resolveStudioProviderKey(ctx, source, explicit, useSaved)
 }
 

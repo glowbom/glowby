@@ -15,6 +15,28 @@ var studioGenerationID = regexp.MustCompile(`^[A-Za-z0-9_-]{16,128}$`)
 var studioProviderURL = regexp.MustCompile(`https?://[^\s<>"']+`)
 var studioGenerations = newStudioProgressStore()
 
+const studioGenerationNotSubmittedHeader = "X-Glowbom-Generation-Not-Submitted"
+
+// Only a decoded request with no earlier saved attempt can carry this proof.
+// Handlers clear it before calling code that can submit paid generation.
+func markStudioGenerationNotSubmitted(w http.ResponseWriter, id string) {
+	w.Header().Add("Access-Control-Expose-Headers", studioGenerationNotSubmittedHeader)
+	if studioGenerationID.MatchString(id) {
+		studioGenerations.mu.Lock()
+		defer studioGenerations.mu.Unlock()
+		if _, cancelled := studioGenerations.cancelled[id]; cancelled {
+			return
+		}
+		if _, found := studioGenerations.entries[id]; found {
+			return
+		}
+		if _, found, err := loadStudioGenerationCheckpoint(id); found || err != nil {
+			return
+		}
+	}
+	w.Header().Set(studioGenerationNotSubmittedHeader, "true")
+}
+
 type studioProgressState struct {
 	ActualDurationSeconds float64             `json:"actualDurationSeconds,omitempty"`
 	Found                 bool                `json:"found"`
@@ -25,6 +47,7 @@ type studioProgressState struct {
 	AspectRatio           string              `json:"aspectRatio,omitempty"`
 	DurationSeconds       int                 `json:"durationSeconds,omitempty"`
 	ReferenceID           string              `json:"referenceId,omitempty"`
+	VoiceID               string              `json:"voiceId,omitempty"`
 	ModelID               string              `json:"modelId,omitempty"`
 	Resolution            string              `json:"resolution,omitempty"`
 	Quality               string              `json:"quality,omitempty"`
@@ -32,7 +55,9 @@ type studioProgressState struct {
 	SourceID              string              `json:"sourceId,omitempty"`
 	StartedAt             string              `json:"startedAt,omitempty"`
 	Error                 string              `json:"error,omitempty"`
+	FailureCategory       string              `json:"failureCategory,omitempty"`
 	CanResume             bool                `json:"canResume,omitempty"`
+	ResultRemoved         bool                `json:"resultRemoved,omitempty"`
 	ResumeStage           string              `json:"resumeStage,omitempty"`
 	Asset                 *studioImageSummary `json:"asset,omitempty"`
 	FirstFrame            *studioImageSummary `json:"firstFrame,omitempty"`
@@ -102,6 +127,7 @@ func (s *studioProgressStore) load(id string) (studioProgressEntry, bool, error)
 			summary := summarizeStudioRecord(asset)
 			entry.state.Asset, entry.state.Stage = &summary, "complete"
 			entry.state.Error, entry.state.CanResume, entry.state.ResumeStage = "", false, ""
+			entry.state.FailureCategory = ""
 			entry.videoURL = ""
 			_ = s.save(entry)
 		}
@@ -128,7 +154,23 @@ func (s *studioProgressStore) read(id string) studioProgressState {
 	if !found {
 		return studioProgressState{}
 	}
+	if !entry.active {
+		return studioLibraryProgressSnapshot(entry.state)
+	}
 	return entry.state
+}
+
+func studioLibraryProgressSnapshot(state studioProgressState) studioProgressState {
+	if !studioStageTerminal(state.Stage) {
+		return state
+	}
+	if state.Asset != nil && studioAssetWasRemoved(state.Asset.ID) {
+		state.Asset, state.CanResume, state.ResultRemoved = nil, false, true
+	}
+	if state.FirstFrame != nil && studioAssetWasRemoved(state.FirstFrame.ID) {
+		state.FirstFrame = nil
+	}
+	return state
 }
 
 func (s *studioProgressStore) begin(id, kind string) int {
@@ -148,6 +190,7 @@ func (s *studioProgressStore) begin(id, kind string) int {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	s.entries[id] = studioProgressEntry{state: studioProgressState{Found: true, ID: id, Stage: "preparing", Kind: kind, StartedAt: time.Now().UTC().Format(time.RFC3339Nano)}, updated: time.Now(), active: true, ctx: ctx, cancel: cancel}
+	debugStudioGeneration("studio_generation_started", s.entries[id].state)
 	return http.StatusOK
 }
 
@@ -161,9 +204,13 @@ func (s *studioProgressStore) update(id, stage string) {
 	if !exists || studioStageTerminal(entry.state.Stage) {
 		return
 	}
+	previousStage := entry.state.Stage
 	entry.state.Stage, entry.updated = stage, time.Now()
 	s.entries[id] = entry
 	_ = s.save(entry)
+	if previousStage != stage {
+		debugStudioGeneration("studio_generation_stage", entry.state)
+	}
 }
 
 func (s *studioProgressStore) edit(id string, change func(*studioProgressEntry)) error {
@@ -176,9 +223,17 @@ func (s *studioProgressStore) edit(id string, change func(*studioProgressEntry))
 	if !found {
 		return errors.New("Studio could not find this generation.")
 	}
+	previous := entry.state
 	change(&entry)
 	entry.updated = time.Now()
 	s.entries[id] = entry
+	if previous.Stage != entry.state.Stage {
+		debugStudioGeneration("studio_generation_stage", entry.state)
+	} else if previous.SourceID != entry.state.SourceID || previous.ModelID != entry.state.ModelID {
+		debugStudioGeneration("studio_generation_configured", entry.state)
+	} else if previous.FailureCategory != entry.state.FailureCategory && entry.state.FailureCategory != "" {
+		debugStudioGeneration("studio_generation_failure", entry.state)
+	}
 	return s.save(entry)
 }
 
@@ -235,7 +290,7 @@ func (s *studioProgressStore) resume(id string) (studioProgress, studioProgressE
 		return studioProgress{}, entry, http.StatusTooManyRequests
 	}
 	entry.ctx, entry.cancel = context.WithCancel(context.Background())
-	entry.active, entry.state.Error = true, ""
+	entry.active, entry.state.Error, entry.state.FailureCategory = true, "", ""
 	entry.state.Stage = "generating"
 	if entry.videoURL != "" {
 		entry.state.Stage = "downloading"
@@ -253,11 +308,17 @@ func (s *studioProgressStore) resume(id string) (studioProgress, studioProgressE
 }
 
 type studioProgress struct {
-	id    string
-	store *studioProgressStore
+	id        string
+	store     *studioProgressStore
+	companion *companionJob
 }
 
-func (p studioProgress) stage(stage string) { p.store.update(p.id, stage) }
+func (p studioProgress) stage(stage string) {
+	p.store.update(p.id, stage)
+	if p.companion != nil {
+		p.companion.mediaStage(stage)
+	}
+}
 func (p studioProgress) finish() {
 	_ = p.store.edit(p.id, func(entry *studioProgressEntry) {
 		if !studioStageTerminal(entry.state.Stage) {
@@ -279,7 +340,7 @@ func (p studioProgress) context(fallback context.Context) context.Context {
 	}
 	p.store.mu.Lock()
 	defer p.store.mu.Unlock()
-	return p.store.entries[p.id].ctx
+	return context.WithValue(p.store.entries[p.id].ctx, studioDebugRequestKey{}, p.id)
 }
 
 func (p studioProgress) configure(prompt, aspect, referenceID, source string, duration int) error {
@@ -300,6 +361,7 @@ func (p studioProgress) operation(id string) error {
 		entry.operationID = id
 		entry.state.CanResume = true
 		entry.state.ResumeStage = "generating"
+		debugStudioGeneration("studio_generation_submitted", entry.state)
 	})
 }
 
@@ -312,12 +374,15 @@ func (p studioProgress) output(url string) error {
 }
 
 func (p studioProgress) completed(asset studioImageSummary) error {
-	return p.store.edit(p.id, func(entry *studioProgressEntry) {
+	err := p.store.edit(p.id, func(entry *studioProgressEntry) {
 		entry.state.Asset = &asset
 		entry.state.Stage, entry.state.Error, entry.state.CanResume = "complete", "", false
+		entry.state.FailureCategory = ""
 		entry.state.ResumeStage = ""
 		entry.videoURL = ""
 	})
+	completeBookVideoGeneration(p.id, asset.ID)
+	return err
 }
 
 func (p studioProgress) failed(ctx context.Context, message string) {
@@ -327,14 +392,19 @@ func (p studioProgress) failed(ctx context.Context, message string) {
 		}
 		if errors.Is(ctx.Err(), context.Canceled) || entry.state.Stage == "stopped" {
 			entry.state.Stage, entry.state.Error = "stopped", "Stopped locally. The provider may still be working."
+			entry.state.FailureCategory = "cancelled"
 		} else {
 			entry.state.Stage, entry.state.Error = "failed", message
+			if entry.state.FailureCategory == "" {
+				entry.state.FailureCategory = "generation_error"
+			}
 		}
 	})
 }
 
 func beginStudioProgress(w http.ResponseWriter, r *http.Request, id, kind string) (studioProgress, bool) {
 	progress := studioProgress{store: studioGenerations}
+	progress.companion, _ = r.Context().Value(companionMediaProgressKey{}).(*companionJob)
 	if id == "" {
 		return progress, true
 	}
@@ -356,6 +426,9 @@ func beginStudioProgress(w http.ResponseWriter, r *http.Request, id, kind string
 		return progress, false
 	}
 	if status := studioGenerations.begin(id, kind); status != http.StatusOK {
+		// A duplicate or unreadable saved request may already have been submitted.
+		// This response cannot prove the outcome of that original request.
+		w.Header().Del(studioGenerationNotSubmittedHeader)
 		if status == http.StatusConflict {
 			http.Error(w, "This generation has already started. Check Studio before generating again.", status)
 		} else if status == http.StatusTooManyRequests {
@@ -477,19 +550,23 @@ func studioGenerationResumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := resumeStudioVideo(ctx, progress, entry)
 	if err != nil {
-		progress.failed(ctx, "Could not recover this video. Your request is saved; you can check it again.")
-		writeStudioProviderError(w, err, "Could not recover this video. Your request is saved; you can check it again.")
+		message, status := progress.failedVideo(ctx, err, "Could not recover this video. Your request is saved; you can check it again.")
+		http.Error(w, message, status)
 		return
 	}
 	writeStudioGenerationResult(w, result)
 }
 
 func writeStudioGenerationResult(w http.ResponseWriter, state studioProgressState) {
+	state = studioLibraryProgressSnapshot(state)
 	key := "image"
 	if state.Kind == "video" {
 		key = "video"
 	}
 	response := map[string]any{key: state.Asset}
+	if state.ResultRemoved {
+		response["resultRemoved"] = true
+	}
 	if state.FirstFrame != nil {
 		response["firstFrame"] = state.FirstFrame
 	}
@@ -497,6 +574,9 @@ func writeStudioGenerationResult(w http.ResponseWriter, state studioProgressStat
 }
 
 func (p studioProgress) imageOptions(options studioImageOptions) error {
+	if p.companion != nil {
+		p.companion.mediaImageOptions(options)
+	}
 	return p.store.edit(p.id, func(entry *studioProgressEntry) {
 		entry.state.ModelID = options.ModelID
 		entry.state.Resolution = options.Resolution

@@ -10,6 +10,7 @@ import (
 // Native records also contain large histories and images. Keep only the fields
 // needed to find projects, and validate the project folder separately each time.
 type studioProjectRecordMetadata struct {
+	IsFavorite          bool   `json:"isFavorite"`
 	ID                  string `json:"id"`
 	Name                string `json:"name"`
 	Path                string `json:"path"`
@@ -58,6 +59,7 @@ func cachedStudioProjectMetadata(path string) (studioProjectRecordMetadata, erro
 		return studioProjectRecordMetadata{}, errors.New("Could not read Studio metadata")
 	}
 	var fields *struct {
+		IsFavorite          bool            `json:"isFavorite"`
 		ID                  json.RawMessage `json:"id"`
 		Name                json.RawMessage `json:"name"`
 		Path                json.RawMessage `json:"path"`
@@ -73,7 +75,7 @@ func cachedStudioProjectMetadata(path string) (studioProjectRecordMetadata, erro
 		_ = json.Unmarshal(raw, &value)
 		return value
 	}
-	metadata := studioProjectRecordMetadata{ID: stringField(fields.ID), Name: stringField(fields.Name), Path: stringField(fields.Path),
+	metadata := studioProjectRecordMetadata{IsFavorite: fields.IsFavorite, ID: stringField(fields.ID), Name: stringField(fields.Name), Path: stringField(fields.Path),
 		ProjectName: stringField(fields.ProjectName), ExportedProjectPath: stringField(fields.ExportedProjectPath), Timestamp: stringField(fields.Timestamp)}
 	if normalizedStudioUUID(metadata.ID) == "" {
 		return studioProjectRecordMetadata{}, errors.New("Studio metadata is invalid")

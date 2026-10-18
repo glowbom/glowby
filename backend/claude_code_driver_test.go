@@ -71,6 +71,7 @@ func TestClaudeCodeHealthAndModelsRequireAuthenticatedJSON(t *testing.T) {
 		{"missing auth field", `{}`, "0", false},
 		{"invalid output", `private-account-detail`, "0", false},
 		{"failed process", `{"loggedIn":true}`, "1", false},
+		{"logged out with exit 1, as the CLI reports it", `{"loggedIn":false,"authMethod":"none"}`, "1", false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("GLOWBOM_CLAUDE_CODE_BIN", fakeClaudeCode(t, "[ \"$1\" = auth ] && [ \"$2\" = status ] && [ \"$3\" = --json ] || exit 3\nprintf '%s\\n' '"+tc.output+"'\nprintf '%s\\n' private-account-detail >&2\nexit "+tc.exit+"\n"))
@@ -227,4 +228,22 @@ func TestClaudeCodeRefineRejectsInvalidModel(t *testing.T) {
 	if status != "failed" || w.Code != http.StatusBadRequest {
 		t.Fatalf("%q %d", status, w.Code)
 	}
+}
+
+func TestClaudeCodeSignedOutGetsTheSignInMessageAndStatus(t *testing.T) {
+	t.Setenv("GLOWBOM_CLAUDE_CODE_BIN", fakeClaudeCode(t, "[ \"$1\" = auth ] && [ \"$2\" = status ] || exit 3\nprintf '%s\\n' '{\"loggedIn\":false,\"authMethod\":\"none\"}'\nexit 1\n"))
+	w := httptest.NewRecorder()
+	claudeCodeHealthHandler(w, httptest.NewRequest("GET", "/opencode/health?agentDriver=claude-code", nil))
+	if !strings.Contains(w.Body.String(), "Run claude auth login") || strings.Contains(w.Body.String(), "check failed") {
+		t.Fatalf("a signed-out CLI should get the sign-in message: %s", w.Body.String())
+	}
+	for _, agent := range currentAgentSetupStatus().Agents {
+		if agent.ID == "claude-code" {
+			if !agent.Installed || agent.SignedIn == nil || *agent.SignedIn {
+				t.Fatalf("Tools should report Claude Code as installed and signed out: %+v", agent)
+			}
+			return
+		}
+	}
+	t.Fatal("Claude Code is missing from the agent status")
 }

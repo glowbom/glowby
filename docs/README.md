@@ -72,7 +72,7 @@ Before publishing, verify the docs homepage and direct loads of `/docs/quickstar
 search, styles, and mobile navigation. Confirm that the existing `/docs/glowby-oss`
 compatibility route still resolves through the deployment's routing.
 
-Check direct loads of `/docs/connect-ai` and `/docs/companion` too. Keep the
+Check direct loads of `/docs/connect-ai`, `/docs/tasks`, and `/docs/companion` too. Keep the
 companion guide marked as a preview requiring matching Desktop and app builds.
 Installation, agent login, and successful model discovery are separate steps.
 

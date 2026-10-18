@@ -20,6 +20,8 @@ var studioProjectMu sync.Mutex
 var studioUUIDPattern = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 
 type studioProjectSummary struct {
+	IsFavorite bool   `json:"isFavorite"`
+	Removed    bool   `json:"removed,omitempty"`
 	ID         string `json:"id"`
 	Name       string `json:"name"`
 	Path       string `json:"path,omitempty"`
@@ -182,6 +184,14 @@ func registerStudioProjectLocked(path string) (studioProjectSummary, error) {
 		stamp = time.Now().UTC().Format(time.RFC3339)
 	}
 	project := studioProjectSummary{ID: id, Name: name, Path: root, Timestamp: stamp, Available: true}
+	removed, err := removedStudioProjectIDs()
+	if err != nil {
+		return project, err
+	}
+	if removed[id] {
+		project.Removed = true
+		return project, nil
+	}
 	if err := repairCompanionPhoneImagesLocked(root, id); err != nil {
 		return project, err
 	}
@@ -234,8 +244,9 @@ func studioProjectAssetCount(id string) (int, error) {
 	return count, nil
 }
 
-func listStudioProjectCatalogPage(id string, imageOffset, imageLimit, videoOffset, videoLimit int) ([]studioImageSummary, []studioImageSummary, bool, bool, error) {
-	if id == "" {
+func listStudioProjectCatalogPage(id string, imageOffset, imageLimit, videoOffset, videoLimit int, favoriteFilter ...bool) ([]studioImageSummary, []studioImageSummary, bool, bool, error) {
+	favoritesOnly := len(favoriteFilter) > 0 && favoriteFilter[0]
+	if id == "" && !favoritesOnly {
 		return listStudioCatalogPage(imageOffset, imageLimit, videoOffset, videoLimit)
 	}
 	images, videos, err := allStudioProjectAssets()
@@ -245,7 +256,7 @@ func listStudioProjectCatalogPage(id string, imageOffset, imageLimit, videoOffse
 	filter := func(items []studioImageSummary, offset, limit int) ([]studioImageSummary, bool) {
 		filtered := []studioImageSummary{}
 		for _, item := range items {
-			if studioHasProject(studioAssetProjectIDs(item), id) {
+			if (id == "" || studioHasProject(studioAssetProjectIDs(item), id)) && (!favoritesOnly || item.IsFavorite) {
 				filtered = append(filtered, item)
 			}
 		}
@@ -271,6 +282,10 @@ func listRegisteredStudioProjects() ([]studioProjectSummary, error) {
 
 func readStudioProjectRecordsLocked() (map[string]studioProjectSummary, error) {
 	studio, err := studioRootDirectory()
+	if err != nil {
+		return nil, err
+	}
+	removed, err := removedStudioProjectIDs()
 	if err != nil {
 		return nil, err
 	}
@@ -306,6 +321,9 @@ func readStudioProjectRecordsLocked() (map[string]studioProjectSummary, error) {
 				continue
 			}
 			id := normalizedStudioUUID(metadata.ID)
+			if removed[id] {
+				continue
+			}
 			name, path := metadata.Name, metadata.Path
 			if folder == "Projects" {
 				name, path = metadata.ProjectName, metadata.ExportedProjectPath
@@ -332,7 +350,7 @@ func readStudioProjectRecordsLocked() (map[string]studioProjectSummary, error) {
 					}
 				}
 			}
-			projects[id] = studioProjectSummary{ID: id, Name: name, Path: path, Timestamp: metadata.Timestamp, Available: available}
+			projects[id] = studioProjectSummary{ID: id, Name: name, Path: path, Timestamp: metadata.Timestamp, Available: available, IsFavorite: metadata.IsFavorite || projects[id].IsFavorite}
 		}
 	}
 	return projects, nil
@@ -342,6 +360,10 @@ func listStudioProjects() ([]studioProjectSummary, error) {
 	studioProjectMu.Lock()
 	defer studioProjectMu.Unlock()
 	projects, err := readStudioProjectRecordsLocked()
+	if err != nil {
+		return nil, err
+	}
+	removed, err := removedStudioProjectIDs()
 	if err != nil {
 		return nil, err
 	}
@@ -363,6 +385,9 @@ func listStudioProjects() ([]studioProjectSummary, error) {
 	}
 	for _, asset := range append(images, videos...) {
 		for _, id := range studioAssetProjectIDs(asset) {
+			if removed[id] {
+				continue
+			}
 			project, exists := projects[id]
 			if !exists {
 				project = studioProjectSummary{ID: id, Name: "Linked project"}
@@ -389,15 +414,20 @@ func sortedStudioProjects(projects map[string]studioProjectSummary) []studioProj
 }
 
 func studioProjectsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		deleteStudioProjectHandler(w, r)
+		return
+	}
 	if r.Method == http.MethodPost {
 		var req struct {
-			Path string `json:"path"`
+			Path    string `json:"path"`
+			Restore bool   `json:"restore"`
 		}
 		if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 16<<10)).Decode(&req); err != nil {
 			http.Error(w, "Invalid project request", http.StatusBadRequest)
 			return
 		}
-		project, err := registerStudioProject(req.Path)
+		project, err := registerStudioProjectWithRestore(req.Path, req.Restore)
 		if err != nil {
 			http.Error(w, "Could not register this Glowbom project.", http.StatusBadRequest)
 			return
@@ -638,7 +668,7 @@ func useStudioImage(id, path string) (studioImageRecord, studioProjectSummary, s
 	if err != nil {
 		return asset, project, "", errors.New("This image cannot be copied into a project.")
 	}
-	project, err = registerStudioProjectLocked(path)
+	project, err = registerStudioProjectRestoringLocked(path, true)
 	if err != nil {
 		return asset, project, "", errors.New("Open a writable Glowbom project first.")
 	}

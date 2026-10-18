@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 )
 
 // A tap keeps the Desktop's original stream intact while recording the same
@@ -52,6 +53,17 @@ func (m *companionManager) trackDesktopBuild(next http.HandlerFunc, w http.Respo
 	}
 	project := companionProject{ID: companionProjectID(root), path: root}
 	job := m.newRun(project, "desktop", request)
+	if err := bindBookLaunchVideo(job, request); err != nil {
+		job.mu.Lock()
+		job.status, job.errorText, job.finishedAt = "failed", err.Error(), m.now().UTC().Format(time.RFC3339Nano)
+		job.permissionPolicy.close()
+		job.mu.Unlock()
+		job.cancel()
+		m.saveRun(job)
+		release()
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
 	m.mu.Lock()
 	session := m.session
 	m.mu.Unlock()

@@ -48,11 +48,65 @@ build input and earlier Book revisions intact. New history does not replace your
 existing stories. If another window changed an entry, reload it before saving
 again so you can keep both sets of changes.
 
+## Delete and restore a story
+
+Deleting a story removes it from the active Book. It keeps the complete story,
+earlier revisions, original project files, images, and Studio videos. Restore it
+from **Deleted stories** when needed. Sync does not import a deleted story again.
+Deleting does not stop submitted media work or reverse a charge. A later result
+can stay in Studio, but it cannot attach itself to the deleted or restored story.
+
+Send `delete-entry` or `restore-entry` to `/project-book` with `projectPath`,
+`entryId`, and the current `expectedContentVersion`. A changed story returns 409;
+reload before trying again. Repeating an action already applied makes no new
+revision. The response contains active `entries` and optional `deletedEntries`.
+A deleted entry retains its fields and adds an ISO `deletedAt` timestamp. Restore
+removes that marker and creates a new content version. The companion returns
+active stories only.
+
 ## Listen to a story
 
 Use the speaker in an entry's controls to hear its title and story. It uses the
 same saved speech voice as chat. Select it again to stop. Playback also stops
 when you open another entry, edit the story, or close the Book.
+
+## Attach a video in Desktop
+
+Open **Edit entry > Videos**. **Add from Studio** selects a saved video.
+**Create video from story** starts a fresh draft using a short, editable opening
+of the story. Choose a saved voice or audio recording, an optional presenter
+photo, and an optional movement clip. Review the words, length, shape, and price,
+then confirm creation. This uses Seedance 2.5 through the Higgsfield account
+connected in Desktop Settings. It does not add app screenshots or launch graphics.
+
+**Resume video** opens saved choices or a submitted request. Closing the editor
+keeps the video draft locally. Submitted work keeps its original story target;
+reopening checks that request rather than submitting another paid request.
+A finished video stays in Studio and gains a reference in the original story.
+Text edits remain separate: use **Save entry** to save those changes. Adding or
+removing a video reference saves immediately. Removing a reference leaves the
+video in Studio. Loading a video in the reader does not autoplay it.
+
+Each entry can hold up to 32 references in its `videos` metadata. A reference
+contains only `id`, `assetId`, `title`, optional `caption`, and `createdAt`.
+No video bytes, provider URLs, or local media paths are copied into the Book.
+Committing the Book to GitHub keeps these references but does not transfer the
+Studio library. Another computer needs the referenced Studio asset to play it.
+Missing media has a retry action and can be unlinked from the editor.
+
+The existing `/project-book` POST endpoint accepts `add-video` (`entryId`,
+`assetId`), `remove-video` (`entryId`, `videoId`), and
+`bind-video-generation` (`entryId`, `generationId`). Each request includes
+`projectPath`. Add and bind accept `title`; add also accepts `caption`.
+Use `expectedContentVersion` to detect changed stories. Bind must succeed before
+submitting a new Studio generation. Backend completion merges the reference into
+the latest story revision without replacing its content. Read and sync recover
+unfinished attachments from saved Studio results without contacting a provider.
+
+Generation bindings remain in the local Studio library outside the project.
+If the project moves while a request runs, add the finished Studio video from its
+new location. This Desktop source feature has not been added to the packaged
+4.1.2 release or the companion's Book interface.
 
 ## Choose a model and style
 
@@ -185,13 +239,24 @@ The story comes from `entry.md`, including edits made in a text editor.
 `source.json` keeps the links to recorded work and `sketch.json` keeps the
 outline and optional visual sketch.
 
+In the latest complete revision, a nonempty `source.json.deletedAt` marks a
+deleted story. File readers must skip that entry when building active summaries,
+overviews, or project briefs. Earlier Markdown files remain historical evidence;
+their presence does not make an entry active. Delete and restore each save a new
+complete revision. The 1000-entry limit includes deleted entries.
+
 The overview notes are starting points for the owner. The initial Project Brief
 points to these files; it is not a generated synthesis or automatically inserted
-into every coding session. The project manifest is left unchanged.
+into every coding session. Delete and restore do not rewrite owner-maintained
+overview notes or briefs. The project manifest is left unchanged.
 
 Original source records stay in `history/` and `.glowbom/prototypes/`. New
 prototype records include immutable input images and, when supplied,
-`input-sketch.json`. Keep these files with the project when moving it.
+`input-sketch.json`. Carousel requests also save `input-carousel.json` with the
+ordered inputs, descriptions, and personalization choices. Its image paths are
+relative to that saved request. An optional `personalizationReferencePath`
+points to the original photo, separate from the annotated canvas. Keep these
+files with the project when moving it.
 
 ## Boundaries of this version
 

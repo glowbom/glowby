@@ -18,6 +18,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/zalando/go-keyring"
 )
 
 type projectIconTestTransport func(*http.Request) (*http.Response, error)
@@ -26,6 +28,9 @@ func (fn projectIconTestTransport) RoundTrip(r *http.Request) (*http.Response, e
 
 func isolateProjectIconCredentials(t *testing.T, credentials ...string) {
 	t.Helper()
+	originalHiggsfieldGet := higgsfieldKeyringGet
+	higgsfieldKeyringGet = func(string, string) (string, error) { return "", keyring.ErrNotFound }
+	t.Cleanup(func() { higgsfieldKeyringGet = originalHiggsfieldGet })
 	t.Setenv("GLOWBOM_STUDIO_DIR", t.TempDir())
 	for _, name := range []string{"OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "XAI_API_KEY"} {
 		t.Setenv(name, "")
@@ -107,11 +112,11 @@ func TestProjectIconSourcesPreferSubscriptionWithoutExposingCredentials(t *testi
 	if err := json.Unmarshal(recorder.Body.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if recorder.Code != 200 || result.Recommended != "xai-subscription" || len(result.Sources) != 6 {
+	if recorder.Code != 200 || result.Recommended != "xai-subscription" || len(result.Sources) != 7 {
 		t.Fatalf("unexpected catalog: %s", recorder.Body.String())
 	}
 	for _, source := range result.Sources {
-		if source.ID == "glowbom-api" || source.ID == "openai-subscription" {
+		if source.ID == "glowbom-api" || source.ID == "openai-subscription" || source.ID == higgsfieldSourceID {
 			continue
 		}
 		if !source.Available {

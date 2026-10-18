@@ -31,7 +31,7 @@ func readSharedChatHistory(path string) ([]chatMessage, error) {
 		messages = []chatMessage{}
 	}
 	for _, message := range messages {
-		if message.Role != "user" && message.Role != "assistant" {
+		if message.Role != "user" && message.Role != "assistant" || validateChatMessageActor(message) != nil {
 			return nil, errors.New("Could not read this saved conversation.")
 		}
 	}
@@ -39,6 +39,11 @@ func readSharedChatHistory(path string) ([]chatMessage, error) {
 }
 
 func saveSharedChatHistory(path string, messages []chatMessage) error {
+	for _, message := range messages {
+		if err := validateChatMessageActor(message); err != nil {
+			return err
+		}
+	}
 	data, err := json.MarshalIndent(messages, "", "  ")
 	if err != nil || len(data) > maxChatHistoryBytes {
 		return errors.New("This conversation is too large to save. Start a new chat.")

@@ -40,13 +40,38 @@ type chatModel struct {
 	RecommendedRank        *int     `json:"recommendedRank,omitempty"`
 }
 type chatMessage struct {
-	Role          string `json:"role"`
-	Text          string `json:"text"`
-	Model         string `json:"model,omitempty"`
-	Reasoning     string `json:"reasoning,omitempty"`
-	WorkedSeconds int    `json:"workedSeconds,omitempty"`
-	BuildSeconds  int    `json:"buildSeconds,omitempty"`
+	Role          string     `json:"role"`
+	Text          string     `json:"text"`
+	Actor         *chatActor `json:"actor,omitempty"`
+	Model         string     `json:"model,omitempty"`
+	Reasoning     string     `json:"reasoning,omitempty"`
+	WorkedSeconds int        `json:"workedSeconds,omitempty"`
+	BuildSeconds  int        `json:"buildSeconds,omitempty"`
 }
+
+// Actor describes who supplied a user message. It does not grant permissions
+// or change the role sent to a model.
+type chatActor struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	Provider string `json:"provider,omitempty"`
+}
+
+func validateChatActor(actor *chatActor) error {
+	if actor != nil && (!controlString(actor.ID, 128, true) || !controlString(actor.Username, 80, true) || !controlString(actor.Name, 160, true) || !controlString(actor.Provider, 160, false)) {
+		return errors.New("Invalid message author.")
+	}
+	return nil
+}
+
+func validateChatMessageActor(message chatMessage) error {
+	if message.Actor != nil && message.Role != "user" {
+		return errors.New("Only user messages can have an agent author.")
+	}
+	return validateChatActor(message.Actor)
+}
+
 type chatRequest struct {
 	ProjectPath     string            `json:"projectPath"`
 	Model           string            `json:"model"`
@@ -58,6 +83,7 @@ type chatRequest struct {
 	Stack           *chatStack        `json:"stack,omitempty"`
 	Images          *chatImageOptions `json:"images,omitempty"`
 	InputSketch     *sketchDocument   `json:"inputSketch,omitempty"`
+	Carousel        *chatCarousel     `json:"carousel,omitempty"`
 	AgentState      *chatAgentState   `json:"agentState,omitempty"`
 }
 type chatAgentState struct {
@@ -484,6 +510,17 @@ func (s *chatService) imagePart(path string) (map[string]any, error) {
 }
 
 func validateChatRequest(req chatRequest) error {
+	if req.Carousel != nil {
+		if req.Mode != "prototype" || len(req.AttachmentPaths) != 0 {
+			return errors.New("Use carousel cards only for prototypes, without separate attachments.")
+		}
+		if req.Images != nil && (req.Images.Personalization || req.Images.ReferencePath != "") {
+			return errors.New("Choose people on each carousel sketch instead of using a global personalization photo.")
+		}
+		if err := validateChatCarousel(req.Carousel); err != nil {
+			return err
+		}
+	}
 	if req.AgentState != nil && (req.AgentState.Status != "idle" && req.AgentState.Status != "running" && req.AgentState.Status != "waiting" || req.AgentState.Driver != "" && req.AgentState.Driver != "opencode" && req.AgentState.Driver != "cursor" && req.AgentState.Driver != "codex" && req.AgentState.Driver != "claude-code" && req.AgentState.Driver != "acp") {
 		return errors.New("Invalid agent status.")
 	}
@@ -526,6 +563,9 @@ func validateChatRequest(req chatRequest) error {
 	for _, m := range req.Messages {
 		if m.Role != "user" && m.Role != "assistant" {
 			return errors.New("Invalid conversation role.")
+		}
+		if err := validateChatMessageActor(m); err != nil {
+			return err
 		}
 		if len(m.Reasoning) > maxChatReasoningBytes {
 			return errors.New("This thinking block is too long. Start a new chat.")
@@ -583,6 +623,9 @@ func (s *chatService) streamHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Request canceled.", http.StatusBadRequest)
 		return
 	}
+	if req.Images != nil && req.Images.SourceID == higgsfieldSourceID && !authorizeVoiceKey(w, r) {
+		return
+	}
 	if isAppleIntelligenceModel(req.Model) {
 		req.Messages = recentChatModelMessages(req.Messages)
 		s.appleIntelligenceChat(w, r, req)
@@ -629,7 +672,7 @@ func (s *chatService) streamHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Choose a project folder before generating.", 400)
 		return
 	}
-	if req.Mode == "prototype" && req.Images != nil && previousPrototype != "" {
+	if req.Mode == "prototype" && req.Carousel == nil && req.Images != nil && previousPrototype != "" {
 		var err error
 		req.Images.previousImages, err = capturePrototypeImageReferences(root, previousPrototype)
 		if err != nil {
@@ -651,6 +694,27 @@ func (s *chatService) streamHandler(w http.ResponseWriter, r *http.Request) {
 		contextText += "\n\nRequested technology stack:\n" + req.Stack.Name + "\n" + req.Stack.Description
 	}
 	parts := append([]map[string]any{}, companionData.images...)
+	var carousel *preparedChatCarousel
+	if req.Carousel != nil {
+		source := ""
+		if req.Images != nil {
+			source = req.Images.SourceID
+		}
+		var err error
+		carousel = companionData.carousel
+		if carousel == nil {
+			carousel, err = s.prepareChatCarousel(req.Carousel, source, r.Context())
+		}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		parts = append(parts, carousel.modelParts...)
+		contextText += carousel.prompt()
+		if req.Images != nil {
+			req.Images.carousel = carousel
+		}
+	}
 	var referencePart map[string]any
 	for _, path := range req.AttachmentPaths {
 		part, err := s.imagePart(path)
@@ -799,7 +863,7 @@ func (s *chatService) streamHandler(w http.ResponseWriter, r *http.Request) {
 	warnings := []string{}
 	prototypeRecord := ""
 	if err == nil && req.Mode == "prototype" {
-		err = saveChatPrototypeWithSketch(root, text, previousPrototype, req.Messages, req.Model, parts, req.InputSketch, &prototypeRecord)
+		err = saveChatPrototypeWithCarousel(root, text, previousPrototype, req.Messages, req.Model, parts, req.InputSketch, carousel, &prototypeRecord)
 		if err == nil {
 			emit(map[string]any{"previewReady": true})
 		}
@@ -1168,6 +1232,10 @@ func saveChatPrototype(root, text, expected string, messages []chatMessage, mode
 }
 
 func saveChatPrototypeWithSketch(root, text, expected string, messages []chatMessage, model string, parts []map[string]any, inputSketch *sketchDocument, records ...*string) error {
+	return saveChatPrototypeWithCarousel(root, text, expected, messages, model, parts, inputSketch, nil, records...)
+}
+
+func saveChatPrototypeWithCarousel(root, text, expected string, messages []chatMessage, model string, parts []map[string]any, inputSketch *sketchDocument, carousel *preparedChatCarousel, records ...*string) error {
 	chatResultMu.Lock()
 	defer chatResultMu.Unlock()
 	if err := validateSketchDocument(inputSketch); err != nil {
@@ -1220,7 +1288,17 @@ func saveChatPrototypeWithSketch(root, text, expected string, messages []chatMes
 		return err
 	}
 	attachments := []map[string]string{}
+	if carousel != nil {
+		attachments, err = carousel.save(record)
+		if err != nil {
+			return err
+		}
+		request["inputCarouselPath"] = "input-carousel.json"
+	}
 	for _, part := range parts {
+		if carousel != nil {
+			break
+		}
 		if part["type"] != "file" {
 			continue
 		}
@@ -1330,7 +1408,7 @@ func (s *chatService) historyHandler(w http.ResponseWriter, r *http.Request) {
 			messages = []chatMessage{}
 		}
 		for _, message := range messages {
-			if message.Role != "user" && message.Role != "assistant" {
+			if message.Role != "user" && message.Role != "assistant" || validateChatMessageActor(message) != nil {
 				http.Error(w, "Could not read the saved conversation.", 400)
 				return
 			}
@@ -1348,6 +1426,10 @@ func (s *chatService) historyHandler(w http.ResponseWriter, r *http.Request) {
 		m := &req.Messages[i]
 		if m.Role != "user" && m.Role != "assistant" {
 			http.Error(w, "Invalid message role", 400)
+			return
+		}
+		if err := validateChatMessageActor(*m); err != nil {
+			http.Error(w, err.Error(), 400)
 			return
 		}
 		if m.Role == "user" {

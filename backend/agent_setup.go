@@ -32,6 +32,8 @@ type codingAgentStatus struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	Installed bool   `json:"installed"`
+	// Reported only for agents with a sign-in check (Claude Code). Missing means unknown.
+	SignedIn *bool `json:"signedIn,omitempty"`
 }
 
 type agentSetupStatus struct {
@@ -111,11 +113,16 @@ func openCodeExecutable() (string, error) {
 func currentAgentSetupStatus() agentSetupStatus {
 	status := agentSetupStatus{Agents: make([]codingAgentStatus, 0, len(codingAgents()))}
 	for _, agent := range codingAgents() {
-		status.Agents = append(status.Agents, codingAgentStatus{
-			ID:        agent.id,
-			Name:      agent.name,
-			Installed: codingAgentInstalled(agent),
-		})
+		entry := codingAgentStatus{ID: agent.id, Name: agent.name, Installed: codingAgentInstalled(agent)}
+		// An installed Claude Code that is signed out lists no models, so say so instead of "Ready".
+		if agent.id == "claude-code" && entry.Installed {
+			if binary, err := claudeCodeExecutable(); err == nil {
+				if signedIn, err := claudeCodeAuthenticated(context.Background(), binary); err == nil {
+					entry.SignedIn = &signedIn
+				}
+			}
+		}
+		status.Agents = append(status.Agents, entry)
 	}
 	selection, err := opencodecompat.Selection()
 	status.OpenCode = &openCodeRuntimeStatus{Selection: selection, Locked: os.Getenv("GLOWBOM_OPENCODE_VERSION") != "", External: strings.TrimSpace(os.Getenv("OPENCODE_URL")) != ""}
